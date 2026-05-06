@@ -32,7 +32,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <None Update="AUTHORS.toml">
+      <None Update="DEFAULT_AUTHORS.toml">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>
