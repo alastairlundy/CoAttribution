@@ -27,7 +27,6 @@
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.7" />
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.7" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
-      <PackageReference Include="Tomlyn" Version="2.3.2" />
       <PackageReference Include="XenoAtom.Terminal.UI" Version="3.2.0" />
     </ItemGroup>
 
