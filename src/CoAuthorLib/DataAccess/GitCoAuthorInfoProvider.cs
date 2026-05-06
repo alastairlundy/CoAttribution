@@ -69,34 +69,40 @@ public class GitCoAuthorInfoProvider : IGitCoAuthorInfoProvider
     }
 
     public async Task<bool> AddCoAuthorAsync(string filePath, GitCoAuthor coAuthor, CancellationToken cancellationToken)
+        => await AddCoAuthorsAsync(filePath, [coAuthor], cancellationToken);
+
+    public async Task<bool> AddCoAuthorsAsync(string filePath, GitCoAuthor[] coAuthors, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrEmpty(filePath);
-        
-        if(!filePath.EndsWith(".toml", StringComparison.CurrentCultureIgnoreCase))
-            throw new ArgumentException("Config file must be a valid TOML file.");
 
+        if (!filePath.EndsWith(".toml", StringComparison.CurrentCultureIgnoreCase))
+            throw new ArgumentException("Config file must be a valid TOML file.");
+        
         if (!File.Exists(Path.GetFullPath(filePath)))
             throw new FileNotFoundException();
-        
-        string tomlContent = await File.ReadAllTextAsync(filePath, cancellationToken);
-        
-        GitCoAuthorConfig? config = TomlSerializer.Deserialize(tomlContent, CoAuthorTomlContext.Default.GitCoAuthorConfig);
 
-        if (config is null)
+        string tomlContent = await File.ReadAllTextAsync(filePath, cancellationToken);
+
+        GitCoAuthorConfig? config = TomlSerializer.Deserialize(tomlContent, CoAuthorTomlContext.Default.GitCoAuthorConfig);
+       
+        if(config is null)
             throw new Exception();
 
-        switch (coAuthor.Type)
+        foreach (GitCoAuthor coAuthor in coAuthors)
         {
-            case  CoAuthorType.Agent:
-                config.Agents.Add(coAuthor.CoAuthorId, coAuthor);
-                break;
-            case CoAuthorType.Human:
-                config.Humans.Add(coAuthor.CoAuthorId, coAuthor);
-                break;
-            case CoAuthorType.NotDefined:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
+            switch (coAuthor.Type)
+            {
+                case  CoAuthorType.Agent:
+                    config.Agents.Remove(coAuthor.CoAuthorId);
+                    break;
+                case CoAuthorType.Human:
+                    config.Humans.Remove(coAuthor.CoAuthorId);
+                    break;
+                case CoAuthorType.NotDefined:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
         
         tomlContent = TomlSerializer.Serialize(config, CoAuthorTomlContext.Default.GitCoAuthorConfig);
@@ -114,6 +120,9 @@ public class GitCoAuthorInfoProvider : IGitCoAuthorInfoProvider
     }
 
     public async Task<bool> RemoveCoAuthorAsync(string filePath, GitCoAuthor coAuthor, CancellationToken cancellationToken)
+        => await RemoveCoAuthorsAsync(filePath, [coAuthor], cancellationToken);
+
+    public async Task<bool> RemoveCoAuthorsAsync(string filePath, GitCoAuthor[] coAuthors, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrEmpty(filePath);
 
@@ -129,19 +138,22 @@ public class GitCoAuthorInfoProvider : IGitCoAuthorInfoProvider
        
         if(config is null)
             throw new Exception();
-        
-        switch (coAuthor.Type)
+
+        foreach (GitCoAuthor coAuthor in coAuthors)
         {
-            case  CoAuthorType.Agent:
-                config.Agents.Remove(coAuthor.CoAuthorId);
-                break;
-            case CoAuthorType.Human:
-                config.Humans.Remove(coAuthor.CoAuthorId);
-                break;
-            case CoAuthorType.NotDefined:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
+            switch (coAuthor.Type)
+            {
+                case  CoAuthorType.Agent:
+                    config.Agents.Remove(coAuthor.CoAuthorId);
+                    break;
+                case CoAuthorType.Human:
+                    config.Humans.Remove(coAuthor.CoAuthorId);
+                    break;
+                case CoAuthorType.NotDefined:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
         
         tomlContent = TomlSerializer.Serialize(config, CoAuthorTomlContext.Default.GitCoAuthorConfig);

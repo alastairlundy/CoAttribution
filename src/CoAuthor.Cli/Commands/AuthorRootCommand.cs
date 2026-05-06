@@ -12,5 +12,10 @@ namespace CoAuthor.Cli.Commands;
 [CliCommand(Name = "author", Parent = typeof(RootCommand))]
 public class AuthorRootCommand
 {
-    
+    public Task<int> RunAsync(CliContext context)
+    {
+        context.ShowHelp();
+
+        return Task.FromResult(0);
+    }
 }

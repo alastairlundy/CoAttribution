@@ -16,6 +16,9 @@ public interface IGitCoAuthorInfoProvider
     Task<GitCoAuthor[]> GetCoAuthorsAsync(string filePath, CancellationToken cancellationToken);
     
     Task<bool> AddCoAuthorAsync(string filePath, GitCoAuthor coAuthor, CancellationToken cancellationToken);
+    Task<bool> AddCoAuthorsAsync(string filePath, GitCoAuthor[] coAuthor, CancellationToken cancellationToken);
     
     Task<bool> RemoveCoAuthorAsync(string filePath, GitCoAuthor coAuthor, CancellationToken cancellationToken);
+    
+    Task<bool> RemoveCoAuthorsAsync(string filePath, GitCoAuthor[] coAuthors, CancellationToken cancellationToken);
 }
