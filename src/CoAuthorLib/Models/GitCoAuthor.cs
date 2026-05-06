@@ -7,6 +7,8 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+using Tomlyn.Serialization;
+
 namespace CoAuthorLib.Models;
 
 // ReSharper disable once PartialTypeWithSinglePart
@@ -17,6 +19,9 @@ public partial record GitCoAuthor
     public string Name { get; set; } = string.Empty;
     
     public string Email { get; set; } = string.Empty;
+
+    [TomlPropertyName("default_attribution_type")]
+    public AttributionType DefaultAttributionType { get; set; } = AttributionType.DefaultOrCoAuthor;
 
     public CoAuthorType Type { get; set; } = CoAuthorType.NotDefined;
     
