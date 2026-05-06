@@ -30,4 +30,7 @@
     <data name="Commands.Commit.Failed.Generic" xml:space="preserve">
         <value>Failed to perform commit with co-author/assist message: '{0}'</value>
     </data>
+    <data name="Commands.Message.Failed" xml:space="preserve">
+        <value>Failed to produce commit message with co-author/assist message: '{0}'</value>
+    </data>
 </root>

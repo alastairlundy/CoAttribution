@@ -94,5 +94,14 @@ namespace CoAuthor.Cli.Localizations {
                 return ResourceManager.GetString("Commands.Exceptions.Details", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to produce commit message with co-author/assist message: &apos;{0}&apos;.
+        /// </summary>
+        internal static string Commands_Message_Failed {
+            get {
+                return ResourceManager.GetString("Commands.Message.Failed", resourceCulture);
+            }
+        }
     }
 }
