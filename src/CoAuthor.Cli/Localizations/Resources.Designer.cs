@@ -58,5 +58,32 @@ namespace CoAuthor.Cli.Localizations {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not add co-author {0} to config file &apos;{1}&apos;.
+        /// </summary>
+        internal static string Commands_Authors_Add_Failed {
+            get {
+                return ResourceManager.GetString("Commands.Authors.Add.Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CoAuthor &apos;{0}&apos; was successfully added to &apos;{1}&apos; config file..
+        /// </summary>
+        internal static string Commands_Authors_Add_Successful {
+            get {
+                return ResourceManager.GetString("Commands.Authors.Add.Successful", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Exception Details: .
+        /// </summary>
+        internal static string Commands_Exceptions_Details {
+            get {
+                return ResourceManager.GetString("Commands.Exceptions.Details", resourceCulture);
+            }
+        }
     }
 }
