@@ -1,7 +1,6 @@
-﻿using Tomlyn.Syntax;
+﻿namespace CoAuthorLib.Models;
 
-namespace CoAuthorLib.Models;
-
+// ReSharper disable once PartialTypeWithSinglePart
 public partial class GitCoAuthorConfig
 {
     public Dictionary<string, GitCoAuthor> Agents { get; set; } = new();

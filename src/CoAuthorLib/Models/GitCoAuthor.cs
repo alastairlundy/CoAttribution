@@ -1,5 +1,6 @@
 ﻿namespace CoAuthorLib.Models;
 
+// ReSharper disable once PartialTypeWithSinglePart
 public partial record GitCoAuthor
 {
     public string CoAuthorId { get; set; } = string.Empty;
