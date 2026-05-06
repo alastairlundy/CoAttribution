@@ -83,6 +83,7 @@ public class CommitMessageBuilder : ICommitMessageBuilder
         if (_coAuthors.Count > 0)
         {
             stringBuilder.AppendLine();
+            stringBuilder.AppendLine();
             
             foreach ((GitCoAuthor coAuthor, AttributionType attributionType) coAuthorTuple in _coAuthors)
             {

@@ -78,6 +78,15 @@ namespace CoAuthor.Cli.Localizations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to perform commit with co-author/assist message: &apos;{0}&apos;.
+        /// </summary>
+        internal static string Commands_Commit_Failed_Generic {
+            get {
+                return ResourceManager.GetString("Commands.Commit.Failed.Generic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Exception Details: .
         /// </summary>
         internal static string Commands_Exceptions_Details {

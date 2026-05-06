@@ -27,4 +27,7 @@
     <data name="Commands.Authors.Add.Failed" xml:space="preserve">
         <value>Could not add co-author {0} to config file '{1}'</value>
     </data>
+    <data name="Commands.Commit.Failed.Generic" xml:space="preserve">
+        <value>Failed to perform commit with co-author/assist message: '{0}'</value>
+    </data>
 </root>
