@@ -1,6 +1,6 @@
 ﻿namespace CoAuthorLib.Models;
 
-public record GitCoAuthor
+public partial record GitCoAuthor
 {
     public string CoAuthorId { get; set; } = string.Empty;
     

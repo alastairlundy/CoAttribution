@@ -75,7 +75,7 @@ public class CommitMessageBuilder : ICommitMessageBuilder
         {
             stringBuilder.AppendLine();
             
-            foreach (var coAuthorTuple in _coAuthors)
+            foreach ((GitCoAuthor coAuthor, AttributionType attributionType) coAuthorTuple in _coAuthors)
             {
                 string attributionMessage = coAuthorTuple.attributionType == AttributionType.CoAuthor
                     ? Resources.CommitTrailers_CoAuthoredBy
