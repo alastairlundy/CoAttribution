@@ -10,10 +10,18 @@
 using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 
+IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
+    .AddCommandLine(args)
+    .AddEnvironmentVariables();
+
+IConfiguration configuration = configurationBuilder.Build();
+
 Cli.Ext.ConfigureServices(services =>
 {
     services.AddSingleton<IGitCoAuthorInfoProvider, GitCoAuthorInfoProvider>();
     services.AddSingleton<ICommitMessageBuilder, CommitMessageBuilder>();
+    
+    services.AddSingleton(configuration);
 });
 
 CliSettings settings = new()
