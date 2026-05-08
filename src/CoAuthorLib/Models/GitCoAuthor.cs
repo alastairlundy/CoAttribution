@@ -22,8 +22,8 @@ public partial record GitCoAuthor
 
     [TomlPropertyName("default_attribution_type")]
     public AttributionType DefaultAttributionType { get; set; } = AttributionType.DefaultOrCoAuthor;
-
-    public CoAuthorType Type { get; set; } = CoAuthorType.NotDefined;
+    
+    public ContributorType Type { get; set; } = ContributorType.NotDefined;
     
     public override string ToString()
     {

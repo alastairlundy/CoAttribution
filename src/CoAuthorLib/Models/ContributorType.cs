@@ -9,9 +9,12 @@
 
 namespace CoAuthorLib.Models;
 
-public enum CoAuthorType
+public enum ContributorType
 {
     Human,
     Agent,
+    /*
+    OtherAIMode,
+    */
     NotDefined
 }

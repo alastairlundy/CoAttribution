@@ -56,13 +56,13 @@ public class GitCoAuthorInfoProvider : IGitCoAuthorInfoProvider
         foreach ((string id, GitCoAuthor author) in config.Agents)
         {
             author.CoAuthorId = id;
-            author.Type = CoAuthorType.Agent;
+            author.Type = ContributorType.Agent;
         }
 
         foreach ((string id, GitCoAuthor author) in config.Humans)
         {
             author.CoAuthorId = id;
-            author.Type = CoAuthorType.Human;
+            author.Type = ContributorType.Human;
         }
 
         return config.Agents.Values.Concat(config.Humans.Values).ToArray();
@@ -92,13 +92,13 @@ public class GitCoAuthorInfoProvider : IGitCoAuthorInfoProvider
         {
             switch (coAuthor.Type)
             {
-                case  CoAuthorType.Agent:
+                case  ContributorType.Agent:
                     config.Agents.Remove(coAuthor.CoAuthorId);
                     break;
-                case CoAuthorType.Human:
+                case ContributorType.Human:
                     config.Humans.Remove(coAuthor.CoAuthorId);
                     break;
-                case CoAuthorType.NotDefined:
+                case ContributorType.NotDefined:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -143,13 +143,13 @@ public class GitCoAuthorInfoProvider : IGitCoAuthorInfoProvider
         {
             switch (coAuthor.Type)
             {
-                case  CoAuthorType.Agent:
+                case  ContributorType.Agent:
                     config.Agents.Remove(coAuthor.CoAuthorId);
                     break;
-                case CoAuthorType.Human:
+                case ContributorType.Human:
                     config.Humans.Remove(coAuthor.CoAuthorId);
                     break;
-                case CoAuthorType.NotDefined:
+                case ContributorType.NotDefined:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();

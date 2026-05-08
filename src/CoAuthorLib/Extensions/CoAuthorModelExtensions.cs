@@ -14,20 +14,20 @@ public static class CoAuthorModelExtensions
     extension(IEnumerable<GitCoAuthor> coAuthors)
     {
         public IEnumerable<GitCoAuthor> EnumerateHumanCoAuthors()
-            => coAuthors.Where(c => c.Type == CoAuthorType.Human);
+            => coAuthors.Where(c => c.Type == ContributorType.Human);
         
         public IEnumerable<GitCoAuthor> EnumerateAgentCoAuthors()
-            => coAuthors.Where(c => c.Type == CoAuthorType.Agent);
+            => coAuthors.Where(c => c.Type == ContributorType.Agent);
     }
     
     extension(GitCoAuthor[] coAuthors)
     {
         public GitCoAuthor[] GetHumanCoAuthors()
-            => coAuthors.Where(c => c.Type == CoAuthorType.Human)
+            => coAuthors.Where(c => c.Type == ContributorType.Human)
                 .ToArray();
         
         public GitCoAuthor[] GetAgentCoAuthors()
-            => coAuthors.Where(c => c.Type == CoAuthorType.Agent)
+            => coAuthors.Where(c => c.Type == ContributorType.Agent)
                 .ToArray();
     }
 }
