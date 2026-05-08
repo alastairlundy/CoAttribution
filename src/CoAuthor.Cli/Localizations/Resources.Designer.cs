@@ -60,7 +60,7 @@ namespace CoAuthor.Cli.Localizations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not add co-author {0} to config file &apos;{1}&apos;.
+        ///   Looks up a localized string similar to Could not add co-author &apos;{0}&apos; to config file &apos;{1}&apos;.
         /// </summary>
         internal static string Commands_Authors_Add_Failed {
             get {
@@ -101,6 +101,105 @@ namespace CoAuthor.Cli.Localizations {
         internal static string Commands_Message_Failed {
             get {
                 return ResourceManager.GetString("Commands.Message.Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Undefined coauthor.
+        /// </summary>
+        internal static string Labels_Authors_Undefined {
+            get {
+                return ResourceManager.GetString("Labels.Authors.Undefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to AI Agent.
+        /// </summary>
+        internal static string Labels_AuthorTypes_Values_Agent {
+            get {
+                return ResourceManager.GetString("Labels.AuthorTypes.Values.Agent", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Other AI mode.
+        /// </summary>
+        internal static string Labels_AuthorTypes_Values_AI_Other {
+            get {
+                return ResourceManager.GetString("Labels.AuthorTypes.Values.AI_Other", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Human.
+        /// </summary>
+        internal static string Labels_AuthorTypes_Values_Human {
+            get {
+                return ResourceManager.GetString("Labels.AuthorTypes.Values.Human", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        internal static string Labels_Buttons_Cancel {
+            get {
+                return ResourceManager.GetString("Labels.Buttons.Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Okay.
+        /// </summary>
+        internal static string Labels_Buttons_Okay {
+            get {
+                return ResourceManager.GetString("Labels.Buttons.Okay", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Save Author.
+        /// </summary>
+        internal static string Labels_Buttons_SaveAuthor {
+            get {
+                return ResourceManager.GetString("Labels.Buttons.SaveAuthor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contrbutor Type.
+        /// </summary>
+        internal static string Labels_Input_ContributorType {
+            get {
+                return ResourceManager.GetString("Labels.Input.ContributorType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Email.
+        /// </summary>
+        internal static string Labels_Input_Email {
+            get {
+                return ResourceManager.GetString("Labels.Input.Email", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name.
+        /// </summary>
+        internal static string Labels_Input_Name {
+            get {
+                return ResourceManager.GetString("Labels.Input.Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to add CoAuthor.
+        /// </summary>
+        internal static string Labels_MessageBoxes_Authors_Add_Failed {
+            get {
+                return ResourceManager.GetString("Labels.MessageBoxes.Authors.Add.Failed", resourceCulture);
             }
         }
     }

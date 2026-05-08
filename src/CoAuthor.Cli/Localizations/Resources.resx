@@ -25,12 +25,45 @@
         <value>Exception Details: </value>
     </data>
     <data name="Commands.Authors.Add.Failed" xml:space="preserve">
-        <value>Could not add co-author {0} to config file '{1}'</value>
+        <value>Could not add co-author '{0}' to config file '{1}'</value>
     </data>
     <data name="Commands.Commit.Failed.Generic" xml:space="preserve">
         <value>Failed to perform commit with co-author/assist message: '{0}'</value>
     </data>
     <data name="Commands.Message.Failed" xml:space="preserve">
         <value>Failed to produce commit message with co-author/assist message: '{0}'</value>
+    </data>
+    <data name="Labels.AuthorTypes.Values.Agent" xml:space="preserve">
+        <value>AI Agent</value>
+    </data>
+    <data name="Labels.AuthorTypes.Values.Human" xml:space="preserve">
+        <value>Human</value>
+    </data>
+    <data name="Labels.AuthorTypes.Values.AI_Other" xml:space="preserve">
+        <value>Other AI mode</value>
+    </data>
+    <data name="Labels.Input.Email" xml:space="preserve">
+        <value>Email</value>
+    </data>
+    <data name="Labels.Input.Name" xml:space="preserve">
+        <value>Name</value>
+    </data>
+    <data name="Labels.Input.ContributorType" xml:space="preserve">
+        <value>Contrbutor Type</value>
+    </data>
+    <data name="Labels.Buttons.Cancel" xml:space="preserve">
+        <value>Cancel</value>
+    </data>
+    <data name="Labels.Buttons.SaveAuthor" xml:space="preserve">
+        <value>Save Author</value>
+    </data>
+    <data name="Labels.Buttons.Okay" xml:space="preserve">
+        <value>Okay</value>
+    </data>
+    <data name="Labels.MessageBoxes.Authors.Add.Failed" xml:space="preserve">
+        <value>Failed to add CoAuthor</value>
+    </data>
+    <data name="Labels.Authors.Undefined" xml:space="preserve">
+        <value>Undefined coauthor</value>
     </data>
 </root>
