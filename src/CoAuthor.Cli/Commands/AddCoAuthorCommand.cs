@@ -50,7 +50,7 @@ public class AddCoAuthorCommand
             Name = AuthorName,
             Email = AuthorEmail,
             Type = AuthorType.Equals("agent", StringComparison.CurrentCultureIgnoreCase) ?
-                CoAuthorType.Agent : CoAuthorType.Human,
+                ContributorType.Agent : ContributorType.Human,
         };
 
         if (!string.IsNullOrEmpty(DefaultAttributionType))
