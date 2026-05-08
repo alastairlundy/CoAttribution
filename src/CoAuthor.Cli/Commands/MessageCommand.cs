@@ -7,8 +7,6 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using XenoAtom.Terminal.UI;
-using XenoAtom.Terminal.UI.Controls;
 
 namespace CoAuthor.Cli.Commands;
 
