@@ -16,6 +16,6 @@ public class AuthorRootCommand
     {
         context.ShowHelp();
 
-        return Task.FromResult(0);
+        return Task.FromResult(1);
     }
 }
