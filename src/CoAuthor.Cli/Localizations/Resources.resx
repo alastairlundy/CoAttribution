@@ -66,4 +66,7 @@
     <data name="Labels.Authors.Undefined" xml:space="preserve">
         <value>Undefined coauthor</value>
     </data>
+    <data name="Commands.Authors.Remove.Failed" xml:space="preserve">
+        <value>Could not remove co-authors: '{0}'</value>
+    </data>
 </root>

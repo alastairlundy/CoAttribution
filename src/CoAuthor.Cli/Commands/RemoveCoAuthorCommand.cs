@@ -56,7 +56,7 @@ public class RemoveCoAuthorCommand
         }
         catch (Exception exception)
         {
-            Console.WriteLine(Resources.Commands_Authors_Add_Failed, newCoAuthor, configFile);
+            Console.WriteLine(Resources.Commands_Authors_Remove_Failed, string.Join(", ", Ids), configFile);
             
             if (Verbose)
             {

@@ -78,6 +78,15 @@ namespace CoAuthor.Cli.Localizations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not remove co-authors: &apos;{0}&apos;.
+        /// </summary>
+        internal static string Commands_Authors_Remove_Failed {
+            get {
+                return ResourceManager.GetString("Commands.Authors.Remove.Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to perform commit with co-author/assist message: &apos;{0}&apos;.
         /// </summary>
         internal static string Commands_Commit_Failed_Generic {
