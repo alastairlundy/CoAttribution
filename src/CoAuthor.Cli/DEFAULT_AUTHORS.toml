@@ -24,6 +24,18 @@ email = ""
 name = "Codex"
 email = ""
 
+[agents.antigravity]
+name = "Antigravity"
+email = ""
+
+[agents.junie]
+name = "Junie"
+email = ""
+
+[agents.pi]
+name = "Pi"
+email = ""
+
 # Unofficial
 [agents.kilo]
 name = "Kilo AI"
