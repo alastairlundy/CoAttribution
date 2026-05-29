@@ -15,11 +15,17 @@ public static class GitCommitArgumentBuilder
 {
     public static string CreateCommitArgs(ICommitMessageBuilder commitMessageBuilder)
     {
+        CommitMessage result = commitMessageBuilder.Build();
+        
         StringBuilder stringBuilder = new();
 
         stringBuilder.Append("commit -m ");
         stringBuilder.Append('"');
-        stringBuilder.Append(commitMessageBuilder.ToString());
+        stringBuilder.Append(result.Message);
+        stringBuilder.Append('"');
+        stringBuilder.Append(" --trailer");
+        stringBuilder.Append('"');
+        stringBuilder.Append(result.Trailer);
         stringBuilder.Append('"');
 
         return stringBuilder.ToString();
