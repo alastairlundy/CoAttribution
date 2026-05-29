@@ -15,3 +15,18 @@
 ## Developer Commands
 - **Build/Test**: Use standard `dotnet` commands targeting the `.slnx` or individual projects.
 - **Verification**: Ensure NativeAOT analyzers are checked during build to prevent compatibility regressions.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in the repo's GitHub Issues (uses the `gh` CLI). See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Standard canonical labels are used (`needs-triage`, `needs-info`, etc.). See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout (`CONTEXT.md` and `docs/adr/` at root). See `docs/agents/domain.md`.
+
