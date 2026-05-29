@@ -7,6 +7,10 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+using CoAuthor.Cli.Components.Dialogs;
+using Terminal.Gui.App;
+using Terminal.Gui.Views;
+
 namespace CoAuthor.Cli.Commands;
 
 [CliCommand(Name = "add", Parent = typeof(AuthorRootCommand))]
@@ -44,6 +48,32 @@ public class AddCoAuthorCommand
     {
         string configFile = ConfigurationFileHelper.ResolveConfigFile(_configuration);
 
+        if (!cliContext.Result.HasTokens)
+        {
+            using IApplication application = Application.Create().Init();
+
+            AddAuthorDialog dialog = new();
+
+            await Task.FromResult(application.Run(dialog));
+
+            if (dialog.Result is not null)
+            {
+                AuthorName = dialog.Result.Name;
+                AuthorEmail = dialog.Result.Email;
+                DefaultAttributionType = dialog.Result.DefaultAttributionType == AttributionType.CoAuthor ? "coauthor" : "assist";
+                AuthorType = dialog.Result.Type == ContributorType.Agent ? "agent" : "human";
+                Id = dialog.Result.CoAuthorId;
+            }
+            else
+            {
+                await Task.FromResult(MessageBox.Query(application, Resources.Labels_MessageBoxes_Authors_Add_Failed,
+                    string.Format(Resources.Commands_Authors_Add_Failed,
+                        Resources.Labels_Authors_Undefined, configFile), Resources.Labels_Buttons_Okay));
+
+                return 1;
+            }
+        }
+        
         GitCoAuthor newCoAuthor = new()
         {
             CoAuthorId = Id,

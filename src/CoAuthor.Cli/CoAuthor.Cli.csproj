@@ -27,6 +27,7 @@
       <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.7" />
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.7" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
+      <PackageReference Include="Terminal.Gui" Version="2.1.0" />
     </ItemGroup>
 
     <ItemGroup>
