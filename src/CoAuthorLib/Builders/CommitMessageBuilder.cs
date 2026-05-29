@@ -67,6 +67,39 @@ public class CommitMessageBuilder : ICommitMessageBuilder
         return this;
     }
 
+    public CommitMessage Build()
+    {
+        StringBuilder messageBuilder = new();
+        StringBuilder trailerBuilder = new();
+        
+        messageBuilder.AppendLine(_subject);
+
+        string bodyMessage = string.Join(Environment.NewLine, _bodyTextLines);
+        
+        ArgumentException.ThrowIfNullOrEmpty(bodyMessage);
+        
+        if (!string.IsNullOrEmpty(bodyMessage)) 
+            messageBuilder.AppendLine(bodyMessage);
+        
+        if (_coAuthors.Count > 0)
+        {
+            messageBuilder.AppendLine();
+            messageBuilder.AppendLine();
+            
+            foreach ((GitCoAuthor coAuthor, AttributionType attributionType) coAuthorTuple in _coAuthors)
+            {
+                string attributionMessage = coAuthorTuple.attributionType == AttributionType.CoAuthor
+                    ? Resources.CommitTrailers_CoAuthoredBy
+                    : Resources.CommitTrailers_AssistedByAgent;
+                
+                trailerBuilder.Append($"{attributionMessage}: ");
+                trailerBuilder.AppendLine(coAuthorTuple.coAuthor.ToString());
+            }
+        }
+        
+        return new CommitMessage(messageBuilder.ToString(), trailerBuilder.ToString());
+    }
+
     public new string ToString()
     {
         StringBuilder stringBuilder = new();
@@ -103,6 +136,5 @@ public class CommitMessageBuilder : ICommitMessageBuilder
     {
         _subject = string.Empty;
         _bodyTextLines.Clear();
-        
     }
 }

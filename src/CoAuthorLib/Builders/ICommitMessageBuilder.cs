@@ -19,6 +19,8 @@ public interface ICommitMessageBuilder
     
     ICommitMessageBuilder AddCoAuthor(GitCoAuthor coAuthor, AttributionType attributionType);
 
+    CommitMessage Build();
+    
     string ToString();
 
     void Clear();
