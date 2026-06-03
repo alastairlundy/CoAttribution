@@ -10,9 +10,15 @@
 using System.CommandLine;
 using Microsoft.Extensions.DependencyInjection;
 
+const string appName = "CoAuthor";
+
 IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
     .AddCommandLine(args)
     .AddEnvironmentVariables();
+
+if (!args.Contains("--config-path", StringComparer.OrdinalIgnoreCase)) 
+    configurationBuilder.Properties.Add("config-path", DetermineDefaultConfigFilePath());
+
 
 IConfiguration configuration = configurationBuilder.Build();
 
@@ -32,3 +38,25 @@ CliSettings settings = new()
 };
 
 return await Cli.RunAsync<RootCommand>(args, settings);
+
+
+static string DetermineDefaultConfigFilePath()
+{
+    if (OperatingSystem.IsWindows())
+    {
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName);
+    }
+    if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst())
+    {
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library", "Application Support", appName);
+    }
+    if (OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD())
+    {
+        string configDirectory = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME") ??
+                                 Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), ".config");
+            
+        return Path.Combine(configDirectory, appName);
+    }
+        
+    throw new PlatformNotSupportedException();
+}
