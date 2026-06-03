@@ -14,5 +14,4 @@ namespace CoAuthor.Cli.Helpers.Contexts;
 [JsonSerializable(typeof(GitCoAuthor[]))]
 public partial class CoAuthorJsonContext : JsonSerializerContext
 {
-   
 }
