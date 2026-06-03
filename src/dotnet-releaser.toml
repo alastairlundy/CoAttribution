@@ -1,0 +1,6 @@
+# configuration file for dotnet-releaser
+[msbuild]
+project = "CoAuthorCli.slnx"
+[github]
+user = "alastairlundy"
+repo = "CoAuthorCli"
