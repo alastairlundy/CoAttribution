@@ -17,6 +17,9 @@ public class ConfigurationFileHelper
 
         configFile ??= "";
         
+        if(string.IsNullOrEmpty(configFile))
+            throw new InvalidOperationException(Resources.Exceptions_CouldNotFindConfigFile);
+        
         return configFile;
     }
 }
