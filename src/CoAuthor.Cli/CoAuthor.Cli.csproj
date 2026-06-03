@@ -7,12 +7,12 @@
         <Nullable>enable</Nullable>
         <AssemblyName>coauthor</AssemblyName>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Title>CoAuthor.Cli</Title>
+        <Title>CoAuthorCli</Title>
         <Authors>Alastair Lundy</Authors>
         <Copyright>Copyright (c) Alastair Lundy 2026</Copyright>
         <RepositoryUrl>https://github.com/alastairlundy/CoAuthorCli</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
-        <PackageTags>ai, coauthor</PackageTags>
+        <PackageTags>coauthor, assisted-by, coauthored-by</PackageTags>
         <IsPackable>true</IsPackable>
         <IsTrimmable>true</IsTrimmable>
         <IsAoTCompatible>true</IsAoTCompatible>
