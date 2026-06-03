@@ -22,12 +22,12 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CliInvoke" Version="2.7.0" />
-      <PackageReference Include="DotMake.CommandLine" Version="3.5.0" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.7" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.7" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.7" />
-      <PackageReference Include="Terminal.Gui" Version="2.1.0" />
+      <PackageReference Include="CliInvoke" />
+      <PackageReference Include="DotMake.CommandLine" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+      <PackageReference Include="Terminal.Gui" />
     </ItemGroup>
 
     <ItemGroup>
