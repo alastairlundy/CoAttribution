@@ -69,4 +69,19 @@
     <data name="Commands.Authors.Remove.Failed" xml:space="preserve">
         <value>Could not remove co-authors: '{0}'</value>
     </data>
+    <data name="Commands.Config.KeyNotValid" xml:space="preserve">
+        <value>Configuration Key '{0}' is not valid.</value>
+    </data>
+    <data name="Commands.Config.EncounteredError.GetValue" xml:space="preserve">
+        <value>Encountered an error whilst getting a config value associated with key '{0}': {1}</value>
+    </data>
+    <data name="Commands.Config.EncounteredError.SetValue" xml:space="preserve">
+        <value>Encountered an error whilst setting a config value associated with key '{0}': {1}</value>
+    </data>
+    <data name="Exceptions.CouldNotFindConfigFile" xml:space="preserve">
+        <value>Could not find the configuration file path to be used.</value>
+    </data>
+    <data name="Exceptions.CouldNotFindConfigFile.ToCreate" xml:space="preserve">
+        <value>Could not find the file path for the Configuration to be created.</value>
+    </data>
 </root>

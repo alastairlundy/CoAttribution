@@ -96,6 +96,33 @@ namespace CoAuthor.Cli.Localizations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Encountered an error whilst getting a config value associated with key &apos;{0}&apos;: {1}.
+        /// </summary>
+        internal static string Commands_Config_EncounteredError_GetValue {
+            get {
+                return ResourceManager.GetString("Commands.Config.EncounteredError.GetValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Encountered an error whilst setting a config value associated with key &apos;{0}&apos;: {1}.
+        /// </summary>
+        internal static string Commands_Config_EncounteredError_SetValue {
+            get {
+                return ResourceManager.GetString("Commands.Config.EncounteredError.SetValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Configuration Key &apos;{0}&apos; is not valid..
+        /// </summary>
+        internal static string Commands_Config_KeyNotValid {
+            get {
+                return ResourceManager.GetString("Commands.Config.KeyNotValid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Exception Details: .
         /// </summary>
         internal static string Commands_Exceptions_Details {
@@ -110,6 +137,24 @@ namespace CoAuthor.Cli.Localizations {
         internal static string Commands_Message_Failed {
             get {
                 return ResourceManager.GetString("Commands.Message.Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not find the configuration file path to be used..
+        /// </summary>
+        internal static string Exceptions_CouldNotFindConfigFile {
+            get {
+                return ResourceManager.GetString("Exceptions.CouldNotFindConfigFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not find the file path for the Configuration to be created..
+        /// </summary>
+        internal static string Exceptions_CouldNotFindConfigFile_ToCreate {
+            get {
+                return ResourceManager.GetString("Exceptions.CouldNotFindConfigFile.ToCreate", resourceCulture);
             }
         }
         
