@@ -30,13 +30,13 @@ public class ListCoAuthorsCommand
     [CliOption(AllowedValues = ["json", "text"], Name = "format", Required = false)]
     public string Format { get; set; } = "text";
     
-    public async Task<int> RunAsync(CancellationToken cancellationToken = default)
+    public async Task<int> RunAsync(CliContext cliContext)
     {
-        string configFile = ConfigurationFileHelper.ResolveConfigFile(_configuration);
+        FileInfo configFile = FileHelper.ResolveConfigFile(_configuration);
 
-        ArgumentException.ThrowIfNullOrEmpty(configFile);
+        FileInfo authorsFile = await FileHelper.ResolveAuthorTomlFileAsync(configFile, cliContext.CancellationToken);
 
-        GitCoAuthor[] storedCoAuthors = await _coAuthorInfoProvider.GetCoAuthorsAsync(configFile, cancellationToken);
+        GitCoAuthor[] storedCoAuthors = await _coAuthorInfoProvider.GetCoAuthorsAsync(authorsFile.FullName, cliContext.CancellationToken);
 
         GitCoAuthor[] coAuthorsToList;
         

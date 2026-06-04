@@ -45,18 +45,19 @@ public class CommitCommand
     [CliOption(Name = "verbose", Alias =  "v", Required = false)]
     public bool Verbose { get; set; } = false;
     
-    public async Task<int> RunAsync(CancellationToken cancellationToken = default)
+    public async Task<int> RunAsync(CliContext cliContext)
     {
-        string configFile = ConfigurationFileHelper.ResolveConfigFile(_configuration);
-        
+        FileInfo configFile = FileHelper.ResolveConfigFile(_configuration);
+
+        FileInfo authorsFile = await FileHelper.ResolveAuthorTomlFileAsync(configFile, cliContext.CancellationToken);
+
         _commitMessageBuilder.SetSubject(SubjectMessage);
         _commitMessageBuilder.SetBody(BodyMessage);
         
         
         try
         {
-            GitCoAuthor[] storedCoAuthors = await  _coAuthorProvider.GetCoAuthorsAsync(configFile,
-                cancellationToken);
+            GitCoAuthor[] storedCoAuthors = await  _coAuthorProvider.GetCoAuthorsAsync(authorsFile.FullName, cliContext.CancellationToken);
 
             if (DefaultIds.Length != 0 && AssistIds.Length != 0 && CoAuthorIds.Length != 0)
             {
@@ -74,7 +75,7 @@ public class CommitCommand
 
             BufferedProcessResult result = await CliRun.RunBufferedAsync(
                 "git", GitCommitArgumentBuilder.CreateCommitArgs(_commitMessageBuilder),
-                cancellationToken: cancellationToken);
+                cancellationToken: cliContext.CancellationToken);
             
             Console.WriteLine();
             Console.WriteLine();

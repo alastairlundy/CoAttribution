@@ -46,8 +46,10 @@ public class AddCoAuthorCommand
     
     public async Task<int> RunAsync(CliContext cliContext)
     {
-        string configFile = ConfigurationFileHelper.ResolveConfigFile(_configuration);
+        FileInfo configFile = FileHelper.ResolveConfigFile(_configuration);
 
+        FileInfo authorsFile = await FileHelper.ResolveAuthorTomlFileAsync(configFile, cliContext.CancellationToken);
+        
         /*if (!cliContext.Result.HasTokens)
         {
             using IApplication application = Application.Create().Init();
@@ -91,15 +93,15 @@ public class AddCoAuthorCommand
 
         try
         {
-            bool success = await _coAuthorInfoProvider.AddCoAuthorAsync(configFile, newCoAuthor, cliContext.CancellationToken);
+            bool success = await _coAuthorInfoProvider.AddCoAuthorAsync(authorsFile.FullName, newCoAuthor, cliContext.CancellationToken);
 
-            Console.WriteLine(Resources.Commands_Authors_Add_Successful, newCoAuthor, Path.GetFullPath(configFile));
+            Console.Out.WriteLine(Resources.Commands_Authors_Add_Successful, newCoAuthor, authorsFile.FullName);
         
             return success ? 0 : 1;
         }
         catch (Exception exception)
         {
-            Console.WriteLine(Resources.Commands_Authors_Add_Failed, newCoAuthor, configFile);
+            Console.WriteLine(Resources.Commands_Authors_Add_Failed, newCoAuthor, authorsFile.FullName);
             
             if (Verbose)
             {

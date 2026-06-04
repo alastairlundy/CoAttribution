@@ -40,7 +40,7 @@ public class ConfigCommand
     [CliCommand(Name = "get", Description = "Get config value.")]
     public async Task<int> GetValueAsync(CancellationToken cancellationToken = default)
     {
-        ConfigPath = ConfigurationFileHelper.ResolveConfigFile(_configuration);
+        ConfigPath = FileHelper.ResolveConfigFile(_configuration).FullName;
 
         try
         {

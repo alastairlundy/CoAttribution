@@ -30,16 +30,18 @@ public class RemoveCoAuthorCommand
     public bool Verbose { get; set; } = false;
 
 
-    public async Task<int> RunAsync(CancellationToken cancellationToken = default)
+    public async Task<int> RunAsync(CliContext cliContext)
     {
-        string configFile = ConfigurationFileHelper.ResolveConfigFile(_configuration);
+        FileInfo configFile = FileHelper.ResolveConfigFile(_configuration);
+
+        FileInfo authorsFile = await FileHelper.ResolveAuthorTomlFileAsync(configFile, cliContext.CancellationToken);
 
         try
         {
-            ArgumentException.ThrowIfNullOrEmpty(configFile);
+            ArgumentException.ThrowIfNullOrEmpty(configFile.FullName);
             
             GitCoAuthor[] storedCoAuthors =
-                await _coAuthorInfoProvider.GetCoAuthorsAsync(configFile, cancellationToken);
+                await _coAuthorInfoProvider.GetCoAuthorsAsync(authorsFile.FullName, cliContext.CancellationToken);
 
             GitCoAuthor[] actualCoAuthors = storedCoAuthors.Join(
                     Ids,

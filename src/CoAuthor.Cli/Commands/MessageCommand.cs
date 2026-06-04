@@ -44,14 +44,16 @@ public class MessageCommand
     // ReSharper disable once RedundantDefaultMemberInitializer
     public bool Verbose { get; set; } = false;
     
-    public async Task<int> RunAsync(CliContext context)  
+    public async Task<int> RunAsync(CliContext cliContext)  
     {
-        string configFile = ConfigurationFileHelper.ResolveConfigFile(_configuration);
+        FileInfo configFile = FileHelper.ResolveConfigFile(_configuration);
+
+        FileInfo authorsFile = await FileHelper.ResolveAuthorTomlFileAsync(configFile, cliContext.CancellationToken);
         
         try
         {
-            GitCoAuthor[] storedCoAuthors = await _gitCoAuthorInfoProvider.GetCoAuthorsAsync(Path.GetFullPath(configFile),
-                context.CancellationToken);
+            GitCoAuthor[] storedCoAuthors = await _gitCoAuthorInfoProvider.GetCoAuthorsAsync(authorsFile.FullName,
+                cliContext.CancellationToken);
             
             _commitMessageBuilder.SetSubject(SubjectMessage);
             _commitMessageBuilder.SetBody(BodyMessage);

@@ -33,10 +33,10 @@ public class InitCommand
         Arity = CliArgumentArity.ExactlyOne)]
     public string ConfigFilePath { get; set; } = string.Empty;
     
-    public async Task<int> RunAsync()
+    public async Task<int> RunAsync(CliContext cliContext)
     {
-        ConfigFilePath = ConfigurationFileHelper.ResolveConfigFile(_configuration);
-
+        ConfigFilePath = FileHelper.ResolveConfigFile(_configuration).FullName;
+        
         /*if (Interactive)
         {
             IApplication application = Application.Create().Init();
@@ -53,28 +53,39 @@ public class InitCommand
 
         try
         {
-            string defaultTomlContents = "";
-                
-            FileInfo file = new(ConfigFilePath);
-            DirectoryInfo directory = file.GetDirectory();
-                
-            Directory.CreateDirectory(directory.FullName);
-                
-            await File.WriteAllTextAsync(ConfigFilePath, defaultTomlContents);
-                
-            // TODO: Inform user of status of File Write.
-            await Console.Out.WriteLineAsync("");
-
-
+            await CreateConfigFileAsync(cliContext.CancellationToken);
+            
+            //TODO Move to Resx
+            await Console.Out.WriteLineAsync($"Configuration file created at: {ConfigFilePath}");
+            
+            await CreateDefaultAuthorsTomlFileAsync(cliContext.CancellationToken);
+            
             return 0;
         }
         catch(Exception exception)
         {
-            await Console.Error.WriteLineAsync("Couldn't initialise the config file");
+            await Console.Out.WriteLineAsync(Resources.Commands_Init_Failed);
 
             await Console.Error.WriteLineAsync($"Exception Details: {exception.Message}");
                 
             return 1;
         }
+    }
+
+    private async Task CreateConfigFileAsync(CancellationToken cancellationToken)
+    {
+        string defaultConfigTomlContents = "";
+                
+        FileInfo file = new(ConfigFilePath);
+        DirectoryInfo directory = file.GetDirectory();
+                
+        Directory.CreateDirectory(directory.FullName);
+            
+        await File.WriteAllTextAsync(ConfigFilePath, defaultConfigTomlContents, cancellationToken);
+    }
+
+    private async Task CreateDefaultAuthorsTomlFileAsync(CancellationToken cancellationToken)
+    {
+        
     }
 }

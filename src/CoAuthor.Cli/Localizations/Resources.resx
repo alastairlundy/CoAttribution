@@ -79,9 +79,12 @@
         <value>Encountered an error whilst setting a config value associated with key '{0}': {1}</value>
     </data>
     <data name="Exceptions.CouldNotFindConfigFile" xml:space="preserve">
-        <value>Could not find the configuration file path to be used.</value>
+        <value>Could not find the config file at path '{0}' to be used.</value>
     </data>
     <data name="Exceptions.CouldNotFindConfigFile.ToCreate" xml:space="preserve">
         <value>Could not find the file path for the Configuration to be created.</value>
+    </data>
+    <data name="Commands.Init.Failed" xml:space="preserve">
+        <value>Couldn't initialise the config file</value>
     </data>
 </root>

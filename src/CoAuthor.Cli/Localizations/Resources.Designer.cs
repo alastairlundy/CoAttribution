@@ -132,6 +132,15 @@ namespace CoAuthor.Cli.Localizations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Couldn&apos;t initialise the config file.
+        /// </summary>
+        internal static string Commands_Init_Failed {
+            get {
+                return ResourceManager.GetString("Commands.Init.Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to produce commit message with co-author/assist message: &apos;{0}&apos;.
         /// </summary>
         internal static string Commands_Message_Failed {
@@ -141,7 +150,7 @@ namespace CoAuthor.Cli.Localizations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Could not find the configuration file path to be used..
+        ///   Looks up a localized string similar to Could not find the config file at path &apos;{0}&apos; to be used..
         /// </summary>
         internal static string Exceptions_CouldNotFindConfigFile {
             get {
