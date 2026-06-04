@@ -150,20 +150,38 @@ namespace CoAuthor.Cli.Localizations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Config file path &apos;{0}&apos; is not a valid TOML configuration file.
+        /// </summary>
+        internal static string Exceptions_Arguments_InvalidConfigFileConfiguration {
+            get {
+                return ResourceManager.GetString("Exceptions.Arguments.InvalidConfigFileConfiguration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Config file does not specify the AUTHORS toml file to use, and no local AUTHORS toml file exists in the current directory..
+        /// </summary>
+        internal static string Exceptions_FileNotFound_AuthorsFile {
+            get {
+                return ResourceManager.GetString("Exceptions.FileNotFound.AuthorsFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not find the config file at path &apos;{0}&apos; to be used..
         /// </summary>
-        internal static string Exceptions_CouldNotFindConfigFile {
+        internal static string Exceptions_FileNotFound_ConfigFile {
             get {
-                return ResourceManager.GetString("Exceptions.CouldNotFindConfigFile", resourceCulture);
+                return ResourceManager.GetString("Exceptions.FileNotFound.ConfigFile", resourceCulture);
             }
         }
         
         /// <summary>
         ///   Looks up a localized string similar to Could not find the file path for the Configuration to be created..
         /// </summary>
-        internal static string Exceptions_CouldNotFindConfigFile_ToCreate {
+        internal static string Exceptions_FileNotFound_ConfigFile_ToCreate {
             get {
-                return ResourceManager.GetString("Exceptions.CouldNotFindConfigFile.ToCreate", resourceCulture);
+                return ResourceManager.GetString("Exceptions.FileNotFound.ConfigFile.ToCreate", resourceCulture);
             }
         }
         

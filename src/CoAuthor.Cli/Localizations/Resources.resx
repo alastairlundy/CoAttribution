@@ -78,13 +78,19 @@
     <data name="Commands.Config.EncounteredError.SetValue" xml:space="preserve">
         <value>Encountered an error whilst setting a config value associated with key '{0}': {1}</value>
     </data>
-    <data name="Exceptions.CouldNotFindConfigFile" xml:space="preserve">
+    <data name="Exceptions.FileNotFound.ConfigFile" xml:space="preserve">
         <value>Could not find the config file at path '{0}' to be used.</value>
     </data>
-    <data name="Exceptions.CouldNotFindConfigFile.ToCreate" xml:space="preserve">
+    <data name="Exceptions.FileNotFound.ConfigFile.ToCreate" xml:space="preserve">
         <value>Could not find the file path for the Configuration to be created.</value>
     </data>
     <data name="Commands.Init.Failed" xml:space="preserve">
         <value>Couldn't initialise the config file</value>
+    </data>
+    <data name="Exceptions.FileNotFound.AuthorsFile" xml:space="preserve">
+        <value>Config file does not specify the AUTHORS toml file to use, and no local AUTHORS toml file exists in the current directory.</value>
+    </data>
+    <data name="Exceptions.Arguments.InvalidConfigFileConfiguration" xml:space="preserve">
+        <value>Config file path '{0}' is not a valid TOML configuration file</value>
     </data>
 </root>
