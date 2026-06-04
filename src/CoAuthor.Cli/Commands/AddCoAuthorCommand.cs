@@ -7,9 +7,9 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using CoAuthor.Cli.Components.Dialogs;
+/*using CoAuthor.Cli.Components.Dialogs;
 using Terminal.Gui.App;
-using Terminal.Gui.Views;
+using Terminal.Gui.Views;*/
 
 namespace CoAuthor.Cli.Commands;
 
@@ -48,7 +48,7 @@ public class AddCoAuthorCommand
     {
         string configFile = ConfigurationFileHelper.ResolveConfigFile(_configuration);
 
-        if (!cliContext.Result.HasTokens)
+        /*if (!cliContext.Result.HasTokens)
         {
             using IApplication application = Application.Create().Init();
 
@@ -72,7 +72,7 @@ public class AddCoAuthorCommand
 
                 return 1;
             }
-        }
+        }*/
         
         GitCoAuthor newCoAuthor = new()
         {

@@ -7,9 +7,10 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using CoAuthor.Cli.Components.Dialogs;
 using DotExtensions.IO.Directories;
-using Terminal.Gui.App;
+/*using Terminal.Gui.App;
+ using CoAuthor.Cli.Components.Dialogs;
+*/
 
 namespace CoAuthor.Cli.Commands;
 
@@ -23,10 +24,10 @@ public class InitCommand
         _configuration = configuration;
     }
     
-    [CliOption(Name = "interactive", Alias = "i", Arity = CliArgumentArity.ZeroOrOne,
+    /*[CliOption(Name = "interactive", Alias = "i", Arity = CliArgumentArity.ZeroOrOne,
         Required = false)]
     // ReSharper disable once RedundantDefaultMemberInitializer
-    public bool Interactive { get; set; } = false;
+    public bool Interactive { get; set; } = false;*/
     
     [CliOption(Name = "config-path", Required = false,
         Arity = CliArgumentArity.ExactlyOne)]
@@ -36,7 +37,7 @@ public class InitCommand
     {
         ConfigFilePath = ConfigurationFileHelper.ResolveConfigFile(_configuration);
 
-        if (Interactive)
+        /*if (Interactive)
         {
             IApplication application = Application.Create().Init();
 
@@ -44,11 +45,11 @@ public class InitCommand
 
             application.RequestStop();
             
-            /*bool exitedSuccess = application  ? 0 : 1;*/
-            /*return exitedSuccess;*/
+            /*bool exitedSuccess = application  ? 0 : 1;#1#
+            /*return exitedSuccess;#1#
             //TODO: Replace with actual code
             return 0;
-        }
+        }*/
 
         try
         {

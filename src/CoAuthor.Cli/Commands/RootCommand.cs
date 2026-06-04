@@ -7,8 +7,10 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+/*
 using CoAuthor.Cli.Components.Windows;
 using Terminal.Gui.App;
+*/
 
 namespace CoAuthor.Cli.Commands;
 
@@ -17,7 +19,10 @@ public class RootCommand
 {
     public Task<int> RunAsync(CliContext context)
     {
-        try
+        context.ShowHelp();
+        return Task.FromResult(1);
+
+        /*try
         {
             using IApplication app = Application.Create().Init();
 
@@ -28,8 +33,8 @@ public class RootCommand
         catch (Exception exception)
         {
             Console.WriteLine(exception);
-            
+
             return Task.FromException<int>(exception);
-        }
+        }*/
     }
 }
