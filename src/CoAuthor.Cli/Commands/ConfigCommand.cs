@@ -8,7 +8,6 @@
  */
 
 using CoAuthor.Cli.Helpers.Contexts;
-using CoAuthor.Cli.Models;
 using Tomlyn;
 
 namespace CoAuthor.Cli.Commands;

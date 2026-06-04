@@ -7,7 +7,6 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using CoAuthor.Cli.Models;
 using Tomlyn.Serialization;
 
 namespace CoAuthor.Cli.Helpers.Contexts;

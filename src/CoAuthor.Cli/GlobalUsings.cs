@@ -2,6 +2,7 @@
 
 global using CoAuthor.Cli.Helpers;
 global using CoAuthor.Cli.Localizations;
+global using CoAuthor.Cli.Models;
 global using CoAuthorLib.Builders;
 global using CoAuthorLib.DataAccess;
 global using CoAuthorLib.Extensions;
