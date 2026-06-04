@@ -55,4 +55,8 @@
       <ProjectReference Include="..\CoAuthorLib\CoAuthorLib.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Folder Include="Components\Windows\" />
+    </ItemGroup>
+
 </Project>
