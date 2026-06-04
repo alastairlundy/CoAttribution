@@ -36,6 +36,19 @@ public class InitCommand
     {
         ConfigFilePath = ConfigurationFileHelper.ResolveConfigFile(_configuration);
 
+        if (Interactive)
+        {
+            IApplication application = Application.Create().Init();
+
+            application = await application.RunAsync<SetupDialog>(CancellationToken.None);
+
+            application.RequestStop();
+            
+            /*bool exitedSuccess = application  ? 0 : 1;*/
+            /*return exitedSuccess;*/
+            //TODO: Replace with actual code
+            return 0;
+        }
 
         try
         {
