@@ -52,13 +52,13 @@ public class RemoveCoAuthorCommand
                 .ToArray();
 
             bool success =
-                await _coAuthorInfoProvider.RemoveCoAuthorsAsync(configFile, actualCoAuthors, cancellationToken);
+                await _coAuthorInfoProvider.RemoveCoAuthorsAsync(authorsFile.FullName, actualCoAuthors, cliContext.CancellationToken);
 
             return success ? 0 : 1;
         }
         catch (Exception exception)
         {
-            Console.WriteLine(Resources.Commands_Authors_Remove_Failed, string.Join(", ", Ids), configFile);
+            Console.WriteLine(Resources.Commands_Authors_Remove_Failed, string.Join(", ", Ids), authorsFile.FullName);
             
             if (Verbose)
             {
