@@ -1,4 +1,0 @@
-<Solution>
-  <Project Path="CoAuthor.Cli/CoAuthor.Cli.csproj" />
-  <Project Path="CoAuthorLib/CoAuthorLib.csproj" />
-</Solution>

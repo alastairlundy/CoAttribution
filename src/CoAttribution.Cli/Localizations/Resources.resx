@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>1.3</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="Commands.Authors.Add.Successful" xml:space="preserve">
+        <value>CoAuthor '{0}' was successfully added to '{1}' config file.</value>
+    </data>
+    <data name="Commands.Exceptions.Details" xml:space="preserve">
+        <value>Exception Details: </value>
+    </data>
+    <data name="Commands.Authors.Add.Failed" xml:space="preserve">
+        <value>Could not add co-author '{0}' to config file '{1}'</value>
+    </data>
+    <data name="Commands.Commit.Failed.Generic" xml:space="preserve">
+        <value>Failed to perform commit with co-author/assist message: '{0}'</value>
+    </data>
+    <data name="Commands.Message.Failed" xml:space="preserve">
+        <value>Failed to produce commit message with co-author/assist message: '{0}'</value>
+    </data>
+    <data name="Labels.AuthorTypes.Values.Agent" xml:space="preserve">
+        <value>AI Agent</value>
+    </data>
+    <data name="Labels.AuthorTypes.Values.Human" xml:space="preserve">
+        <value>Human</value>
+    </data>
+    <data name="Labels.AuthorTypes.Values.AI_Other" xml:space="preserve">
+        <value>Other AI mode</value>
+    </data>
+    <data name="Labels.Input.Email" xml:space="preserve">
+        <value>Email</value>
+    </data>
+    <data name="Labels.Input.Name" xml:space="preserve">
+        <value>Name</value>
+    </data>
+    <data name="Labels.Input.ContributorType" xml:space="preserve">
+        <value>Contrbutor Type</value>
+    </data>
+    <data name="Labels.Buttons.Cancel" xml:space="preserve">
+        <value>Cancel</value>
+    </data>
+    <data name="Labels.Buttons.SaveAuthor" xml:space="preserve">
+        <value>Save Author</value>
+    </data>
+    <data name="Labels.Buttons.Okay" xml:space="preserve">
+        <value>Okay</value>
+    </data>
+    <data name="Labels.MessageBoxes.Authors.Add.Failed" xml:space="preserve">
+        <value>Failed to add CoAuthor</value>
+    </data>
+    <data name="Labels.Authors.Undefined" xml:space="preserve">
+        <value>Undefined coauthor</value>
+    </data>
+    <data name="Commands.Authors.Remove.Failed" xml:space="preserve">
+        <value>Could not remove co-authors: '{0}'</value>
+    </data>
+    <data name="Commands.Config.KeyNotValid" xml:space="preserve">
+        <value>Configuration Key '{0}' is not valid.</value>
+    </data>
+    <data name="Commands.Config.EncounteredError.GetValue" xml:space="preserve">
+        <value>Encountered an error whilst getting a config value associated with key '{0}': {1}</value>
+    </data>
+    <data name="Commands.Config.EncounteredError.SetValue" xml:space="preserve">
+        <value>Encountered an error whilst setting a config value associated with key '{0}': {1}</value>
+    </data>
+    <data name="Exceptions.FileNotFound.ConfigFile" xml:space="preserve">
+        <value>Could not find the config file at path '{0}' to be used.</value>
+    </data>
+    <data name="Exceptions.FileNotFound.ConfigFile.ToCreate" xml:space="preserve">
+        <value>Could not find the file path for the Configuration to be created.</value>
+    </data>
+    <data name="Commands.Init.Failed" xml:space="preserve">
+        <value>Couldn't initialise the config file</value>
+    </data>
+    <data name="Exceptions.FileNotFound.AuthorsFile" xml:space="preserve">
+        <value>Config file does not specify the AUTHORS toml file to use, and no local AUTHORS toml file exists in the current directory.</value>
+    </data>
+    <data name="Exceptions.Arguments.InvalidConfigFileConfiguration" xml:space="preserve">
+        <value>Config file path '{0}' is not a valid TOML configuration file</value>
+    </data>
+    <data name="Commands.Init.ConfigFileCreated" xml:space="preserve">
+        <value>Configuration file created at: {0}</value>
+    </data>
+</root>

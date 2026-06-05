@@ -1,7 +1,7 @@
-# AGENTS.md - CoAuthorCli
+# AGENTS.md - CoAttribution
 
 ## Project Purpose & Scope
-CoAuthorCli is strictly an **Attribution Metadata Orchestrator**. Its sole purpose is to manage the 'Who' and 'How' of Git commit trailers.
+CoAttribution is strictly an **Attribution Metadata Orchestrator**. Its sole purpose is to manage the 'Who' and 'How' of Git commit trailers.
 
 ### In-Scope
 - Managing a local TOML registry of Authors (Name, Email).
@@ -16,9 +16,9 @@ CoAuthorCli is strictly an **Attribution Metadata Orchestrator**. Its sole purpo
 - **No Prompt Management**: It is not a prompt engineering or AI agent management tool.
 
 ## Architecture
-- **CLI**: `src/CoAuthor.Cli/` - Entry point, TUI (`Terminal.Gui`), and command handling.
-- **Library**: `src/CoAuthorLib/` - Core logic, abstractions, and implementations. Reusable logic must reside here.
-- **Solution**: Managed via `src/CoAuthorCli.slnx`.
+- **CLI**: `src/CoAttribution.Cli/` - Entry point, TUI (`Terminal.Gui`), and command handling.
+- **Library**: `src/CoAttribution.Lib/` - Core logic, abstractions, and implementations. Reusable logic must reside here.
+- **Solution**: Managed via `src/CoAttribution.slnx`.
 
 ## Constraints & Conventions
 - **NativeAOT**: The CLI must maintain NativeAOT compatibility. 
