@@ -1,4 +1,4 @@
-# CoAuthorCli
+# CoAttribution
 
 CoAuthorCli streamlines Git commit attribution by appending `Co-authored-by` and `Assisted-by` trailers using a preset author registry.
 
