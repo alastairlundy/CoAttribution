@@ -51,8 +51,6 @@ public class AddCoAuthorCommand
     public async Task<int> RunAsync(CliContext cliContext)
     {
         AppConfig configuration = await _configResolver.ResolveAppConfig(_configuration, cliContext.CancellationToken);
-
-        FileInfo authorsFile = await FileHelper.ResolveAuthorTomlFileAsync(, cliContext.CancellationToken);
         
         /*if (!cliContext.Result.HasTokens)
         {
