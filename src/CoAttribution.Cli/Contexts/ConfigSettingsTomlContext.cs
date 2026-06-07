@@ -7,11 +7,11 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using System.Text.Json.Serialization;
+using Tomlyn.Serialization;
 
-namespace CoAttribution.Cli.Helpers.Contexts;
+namespace CoAttribution.Cli.Contexts;
 
-[JsonSerializable(typeof(GitCoAuthor[]))]
-public partial class CoAuthorJsonContext : JsonSerializerContext
+[TomlSerializable(typeof(AppConfig))]
+public partial class ConfigSettingsTomlContext : TomlSerializerContext
 {
 }

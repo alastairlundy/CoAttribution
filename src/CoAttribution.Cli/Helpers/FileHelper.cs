@@ -8,7 +8,6 @@
  */
 
 using Tomlyn;
-using ConfigSettingsTomlContext = CoAuthor.Cli.Helpers.Contexts.ConfigSettingsTomlContext;
 
 namespace CoAttribution.Cli.Helpers;
 

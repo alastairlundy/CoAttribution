@@ -8,7 +8,6 @@
  */
 
 using CoAttribution.Cli.Helpers;
-using CoAttribution.Cli.Helpers.Contexts;
 using Tomlyn;
 
 namespace CoAttribution.Cli.Commands;

@@ -7,7 +7,6 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using CoAttribution.Cli.Helpers;
 using DotExtensions.IO.Directories;
 
 /*using Terminal.Gui.App;
