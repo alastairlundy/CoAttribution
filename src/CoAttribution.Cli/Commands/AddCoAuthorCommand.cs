@@ -12,7 +12,6 @@ using Terminal.Gui.App;
 using Terminal.Gui.Views;*/
 
 using CoAttribution.Cli.Abstractions;
-using CoAttribution.Cli.Helpers;
 
 namespace CoAttribution.Cli.Commands;
 

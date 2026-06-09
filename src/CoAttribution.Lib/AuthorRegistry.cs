@@ -8,7 +8,6 @@
  */
 
 using CoAttribution.Lib.DataAccess;
-using CoAttribution.Lib.Extensions;
 using Tomlyn;
 
 namespace CoAttribution.Lib;
