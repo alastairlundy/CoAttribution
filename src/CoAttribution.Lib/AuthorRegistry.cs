@@ -36,8 +36,8 @@ public class AuthorRegistry : IAuthorRegistry
         FileInfo? registryFile = await GetRegistryFileAsync(cancellationToken);
 
         if (registryFile is null)
-            throw new ArgumentException();
-        
+            return await ProvideDefaultAuthorsAsync();
+
         string authorTomlString = await File.ReadAllTextAsync(registryFile.FullName, cancellationToken);
         
         GitCoAuthorConfig? config = TomlSerializer.Deserialize(authorTomlString, CoAuthorTomlContext.Default.GitCoAuthorConfig);
