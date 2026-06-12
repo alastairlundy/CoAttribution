@@ -8,6 +8,7 @@
  */
 
 using System.CommandLine;
+using CoAttribution.Cli.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 
 const string appName = "CoAuthor";
@@ -24,6 +25,7 @@ IConfiguration configuration = configurationBuilder.Build();
 
 Cli.Ext.ConfigureServices(services =>
 {
+    services.AddSingleton<ICoAuthorResolver, CoAuthorResolver>();
     services.AddSingleton<IAuthorRegistry, AuthorRegistry>();
     services.AddSingleton<ICommitMessageBuilder, CommitMessageBuilder>();
     
