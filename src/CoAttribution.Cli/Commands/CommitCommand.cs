@@ -11,25 +11,24 @@ using CliInvoke;
 using CliInvoke.Core;
 using CoAttribution.Cli.Abstractions;
 using CoAttribution.Cli.Helpers;
-using CoAttribution.Lib.Logic;
+using CoAttribution.Lib.Models.DTOs;
 
 namespace CoAttribution.Cli.Commands;
 
 [CliCommand(Name = "commit", Parent = typeof(RootCommand))]
 public class CommitCommand
 {
-    private readonly IGitCoAuthorInfoProvider _coAuthorProvider;
-    private readonly IConfigResolver _configResolver;
+    private readonly IAuthorRegistry _authorRegistry;
+    private readonly ICoAuthorResolver _coAuthorResolver;
     private readonly ICommitMessageBuilder _commitMessageBuilder;
-    private readonly IConfiguration _configuration;
 
-    public CommitCommand(IGitCoAuthorInfoProvider coAuthorProvider, IConfigResolver configResolver,
-        ICommitMessageBuilder commitMessageBuilder, IConfiguration configuration)
+    public CommitCommand(IAuthorRegistry authorRegistry,
+        ICoAuthorResolver coAuthorResolver,
+        ICommitMessageBuilder commitMessageBuilder)
     {
-        _coAuthorProvider = coAuthorProvider;
-        _configResolver = configResolver;
+        _authorRegistry = authorRegistry;
+        _coAuthorResolver = coAuthorResolver;
         _commitMessageBuilder = commitMessageBuilder;
-        _configuration = configuration;
     }
  
     [CliOption(Name = "message", Alias = "m", Required = true, Arity = CliArgumentArity.ExactlyOne)]
@@ -52,29 +51,28 @@ public class CommitCommand
     
     public async Task<int> RunAsync(CliContext cliContext)
     {
-        AppConfig configuration = await _configResolver.ResolveAppConfig(_configuration, cliContext.CancellationToken);
+        GitCoAuthorConfig config = await  _authorRegistry.GetAuthorConfigAsync(cliContext.CancellationToken);
 
-        FileInfo authorsFile = await FileHelper.ResolveAuthorTomlFileAsync(configuration, cliContext.CancellationToken);
+        GitCoAuthor[] storedCoAuthors = config.GetCoAuthors();
 
+        
         _commitMessageBuilder.SetSubject(SubjectMessage);
         _commitMessageBuilder.SetBody(BodyMessage);
         
         
         try
         {
-            GitCoAuthor[] storedCoAuthors = await  _coAuthorProvider.GetCoAuthorsAsync(cliContext.CancellationToken);
-
             if (DefaultIds.Length != 0 && AssistIds.Length != 0 && CoAuthorIds.Length != 0)
             {
-                KeyValuePair<GitCoAuthor, AttributionType>[] actualCoAuthors = CoAuthorResolver.ResolveCoAuthorsByAttributionType(storedCoAuthors,
-                    DefaultIds, CoAuthorIds, AssistIds);
+                ResolvedCoAuthor[] actualCoAuthors = _coAuthorResolver.ResolveCoAuthors(new CoAuthorResolutionRequest(storedCoAuthors,
+                    DefaultIds, CoAuthorIds, AssistIds));
             
-                foreach (KeyValuePair<GitCoAuthor, AttributionType> coAuthorPair in actualCoAuthors)
+                foreach (ResolvedCoAuthor coAuthorPair in actualCoAuthors)
                 {
-                    _commitMessageBuilder.AddCoAuthorById(coAuthorPair.Key,
-                        coAuthorPair.Value == AttributionType.DefaultOrCoAuthor
+                    _commitMessageBuilder.AddCoAuthorById(coAuthorPair.Author,
+                        coAuthorPair.Type == AttributionType.DefaultOrCoAuthor
                             ? AttributionType.CoAuthor
-                            : coAuthorPair.Value);
+                            : coAuthorPair.Type);
                 }
             }
 

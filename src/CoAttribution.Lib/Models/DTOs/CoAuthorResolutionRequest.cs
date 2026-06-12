@@ -7,11 +7,9 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using CoAttribution.Lib.Models.DTOs;
+namespace CoAttribution.Lib.Models.DTOs;
 
-namespace CoAttribution.Lib.Abstractions;
-
-public interface ICoAuthorResolver
-{
-    ResolvedCoAuthor[] ResolveCoAuthors(CoAuthorResolutionRequest coAuthorResolutionRequest);
-}
+public record CoAuthorResolutionRequest(GitCoAuthor[] AvailableAuthors,
+    string[] DefaultIds,
+    string[] CoAuthorIds,
+    string[] AssistIds );

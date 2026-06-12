@@ -9,7 +9,7 @@
 
 
 using CoAttribution.Cli.Helpers;
-using CoAttribution.Lib.Logic;
+using CoAttribution.Lib.Models.DTOs;
 
 namespace CoAttribution.Cli.Commands;
 
@@ -17,13 +17,16 @@ namespace CoAttribution.Cli.Commands;
 public class MessageCommand
 {
     private readonly ICommitMessageBuilder _commitMessageBuilder;
+    private readonly ICoAuthorResolver _coAuthorResolver;
     private readonly IAuthorRegistry _authorRegistry;
     private readonly IConfiguration _configuration;
 
     public MessageCommand(ICommitMessageBuilder commitMessageBuilder,
+        ICoAuthorResolver coAuthorResolver,
         IAuthorRegistry authorRegistry, IConfiguration configuration)
     {
         _commitMessageBuilder = commitMessageBuilder;
+        _coAuthorResolver = coAuthorResolver;
         _authorRegistry = authorRegistry;
         _configuration = configuration;
     }
@@ -58,15 +61,16 @@ public class MessageCommand
             _commitMessageBuilder.SetSubject(SubjectMessage);
             _commitMessageBuilder.SetBody(BodyMessage);
 
-            KeyValuePair<GitCoAuthor, AttributionType>[] actualCoAuthors = CoAuthorResolver.ResolveCoAuthorsByAttributionType(storedCoAuthors,
-                DefaultIds, CoAuthorIds, AssistIds);
+            ResolvedCoAuthor[] actualCoAuthors = _coAuthorResolver.ResolveCoAuthors(
+                new CoAuthorResolutionRequest(authorConfig.GetCoAuthors(), 
+                    DefaultIds, CoAuthorIds, AssistIds));
             
-            foreach (KeyValuePair<GitCoAuthor, AttributionType> coAuthorPair in actualCoAuthors)
+            foreach (ResolvedCoAuthor coAuthorPair in actualCoAuthors)
             {
-                _commitMessageBuilder.AddCoAuthorById(coAuthorPair.Key,
-                    coAuthorPair.Value == AttributionType.DefaultOrCoAuthor
+                _commitMessageBuilder.AddCoAuthorById(coAuthorPair.Author,
+                    coAuthorPair.Type == AttributionType.DefaultOrCoAuthor
                         ? AttributionType.CoAuthor
-                        : coAuthorPair.Value);
+                        : coAuthorPair.Type);
             }
             
             string builtCommitMessage = _commitMessageBuilder.ToString();

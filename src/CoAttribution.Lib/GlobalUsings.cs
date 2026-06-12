@@ -4,3 +4,4 @@ global using CoAttribution.Lib.Abstractions;
 global using CoAttribution.Lib.Extensions;
 global using CoAttribution.Lib.Localizations;
 global using CoAttribution.Lib.Models;
+global using CoAttribution.Lib.Models.DTOs;
