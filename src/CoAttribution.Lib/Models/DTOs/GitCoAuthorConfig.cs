@@ -7,7 +7,7 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-namespace CoAttribution.Lib.Models;
+namespace CoAttribution.Lib.Models.DTOs;
 
 // ReSharper disable once PartialTypeWithSinglePart
 public partial class GitCoAuthorConfig
