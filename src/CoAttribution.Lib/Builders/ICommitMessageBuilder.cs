@@ -17,7 +17,8 @@ public interface ICommitMessageBuilder
 
     ICommitMessageBuilder AddBodyLine(string text);
     
-    ICommitMessageBuilder AddCoAuthorById(string coAuthorId);
+    ICommitMessageBuilder AddCoAuthorById(GitCoAuthor coAuthor,
+        AttributionType attributionType);
 
     CommitMessage Build();
 

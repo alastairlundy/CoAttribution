@@ -13,15 +13,13 @@ namespace CoAttribution.Lib.Builders;
 
 public class CommitMessageBuilder : ICommitMessageBuilder
 {
-    private readonly ICoAuthorResolver _coAuthorResolver;
     private readonly List<string> _bodyTextLines;
     private readonly List<(GitCoAuthor coAuthor, AttributionType attributionType)> _coAuthors;
     
     private string _subject;
     
-    public CommitMessageBuilder(ICoAuthorResolver coAuthorResolver)
+    public CommitMessageBuilder()
     {
-        _coAuthorResolver = coAuthorResolver;
         _coAuthors = [];
         _bodyTextLines = [];
         _subject = string.Empty;
@@ -55,13 +53,11 @@ public class CommitMessageBuilder : ICommitMessageBuilder
         return this;
     }
 
-    public ICommitMessageBuilder AddCoAuthorById(string coAuthorId)
+    public ICommitMessageBuilder AddCoAuthorById(GitCoAuthor coAuthor, AttributionType attributionType)
     {
-        ArgumentNullException.ThrowIfNull(coAuthorId);
+        ArgumentNullException.ThrowIfNull(coAuthor);
         
-        
-        
-        _coAuthors.Add((coAuthor, attributionType));
+        _coAuthors.Add(new ValueTuple<GitCoAuthor, AttributionType>(coAuthor, attributionType));
         
         return this;
     }
