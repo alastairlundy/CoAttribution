@@ -8,25 +8,24 @@
  */
 
 using CoAttribution.Lib.DataAccess;
+using CoAttribution.Lib.Models.DTOs;
 using Tomlyn;
 
 namespace CoAttribution.Lib;
 
 public class AuthorRegistry : IAuthorRegistry
 {
-    private bool AuthorsTomlExists { get; set; }
-    
-    private string? AuthorsTomlFilePath { get; set; }
+    private readonly IRegistryPathResolver _pathResolver;
 
-    public AuthorRegistry()
+    public AuthorRegistry(IRegistryPathResolver pathResolver)
     {
-        AuthorsTomlExists = true;
+        _pathResolver = pathResolver;
     }
-    
+
     public async Task<GitCoAuthor?> GetByIdAsync(string id, CancellationToken cancellationToken)
-    { 
+    {
         GitCoAuthorConfig config = await GetAuthorConfigAsync(cancellationToken);
-       
+
         return config.EnumerateCoAuthors()
             .FirstOrDefault(author => author.CoAuthorId == id);
     }
@@ -39,7 +38,7 @@ public class AuthorRegistry : IAuthorRegistry
             return await ProvideDefaultAuthorsAsync();
 
         string authorTomlString = await File.ReadAllTextAsync(registryFile.FullName, cancellationToken);
-        
+
         GitCoAuthorConfig? config = TomlSerializer.Deserialize(authorTomlString, CoAuthorTomlContext.Default.GitCoAuthorConfig);
 
         if (config is null)
@@ -56,8 +55,15 @@ public class AuthorRegistry : IAuthorRegistry
             author.CoAuthorId = id;
             author.Type = ContributorType.Human;
         }
-        
+
         return config;
+    }
+
+    public async Task<IEnumerable<GitCoAuthor>> GetAllAsync(CancellationToken cancellationToken)
+    {
+        GitCoAuthorConfig config = await GetAuthorConfigAsync(cancellationToken);
+
+        return config.EnumerateCoAuthors();
     }
 
     public async Task AddAsync(GitCoAuthor coAuthor, CancellationToken cancellationToken)
@@ -71,11 +77,11 @@ public class AuthorRegistry : IAuthorRegistry
         {
             switch (coAuthor.Type)
             {
-                case  ContributorType.Agent:
-                    config.Agents.Add(coAuthor.CoAuthorId, coAuthor);
+                case ContributorType.Agent:
+                    config.Agents[coAuthor.CoAuthorId] = coAuthor;
                     break;
                 case ContributorType.Human:
-                    config.Humans.Add(coAuthor.CoAuthorId, coAuthor);
+                    config.Humans[coAuthor.CoAuthorId] = coAuthor;
                     break;
                 case ContributorType.NotDefined:
                     break;
@@ -83,13 +89,15 @@ public class AuthorRegistry : IAuthorRegistry
                     throw new ArgumentOutOfRangeException();
             }
         }
-        
-        string authorsTomlString =  TomlSerializer.Serialize(config, CoAuthorTomlContext.Default);
 
-        if (!AuthorsTomlExists || AuthorsTomlFilePath is null)
+        string authorsTomlString = TomlSerializer.Serialize(config, CoAuthorTomlContext.Default);
+
+        FileInfo? registryFile = await GetRegistryFileAsync(cancellationToken);
+
+        if (registryFile is null)
             throw new InvalidOperationException("Cannot add the Author to a registry because the registry does not exist.");
-        
-        await File.WriteAllTextAsync(AuthorsTomlFilePath, authorsTomlString, cancellationToken);
+
+        await File.WriteAllTextAsync(registryFile.FullName, authorsTomlString, cancellationToken);
     }
 
     public async Task RemoveAsync(string coAuthorId, CancellationToken cancellationToken)
@@ -102,15 +110,15 @@ public class AuthorRegistry : IAuthorRegistry
     public async Task RemoveAsync(string[] coAuthorIds, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(coAuthorIds);
-        
+
         GitCoAuthorConfig config = await GetAuthorConfigAsync(cancellationToken);
-        
+
         foreach (GitCoAuthor gitCoAuthor in config.EnumerateCoAuthors()
                      .Where(author => coAuthorIds.Contains(author.CoAuthorId)))
         {
             switch (gitCoAuthor.Type)
             {
-                case  ContributorType.Agent:
+                case ContributorType.Agent:
                     config.Agents.Remove(gitCoAuthor.CoAuthorId);
                     break;
                 case ContributorType.Human:
@@ -122,16 +130,18 @@ public class AuthorRegistry : IAuthorRegistry
                     throw new ArgumentOutOfRangeException();
             }
         }
-        
-        string authorsTomlString =  TomlSerializer.Serialize(config, CoAuthorTomlContext.Default);
 
-        if (!AuthorsTomlExists || AuthorsTomlFilePath is null)
+        string authorsTomlString = TomlSerializer.Serialize(config, CoAuthorTomlContext.Default);
+
+        FileInfo? registryFile = await GetRegistryFileAsync(cancellationToken);
+
+        if (registryFile is null)
             throw new InvalidOperationException("Cannot remove the Author from the registry because the registry does not exist.");
-        
-        await File.WriteAllTextAsync(AuthorsTomlFilePath, authorsTomlString, cancellationToken);
+
+        await File.WriteAllTextAsync(registryFile.FullName, authorsTomlString, cancellationToken);
     }
 
-    public Task<FileInfo?> GetRegistryFileAsync(CancellationToken cancellationToken)
+    public async Task<FileInfo?> GetRegistryFileAsync(CancellationToken cancellationToken)
     {
         // Prioritise local authors.toml if available.
         DirectoryInfo directoryInfo = new(Directory.GetCurrentDirectory());
@@ -147,26 +157,31 @@ public class AuthorRegistry : IAuthorRegistry
 
         if (localAuthorsFile is not null)
         {
-            AuthorsTomlExists = localAuthorsFile.Exists;
-            AuthorsTomlFilePath = localAuthorsFile.FullName;
-            return Task.FromResult(localAuthorsFile);
+            return localAuthorsFile;
         }
-        
-        // Fallback to global authors.toml
-        
-        
-        
-        FileInfo? globalAuthorsFile;
 
+        // Fallback to global authors.toml from AppConfig
+        string? globalRegistryPath = await _pathResolver.GetGlobalRegistryPathAsync(cancellationToken);
 
-        if (globalAuthorsFile is null)
-            return Task.FromResult(null);
+        if (globalRegistryPath is not null)
+        {
+            FileInfo globalAuthorsFile = new(globalRegistryPath);
+
+            if (globalAuthorsFile.Exists)
+                return globalAuthorsFile;
+        }
+
+        return null;
     }
-    
-    private Task<GitCoAuthorConfig> ProvideDefaultAuthorsAsync()
+
+    private static Task<GitCoAuthorConfig> ProvideDefaultAuthorsAsync()
     {
-        AuthorsTomlExists = false;
-        
-        
+        GitCoAuthorConfig defaultConfig = new()
+        {
+            Agents = new Dictionary<string, GitCoAuthor>(),
+            Humans = new Dictionary<string, GitCoAuthor>()
+        };
+
+        return Task.FromResult(defaultConfig);
     }
 }
