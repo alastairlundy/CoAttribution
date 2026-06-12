@@ -7,23 +7,6 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using System.Text;
-
 namespace CoAttribution.Lib.Models;
 
-public record CommitMessage(string Message, string Trailer)
-{
-    public override string ToString()
-    {
-        StringBuilder stringBuilder = new();
-        
-        stringBuilder.AppendLine(Message);
-
-        stringBuilder.AppendLine();
-        stringBuilder.AppendLine();
-        
-        stringBuilder.Append(Trailer);
-        
-        return stringBuilder.ToString();
-    }
-}
+public record CommitMessage(string Message, string Trailer);
