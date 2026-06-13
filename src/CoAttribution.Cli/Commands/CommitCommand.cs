@@ -7,28 +7,16 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using CliInvoke;
-using CliInvoke.Core;
-using CoAttribution.Cli.Abstractions;
-using CoAttribution.Cli.Helpers;
-using CoAttribution.Lib.Models.DTOs;
-
 namespace CoAttribution.Cli.Commands;
 
 [CliCommand(Name = "commit", Parent = typeof(RootCommand))]
 public class CommitCommand
 {
-    private readonly IAuthorRegistry _authorRegistry;
-    private readonly ICoAuthorResolver _coAuthorResolver;
-    private readonly ICommitMessageBuilder _commitMessageBuilder;
+    private readonly ICommitOrchestrator _commitOrchestrator;
 
-    public CommitCommand(IAuthorRegistry authorRegistry,
-        ICoAuthorResolver coAuthorResolver,
-        ICommitMessageBuilder commitMessageBuilder)
+    public CommitCommand(ICommitOrchestrator commitOrchestrator)
     {
-        _authorRegistry = authorRegistry;
-        _coAuthorResolver = coAuthorResolver;
-        _commitMessageBuilder = commitMessageBuilder;
+        _commitOrchestrator = commitOrchestrator;
     }
  
     [CliOption(Name = "message", Alias = "m", Required = true, Arity = CliArgumentArity.ExactlyOne)]
@@ -51,34 +39,13 @@ public class CommitCommand
     
     public async Task<int> RunAsync(CliContext cliContext)
     {
-        GitCoAuthorConfig config = await  _authorRegistry.GetAuthorConfigAsync(cliContext.CancellationToken);
-
-        GitCoAuthor[] storedCoAuthors = config.GetCoAuthors();
-
-        
-        _commitMessageBuilder.SetSubject(SubjectMessage);
-        _commitMessageBuilder.SetBody(BodyMessage);
-        
-        
         try
         {
-            if (DefaultIds.Length != 0 && AssistIds.Length != 0 && CoAuthorIds.Length != 0)
-            {
-                ResolvedCoAuthor[] actualCoAuthors = _coAuthorResolver.ResolveCoAuthors(new CoAuthorResolutionRequest(storedCoAuthors,
-                    DefaultIds, CoAuthorIds, AssistIds));
+            CommitMessage commitMessage = await _commitOrchestrator.BuildCommitMessageAsync(new CommitRequest(SubjectMessage, BodyMessage,
+                    DefaultIds, CoAuthorIds, AssistIds),
+                cliContext.CancellationToken);
             
-                foreach (ResolvedCoAuthor coAuthorPair in actualCoAuthors)
-                {
-                    _commitMessageBuilder.AddCoAuthorById(coAuthorPair.Author,
-                        coAuthorPair.Type == AttributionType.DefaultOrCoAuthor
-                            ? AttributionType.CoAuthor
-                            : coAuthorPair.Type);
-                }
-            }
-
-            BufferedProcessResult result = await CliRun.RunBufferedAsync(
-                "git", GitCommitArgumentBuilder.CreateCommitArgs(_commitMessageBuilder),
-                cancellationToken: cliContext.CancellationToken);
+            GitResult result = await _commitOrchestrator.ExecuteCommitAsync(commitMessage, cliContext.CancellationToken);
             
             Console.WriteLine();
             Console.WriteLine();
@@ -87,15 +54,15 @@ public class CommitCommand
         }
         catch(Exception exception)
         {
-            Console.WriteLine(Resources.Commands_Commit_Failed_Generic, _commitMessageBuilder.ToString());
+            await Console.Error.WriteLineAsync(Resources.Commands_Commit_Failed_Generic);
           
             if (Verbose)
             {
-                Console.WriteLine();
+                await Console.Error.WriteLineAsync();
                 throw;
             }
             
-            Console.WriteLine(Resources.Commands_Exceptions_Details + exception.Message);
+            await Console.Error.WriteLineAsync(Resources.Commands_Exceptions_Details + exception.Message);
             return 1;
         }
     }
