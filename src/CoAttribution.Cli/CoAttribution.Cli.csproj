@@ -24,7 +24,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CliInvoke" />
+      <PackageReference Include="CliInvoke.Extensions" />
       <PackageReference Include="DotMake.CommandLine" />
       <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
