@@ -9,6 +9,7 @@
 
 using System.CommandLine;
 using CoAttribution.Cli.Helpers;
+using CliInvoke.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 const string appName = "CoAuthor";
