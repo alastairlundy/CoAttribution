@@ -12,6 +12,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="CliInvoke.Core" />
       <PackageReference Include="Tomlyn" />
     </ItemGroup>
 
