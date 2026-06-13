@@ -7,14 +7,12 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using System.Text;
-
 namespace CoAttribution.Lib.Builders;
 
 public class CommitMessageBuilder : ICommitMessageBuilder
 {
     private readonly List<string> _bodyTextLines;
-    private readonly List<(GitCoAuthor coAuthor, AttributionType attributionType)> _coAuthors;
+    private readonly List<ResolvedCoAuthor> _coAuthors;
     
     private string _subject;
     
@@ -57,47 +55,18 @@ public class CommitMessageBuilder : ICommitMessageBuilder
     {
         ArgumentNullException.ThrowIfNull(coAuthor);
         
-        _coAuthors.Add(new ValueTuple<GitCoAuthor, AttributionType>(coAuthor, attributionType));
+        _coAuthors.Add(new ResolvedCoAuthor(coAuthor, attributionType));
         
         return this;
     }
 
-    public CommitMessage Build()
-    {
-        StringBuilder messageBuilder = new();
-        StringBuilder trailerBuilder = new();
-        
-        messageBuilder.AppendLine(_subject);
-
-        string bodyMessage = string.Join(Environment.NewLine, _bodyTextLines);
-        
-        ArgumentException.ThrowIfNullOrEmpty(bodyMessage);
-        
-        if (!string.IsNullOrEmpty(bodyMessage)) 
-            messageBuilder.AppendLine(bodyMessage);
-        
-        if (_coAuthors.Count > 0)
-        {
-            messageBuilder.AppendLine();
-            messageBuilder.AppendLine();
-            
-            foreach ((GitCoAuthor coAuthor, AttributionType attributionType) coAuthorTuple in _coAuthors)
-            {
-                string attributionMessage = coAuthorTuple.attributionType == AttributionType.CoAuthor
-                    ? Resources.CommitTrailers_CoAuthoredBy
-                    : Resources.CommitTrailers_AssistedByAgent;
-                
-                trailerBuilder.Append($"{attributionMessage}: ");
-                trailerBuilder.AppendLine(coAuthorTuple.coAuthor.ToString());
-            }
-        }
-        
-        return new CommitMessage(messageBuilder.ToString(), trailerBuilder.ToString());
-    }
+    public CommitMessage Build() => new(_subject, _bodyTextLines.AsReadOnly(),
+        _coAuthors.AsReadOnly());
 
     public void Clear()
     {
         _subject = string.Empty;
         _bodyTextLines.Clear();
+        _coAuthors.Clear();
     }
 }
