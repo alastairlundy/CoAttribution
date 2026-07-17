@@ -34,7 +34,9 @@ public class CommitOrchestrator : ICommitOrchestrator
         _commitMessageBuilder.SetSubject(commitRequest.MessageSubject);
         _commitMessageBuilder.SetBody(commitRequest.MessageBody);
 
-        GitCoAuthor[] coAuthors = await _authorRegistry.GetAuthorConfigAsync(cancellationToken);
+        GitCoAuthorConfig authorConfig = await _authorRegistry.GetAuthorConfigAsync(cancellationToken);
+
+        GitCoAuthor[] coAuthors = authorConfig.GetCoAuthors();
         
         ResolvedCoAuthor[] actualCoAuthors = _coAuthorResolver.ResolveCoAuthors(
             new CoAuthorResolutionRequest(coAuthors, commitRequest.DefaultIds,

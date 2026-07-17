@@ -24,7 +24,10 @@ public partial record GitCoAuthor
     public AttributionType DefaultAttributionType { get; set; } = AttributionType.DefaultOrCoAuthor;
     
     public ContributorType Type { get; set; } = ContributorType.NotDefined;
-    
+
+    [TomlPropertyName("host")]
+    public Dictionary<string, HostOverride> Host { get; set; } = new();
+
     public override string ToString()
     {
         return $"{Name} <{Email}>";

@@ -30,6 +30,7 @@
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
       <PackageReference Include="Terminal.Gui" />
+      <PackageReference Include="Tomlyn" />
     </ItemGroup>
 
     <ItemGroup>
