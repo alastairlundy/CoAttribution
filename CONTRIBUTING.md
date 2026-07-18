@@ -69,6 +69,10 @@ Example:
 
 > **AI Usage**: Code in `src/CoAttribution.Lib/TomlParser.cs` was AI-assisted using GitHub Copilot (GPT-5.5) via the Copilot CLI agent harness. Tests were written manually.
 
+### PR Descriptions
+
+PRs authored by external contributors must not have AI-generated PR descriptions. You may use AI to help guide your writing or suggest wording, but the final PR description must be written by a human.
+
 PRs that do not follow this guide may not be merged.
 
 ## Code Conventions
