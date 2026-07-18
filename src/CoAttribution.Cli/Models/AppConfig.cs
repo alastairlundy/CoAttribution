@@ -24,4 +24,7 @@ public partial class AppConfig
     
     [TomlPropertyName("authors_registry")]
     public Dictionary<string, string> AuthorsRegistry { get; set; } = new();
+
+    [TomlPropertyName("host_aliases")]
+    public Dictionary<string, string> HostAliases { get; set; } = new();
 }

@@ -7,11 +7,12 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using Tomlyn.Serialization;
+namespace CoAttribution.Lib.Models.DTOs;
 
-namespace CoAttribution.Lib.DataAccess;
-
-[TomlSerializable(typeof(AppConfig))]
-public partial class ConfigSettingsTomlContext : TomlSerializerContext
+// ReSharper disable once PartialTypeWithSinglePart
+public partial class HostOverride
 {
+    public string Name { get; set; } = string.Empty;
+
+    public string Email { get; set; } = string.Empty;
 }
