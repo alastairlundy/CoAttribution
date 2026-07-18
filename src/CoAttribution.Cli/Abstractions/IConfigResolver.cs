@@ -1,4 +1,4 @@
-﻿using CoAttribution.Cli.Models;
+﻿using CoAttribution.Lib.Models;
 
 namespace CoAttribution.Cli.Abstractions;
 
