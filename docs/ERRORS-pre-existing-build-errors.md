@@ -5,6 +5,8 @@
 > **Verification command**: `dotnet build src/CoAttribution.slnx` from the repo root.
 > **Current count**: 6 errors, 0 warnings, target framework `net10.0`.
 
+> **Note (2026-07-18, host-override work)**: As part of tickets 3/4/6, `AppConfig` was moved from `CoAttribution.Cli.Models` → `CoAttribution.Lib.Models` to satisfy the T013 layering rule (`HostResolver` lives in `Lib` and needs to consume `AppConfig`). The `global using CoAttribution.Cli.Models;` line was removed from `src/CoAttribution.Cli/GlobalUsings.cs`; explicit `using CoAttribution.Cli.Models;` directives in `src/CoAttribution.Cli/Abstractions/IConfigResolver.cs` and `src/CoAttribution.Cli/DataAccess/ConfigSettingsTomlContext.cs` were retargeted to `CoAttribution.Lib.Models`. All other consumers resolve `AppConfig` through the existing `global using CoAttribution.Lib.Models;` in `src/CoAttribution.Cli/GlobalUsings.cs`. The `src/CoAttribution.Cli/Models/` folder is now empty and can be deleted by a future agent if desired.
+
 ## Why these errors are visible now
 
 The `CoAttribution.Cli` build was previously masked by a generator failure in `src/CoAttribution.Lib/DataAccess/ConfigSettingsTomlContext.cs`, which `[TomlSerializable(typeof(AppConfig))]`-ed a `Cli` type from inside `Lib`. The Tomlyn source generator emitted broken type info into `obj/.../Lib/.../generated/.../`, so the Lib csproj failed to compile and the rest of the solution never got a chance to fail.
@@ -95,7 +97,8 @@ A future agent tackling this ticket should:
 - The `ConfigSettingsTomlContext` layering fix (already shipped).
 - The `CommitOrchestrator.cs:37` regression fix (already shipped).
 - Host-override DTOs / validator / default map / `HostBlockWriter` (already shipped under separate tickets).
-- Any change to the public API surface of `IAuthorRegistry`, `IConfigResolver`, or `AppConfig`.
+- Host-override abstractions, implementations, and presentation: `IHostResolver`, `IGitConfigClient`, `IGitRemoteProbe`, `HostResolver`, `GitConfigClient`, `GitRemoteProbe`, `MissingHostBlockDialog`, `MissingHostBlockChoice`, `MissingHostBlockDiagnosticFormatter`, and the 5 new resource strings in `Resources.resx` / `Resources.Designer.cs` (already shipped under Tickets 3, 4, and 6).
+- Any change to the public API surface of `IAuthorRegistry` or `IConfigResolver`. (`AppConfig` had its namespace moved from `CoAttribution.Cli.Models` to `CoAttribution.Lib.Models`; the type's members are unchanged.)
 
 ## Reproduction
 

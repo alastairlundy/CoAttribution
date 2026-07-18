@@ -3,7 +3,6 @@
 global using CoAttribution.Cli.Contexts;
 global using CoAttribution.Cli.DataAccess;
 global using CoAttribution.Cli.Localizations;
-global using CoAttribution.Cli.Models;
 global using CoAttribution.Lib;
 global using CoAttribution.Lib.Abstractions;
 global using CoAttribution.Lib.Builders;

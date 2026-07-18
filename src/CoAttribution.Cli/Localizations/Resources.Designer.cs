@@ -289,5 +289,50 @@ namespace CoAttribution.Cli.Localizations {
                 return ResourceManager.GetString("Labels.MessageBoxes.Authors.Add.Failed", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No per-host identity block is configured for host &apos;{0}&apos;..
+        /// </summary>
+        internal static string Diagnostics_MissingHostBlock_Header {
+            get {
+                return ResourceManager.GetString("Diagnostics.MissingHostBlock.Header", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Contributor: {0}.
+        /// </summary>
+        internal static string Diagnostics_MissingHostBlock_Contributor {
+            get {
+                return ResourceManager.GetString("Diagnostics.MissingHostBlock.Contributor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registry file: {0}.
+        /// </summary>
+        internal static string Diagnostics_MissingHostBlock_Registry {
+            get {
+                return ResourceManager.GetString("Diagnostics.MissingHostBlock.Registry", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add the following block to &apos;{0}&apos;:.
+        /// </summary>
+        internal static string Diagnostics_MissingHostBlock_Snippet {
+            get {
+                return ResourceManager.GetString("Diagnostics.MissingHostBlock.Snippet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0}.
+        /// </summary>
+        internal static string Diagnostics_MissingHostBlock_SnippetBody {
+            get {
+                return ResourceManager.GetString("Diagnostics.MissingHostBlock.SnippetBody", resourceCulture);
+            }
+        }
     }
 }

@@ -96,4 +96,19 @@
     <data name="Commands.Init.ConfigFileCreated" xml:space="preserve">
         <value>Configuration file created at: {0}</value>
     </data>
+    <data name="Diagnostics.MissingHostBlock.Header" xml:space="preserve">
+        <value>No per-host identity block is configured for host '{0}'.</value>
+    </data>
+    <data name="Diagnostics.MissingHostBlock.Contributor" xml:space="preserve">
+        <value>Contributor: {0}</value>
+    </data>
+    <data name="Diagnostics.MissingHostBlock.Registry" xml:space="preserve">
+        <value>Registry file: {0}</value>
+    </data>
+    <data name="Diagnostics.MissingHostBlock.Snippet" xml:space="preserve">
+        <value>Add the following block to '{0}':</value>
+    </data>
+    <data name="Diagnostics.MissingHostBlock.SnippetBody" xml:space="preserve">
+        <value>{0}</value>
+    </data>
 </root>

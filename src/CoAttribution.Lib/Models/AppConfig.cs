@@ -1,5 +1,5 @@
-﻿/*
-    CoAttribution
+/*
+    CoAttribution.Lib
     Copyright (c) Alastair Lundy 2026
  
     This Source Code Form is subject to the terms of the Mozilla Public
@@ -9,7 +9,7 @@
 
 using Tomlyn.Serialization;
 
-namespace CoAttribution.Cli.Models;
+namespace CoAttribution.Lib.Models;
 
 public partial class AppConfig
 {
