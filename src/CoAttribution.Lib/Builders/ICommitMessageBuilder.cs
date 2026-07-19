@@ -11,14 +11,9 @@ namespace CoAttribution.Lib.Builders;
 
 public interface ICommitMessageBuilder
 {
-    ICommitMessageBuilder SetSubject(string subject);
-    
-    ICommitMessageBuilder SetBody(string text);
+    ICommitMessageBuilder SetContent(string subject, string body);
 
-    ICommitMessageBuilder AddBodyLine(string text);
-    
-    ICommitMessageBuilder AddCoAuthorById(GitCoAuthor coAuthor,
-        AttributionType attributionType);
+    ICommitMessageBuilder AddCoAuthors(IEnumerable<ResolvedCoAuthor> coAuthors);
 
     CommitMessage Build();
 
