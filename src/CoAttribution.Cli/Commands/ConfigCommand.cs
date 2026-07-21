@@ -40,15 +40,23 @@ public class ConfigCommand
     [CliCommand(Name = "get", Description = "Get config value.")]
     public async Task<int> GetValueAsync(CancellationToken cancellationToken = default)
     {
+        AppConfig? config;
+        
         if (string.IsNullOrEmpty(ConfigPath))
         {
-            AppConfig config = await _configResolver.ResolveAppConfig(_configuration, cancellationToken);
-            ConfigPath = _configuration["config-file"] ?? _configuration["coauthor_config_file"] ?? "";
+            config = await _configResolver.ResolveAppConfig(_configuration, cancellationToken);
+            ConfigPath = _configuration["config-path"] ?? _configuration["coauthor_config_file"] ?? "";
+        }
+        else
+        {
+            string text = await File.ReadAllTextAsync(ConfigPath, cancellationToken);
+        
+            config = TomlSerializer.Deserialize<AppConfig>(text, ConfigSettingsTomlContext.Default);
         }
 
         try
         {
-            string value = await GetValueAsync(Key, cancellationToken);
+            string value = await GetValue(config, Key);
 
             await Console.Out.WriteLineAsync(value);
 
@@ -71,15 +79,23 @@ public class ConfigCommand
     [CliCommand(Name = "set", Description = "Set config value.")]
     public async Task<int> SetValueAsync(CancellationToken cancellationToken = default)
     {
+        AppConfig? config;
+        
         if (string.IsNullOrEmpty(ConfigPath))
         {
-            await _configResolver.ResolveAppConfig(_configuration, cancellationToken);
-            ConfigPath = _configuration["config-file"] ?? _configuration["coauthor_config_file"] ?? "";
+            config = await _configResolver.ResolveAppConfig(_configuration, cancellationToken);
+            ConfigPath = _configuration["config-path"] ?? _configuration["coauthor_config_file"] ?? "";
+        }
+        else
+        {
+            string text = await File.ReadAllTextAsync(ConfigPath, cancellationToken);
+        
+            config = TomlSerializer.Deserialize<AppConfig>(text, ConfigSettingsTomlContext.Default);
         }
 
         try
         {
-            await SetValueAsync(Key, Value, cancellationToken);
+            await SetValueAsync(config, Key, Value, cancellationToken);
 
             await Console.Out.WriteLineAsync($"Set value for {Key}");
 
@@ -106,72 +122,71 @@ public class ConfigCommand
         return -1;
     }
 
-    private async Task<string> GetValueAsync(string key, CancellationToken cancellationToken)
+    private static Task<string> GetValue(AppConfig? config, string key)
     {
-        ArgumentException.ThrowIfNullOrEmpty(key);
+        try
+        {
+            ArgumentException.ThrowIfNullOrEmpty(key);
         
-        string text = await File.ReadAllTextAsync(ConfigPath, cancellationToken);
-        
-        AppConfig? appConfig = TomlSerializer.Deserialize<AppConfig>(text, ConfigSettingsTomlContext.Default);
+            if (config is null)
+            {
+                throw new InvalidOperationException("");
+            }
 
-        if (appConfig is null)
-        {
-            throw new InvalidOperationException("");
-        }
+            if (key.StartsWith("path.", StringComparison.CurrentCultureIgnoreCase))
+            {
+                return Task.FromResult(config.PathsSettings[key.Replace("path.", string.Empty)]);
+            }
+            if (key.StartsWith("trailers.", StringComparison.CurrentCultureIgnoreCase))
+            {
+                return Task.FromResult(config.TrailersSettings[key.Replace("trailers.", string.Empty)]);
+            }
+            if (key.StartsWith("tui.", StringComparison.CurrentCultureIgnoreCase))
+            {
+                return Task.FromResult(config.TuiSettings[key.Replace("tui.", string.Empty)]);
+            }
+            if (key.StartsWith("authors_registry.", StringComparison.CurrentCultureIgnoreCase))
+            {
+                return Task.FromResult(config.AuthorsRegistry[key.Replace("authors_registry.", string.Empty)]);
+            }
 
-        if (key.StartsWith("path.", StringComparison.CurrentCultureIgnoreCase))
-        {
-            return appConfig.PathsSettings[key.Replace("path.", string.Empty)];
+            throw new KeyNotFoundException();
         }
-        if (key.StartsWith("trailers.", StringComparison.CurrentCultureIgnoreCase))
+        catch (Exception exception)
         {
-            return appConfig.TrailersSettings[key.Replace("trailers.", string.Empty)];
+            return Task.FromException<string>(exception);
         }
-        if (key.StartsWith("tui.", StringComparison.CurrentCultureIgnoreCase))
-        {
-            return appConfig.TuiSettings[key.Replace("tui.", string.Empty)];
-        }
-        if (key.StartsWith("authors_registry.", StringComparison.CurrentCultureIgnoreCase))
-        {
-            return appConfig.AuthorsRegistry[key.Replace("authors_registry.", string.Empty)];
-        }
-
-        throw new KeyNotFoundException();
     }
 
-    private async Task SetValueAsync(string key, string value,
+    private async Task SetValueAsync(AppConfig? config, string key, string value,
         CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
         ArgumentException.ThrowIfNullOrEmpty(value);
         
-        string text = await File.ReadAllTextAsync(ConfigPath, cancellationToken);
-        
-        AppConfig? appConfig = TomlSerializer.Deserialize<AppConfig>(text, ConfigSettingsTomlContext.Default);
-
-        if (appConfig is null)
+        if (config is null)
         {
             throw new InvalidOperationException("");
         }
 
         if (key.StartsWith("path.", StringComparison.CurrentCultureIgnoreCase))
         {
-            appConfig.PathsSettings[key.Replace("path.", string.Empty)] = value;
+            config.PathsSettings[key.Replace("path.", string.Empty)] = value;
         }
         if (key.StartsWith("trailers.", StringComparison.CurrentCultureIgnoreCase))
         {
-            appConfig.TrailersSettings[key.Replace("trailers.", string.Empty)] = value;
+            config.TrailersSettings[key.Replace("trailers.", string.Empty)] = value;
         }
         if (key.StartsWith("tui.", StringComparison.CurrentCultureIgnoreCase))
         {
-            appConfig.TuiSettings[key.Replace("tui.", string.Empty)] = value;
+            config.TuiSettings[key.Replace("tui.", string.Empty)] = value;
         }
         if (key.StartsWith("authors_registry.", StringComparison.CurrentCultureIgnoreCase))
         {
-            appConfig.AuthorsRegistry[key.Replace("authors_registry.", string.Empty)] = value;
+            config.AuthorsRegistry[key.Replace("authors_registry.", string.Empty)] = value;
         }
         
-        text = TomlSerializer.Serialize(appConfig, ConfigSettingsTomlContext.Default);
+        string text = TomlSerializer.Serialize(config, ConfigSettingsTomlContext.Default);
         
         await File.WriteAllTextAsync(ConfigPath, text, cancellationToken);
     }

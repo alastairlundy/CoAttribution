@@ -17,16 +17,10 @@ namespace CoAttribution.Cli.Commands;
 public class AddCoAuthorCommand
 {
     private readonly IAuthorRegistry _authorRegistry;
-    private readonly IConfigResolver _configResolver;
-    private readonly IConfiguration _configuration;
 
-    public AddCoAuthorCommand(IAuthorRegistry authorRegistry,
-        IConfigResolver configResolver,
-        IConfiguration configuration)
+    public AddCoAuthorCommand(IAuthorRegistry authorRegistry)
     {
         _authorRegistry = authorRegistry;
-        _configResolver = configResolver;
-        _configuration = configuration;
     }
     
     [CliArgument(Name = "<Configuration_Id>", Order = 0, Required = true, Arity =  CliArgumentArity.ExactlyOne)]
@@ -50,8 +44,6 @@ public class AddCoAuthorCommand
     
     public async Task<int> RunAsync(CliContext cliContext)
     {
-        AppConfig configuration = await _configResolver.ResolveAppConfig(_configuration, cliContext.CancellationToken);
-
         FileInfo? authorsFile = await _authorRegistry.GetRegistryFileAsync(cliContext.CancellationToken);
         
         GitCoAuthor newCoAuthor = new()
