@@ -76,5 +76,14 @@ namespace CoAttribution.Lib.Localizations {
                 return ResourceManager.GetString("CommitTrailers.CoAuthoredBy", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Git config key &apos;{0}&apos; is not in the &apos;{1}&apos; namespace. Only &apos;{2}*&apos; keys may be set..
+        /// </summary>
+        internal static string Exceptions_Configuration_KeyNotInNamespace {
+            get {
+                return ResourceManager.GetString("Exceptions.Configuration.KeyNotInNamespace", resourceCulture);
+            }
+        }
     }
 }

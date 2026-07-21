@@ -24,4 +24,7 @@
     <data name="CommitTrailers.CoAuthoredBy" xml:space="preserve">
         <value>Co-authored-by</value>
     </data>
+    <data name="Exceptions.Configuration.KeyNotInNamespace" xml:space="preserve">
+        <value>Git config key '{0}' is not in the '{1}' namespace. Only '{2}*' keys may be set.</value>
+    </data>
 </root>

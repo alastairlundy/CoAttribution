@@ -71,7 +71,7 @@ public partial class GitConfigClient : Abstractions.IGitConfigClient
         if (!key.StartsWith(Namespace, StringComparison.Ordinal))
         {
             throw new ArgumentException(
-                $"Git config key '{key}' is not in the '{Namespace}' namespace. Only '{Namespace}*' keys may be set.",
+                string.Format(Resources.Exceptions_Configuration_KeyNotInNamespace, key, Namespace, Namespace),
                 nameof(key));
         }
     }
