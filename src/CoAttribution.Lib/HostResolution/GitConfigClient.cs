@@ -33,7 +33,8 @@ public partial class GitConfigClient : Abstractions.IGitConfigClient
 
         using ProcessConfiguration processConfiguration = new ProcessConfigurationBuilder(GitExecutable)
             .SetArguments(new[] { "config", "--get", key })
-            .SetOutputRedirection(true)
+            .RedirectStandardOutput(true)
+            .RedirectStandardError(true)
             .Build();
 
         BufferedProcessResult result = _processInvoker.ExecuteBufferedAsync(processConfiguration)
@@ -57,8 +58,9 @@ public partial class GitConfigClient : Abstractions.IGitConfigClient
         ValidateKeyNamespace(key);
 
         using ProcessConfiguration processConfiguration = new ProcessConfigurationBuilder(GitExecutable)
-            .SetArguments(new[] { "config", key, value })
-            .SetOutputRedirection(true)
+            .SetArguments(["config", key, value])
+            .RedirectStandardOutput(true)
+            .RedirectStandardError(true)
             .Build();
 
         _processInvoker.ExecuteBufferedAsync(processConfiguration).GetAwaiter().GetResult();
