@@ -60,10 +60,10 @@ public class MessageCommand
             if (Verbose)
             {
                 await Console.Error.WriteLineAsync();
-                throw;
+                
+                await Console.Error.WriteLineAsync(Resources.Commands_Exceptions_Details + exception.Message);
             }
             
-            await Console.Error.WriteLineAsync(Resources.Commands_Exceptions_Details + exception.Message);
             return 1;
         }
     }

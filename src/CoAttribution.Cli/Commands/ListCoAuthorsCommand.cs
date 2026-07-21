@@ -16,12 +16,10 @@ namespace CoAttribution.Cli.Commands;
 public class ListCoAuthorsCommand
 {
     private readonly IAuthorRegistry _authorRegistry;
-    private readonly IConfiguration _configuration;
 
-    public ListCoAuthorsCommand(IAuthorRegistry authorRegistry, IConfiguration configuration)
+    public ListCoAuthorsCommand(IAuthorRegistry authorRegistry)
     {
         _authorRegistry = authorRegistry;
-        _configuration = configuration;
     }
     
     [CliOption(AllowedValues = ["human", "agent"], Name = "type", Required = false)]
@@ -70,8 +68,9 @@ public class ListCoAuthorsCommand
         }
         catch (Exception exception)
         {
-            Console.WriteLine(exception);
-            throw;
+            await Console.Error.WriteLineAsync(exception.Message);
+
+            return 1;
         }
     }
 }

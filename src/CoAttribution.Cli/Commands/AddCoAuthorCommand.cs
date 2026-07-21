@@ -71,15 +71,15 @@ public class AddCoAuthorCommand
         }
         catch (Exception exception)
         {
-            Console.WriteLine(Resources.Commands_Authors_Add_Failed, newCoAuthor, authorsFile?.FullName ?? "N/A");
+            await Console.Error.WriteLineAsync(string.Format(Resources.Commands_Authors_Add_Failed, newCoAuthor, authorsFile?.FullName ?? "N/A"));
             
             if (Verbose)
             {
-                Console.WriteLine();
-                throw;
+                await Console.Error.WriteLineAsync();
+                
+                await Console.Error.WriteLineAsync(Resources.Commands_Exceptions_Details + exception.Message);
             }
             
-            Console.WriteLine(Resources.Commands_Exceptions_Details + exception.Message);
             return 1;
         }
     }

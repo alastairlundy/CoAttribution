@@ -26,7 +26,6 @@ public class RemoveCoAuthorCommand
     // ReSharper disable once RedundantDefaultMemberInitializer
     public bool Verbose { get; set; } = false;
 
-
     public async Task<int> RunAsync(CliContext cliContext)
     {
         FileInfo? authorsFile = await _authorRegistry.GetRegistryFileAsync(cliContext.CancellationToken);
@@ -39,15 +38,16 @@ public class RemoveCoAuthorCommand
         }
         catch (Exception exception)
         {
-            Console.WriteLine(Resources.Commands_Authors_Remove_Failed, string.Join(", ", Ids), authorsFile?.FullName ?? "N/A");
+            string error = string.Format(Resources.Commands_Authors_Remove_Failed, string.Join(", ", Ids), authorsFile?.FullName ?? "N/A");
+            
+            await Console.Error.WriteLineAsync(error);
             
             if (Verbose)
-            {
-                Console.WriteLine();
-                throw;
+            { 
+                await Console.Error.WriteLineAsync();
+                
+                await Console.Error.WriteLineAsync(Resources.Commands_Exceptions_Details + exception.Message);
             }
-            
-            Console.WriteLine(Resources.Commands_Exceptions_Details + exception.Message);
 
             return 1;
         }
