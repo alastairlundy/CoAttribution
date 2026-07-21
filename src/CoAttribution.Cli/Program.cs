@@ -9,7 +9,6 @@
 
 using System.CommandLine;
 using CoAttribution.Cli;
-using CoAttribution.Cli.Helpers;
 using CliInvoke.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -41,7 +40,6 @@ CliSettings settings = new()
 {
     EnablePosixBundling = true,
     EnableDefaultExceptionHandler = true,
-    
 };
 
 return await Cli.RunAsync<RootCommand>(args, settings);

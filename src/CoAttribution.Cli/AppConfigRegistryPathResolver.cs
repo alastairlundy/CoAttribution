@@ -9,7 +9,7 @@
 
 using Tomlyn;
 
-namespace CoAttribution.Cli.Helpers;
+namespace CoAttribution.Cli;
 
 public class AppConfigRegistryPathResolver : IRegistryPathResolver
 {
