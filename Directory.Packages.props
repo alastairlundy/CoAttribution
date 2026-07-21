@@ -3,14 +3,14 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="CliInvoke" Version="2.8.2" />
-    <PackageVersion Include="CliInvoke.Core" Version="2.8.2" />
+    <PackageVersion Include="CliInvoke" Version="2.9.0" />
+    <PackageVersion Include="CliInvoke.Core" Version="2.9.0" />
     <PackageVersion Include="CliInvoke.Extensions" Version="2.8.2" />
     <PackageVersion Include="DotMake.CommandLine" Version="3.5.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.9" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
     <PackageVersion Include="Terminal.Gui" Version="2.4.6" />
-    <PackageVersion Include="Tomlyn" Version="2.6.0" />
+    <PackageVersion Include="Tomlyn" Version="2.10.1" />
   </ItemGroup>
 </Project>
