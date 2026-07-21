@@ -23,39 +23,23 @@ public class CommitMessageBuilder : ICommitMessageBuilder
         _subject = string.Empty;
     }
     
-    public ICommitMessageBuilder SetSubject(string subject)
+    public ICommitMessageBuilder SetContent(string subject, string body)
     {
         ArgumentNullException.ThrowIfNull(subject);
+        ArgumentNullException.ThrowIfNull(body);
         
         _subject = subject;
-        
-        return this;
-    }
-
-    public ICommitMessageBuilder SetBody(string text)
-    {
-        ArgumentNullException.ThrowIfNull(text);
-        
         _bodyTextLines.Clear();
-        _bodyTextLines.Add(text);
+        _bodyTextLines.Add(body);
         
         return this;
     }
 
-    public ICommitMessageBuilder AddBodyLine(string text)
+    public ICommitMessageBuilder AddCoAuthors(IEnumerable<ResolvedCoAuthor> coAuthors)
     {
-        ArgumentNullException.ThrowIfNull(text);
+        ArgumentNullException.ThrowIfNull(coAuthors);
         
-        _bodyTextLines.Add(text);
-        
-        return this;
-    }
-
-    public ICommitMessageBuilder AddCoAuthorById(GitCoAuthor coAuthor, AttributionType attributionType)
-    {
-        ArgumentNullException.ThrowIfNull(coAuthor);
-        
-        _coAuthors.Add(new ResolvedCoAuthor(coAuthor, attributionType));
+        _coAuthors.AddRange(coAuthors);
         
         return this;
     }

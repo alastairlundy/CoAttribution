@@ -15,40 +15,30 @@ public class CommitOrchestrator : ICommitOrchestrator
 {
     private readonly ICommitMessageBuilder _commitMessageBuilder;
     private readonly IAuthorRegistry _authorRegistry;
-    private readonly ICoAuthorResolver _coAuthorResolver;
     private readonly IGitClient _gitClient;
 
     public CommitOrchestrator(ICommitMessageBuilder commitMessageBuilder,
         IAuthorRegistry authorRegistry,
-        ICoAuthorResolver coAuthorResolver,
         IGitClient gitClient)
     {
         _commitMessageBuilder = commitMessageBuilder;
         _authorRegistry = authorRegistry;
-        _coAuthorResolver = coAuthorResolver;
         _gitClient = gitClient;
     }
     
     public async Task<CommitMessage> BuildCommitMessageAsync(CommitRequest commitRequest, CancellationToken cancellationToken)
     {
-        _commitMessageBuilder.SetSubject(commitRequest.MessageSubject);
-        _commitMessageBuilder.SetBody(commitRequest.MessageBody);
+        _commitMessageBuilder.SetContent(commitRequest.MessageSubject, commitRequest.MessageBody);
 
         GitCoAuthorConfig authorConfig = await _authorRegistry.GetAuthorConfigAsync(cancellationToken);
 
         GitCoAuthor[] coAuthors = authorConfig.GetCoAuthors();
         
-        ResolvedCoAuthor[] actualCoAuthors = _coAuthorResolver.ResolveCoAuthors(
-            new CoAuthorResolutionRequest(coAuthors, commitRequest.DefaultIds,
-                commitRequest.CoAuthorIds, commitRequest.AssistIds));
+        ResolvedCoAuthor[] actualCoAuthors = AttributionPolicy.Resolve(
+            coAuthors, commitRequest.DefaultIds,
+            commitRequest.CoAuthorIds, commitRequest.AssistIds);
         
-        foreach (ResolvedCoAuthor coAuthorPair in actualCoAuthors)
-        {
-            _commitMessageBuilder.AddCoAuthorById(coAuthorPair.Author,
-                coAuthorPair.Type == AttributionType.DefaultOrCoAuthor
-                    ? AttributionType.CoAuthor
-                    : coAuthorPair.Type);
-        }
+        _commitMessageBuilder.AddCoAuthors(actualCoAuthors);
         
         return _commitMessageBuilder.Build();
     }

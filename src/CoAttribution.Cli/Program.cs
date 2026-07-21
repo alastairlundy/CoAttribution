@@ -27,7 +27,6 @@ IConfiguration configuration = configurationBuilder.Build();
 Cli.Ext.ConfigureServices(services =>
 {
     services.AddCliInvoke();
-    services.AddSingleton<ICoAuthorResolver, CoAuthorResolver>();
     services.AddSingleton<IRegistryPathResolver, AppConfigRegistryPathResolver>();
     services.AddSingleton<IAuthorRegistry, AuthorRegistry>();
     services.AddSingleton<ICommitMessageBuilder, CommitMessageBuilder>();
