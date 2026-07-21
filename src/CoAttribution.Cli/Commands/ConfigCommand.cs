@@ -7,7 +7,6 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using CoAttribution.Cli.Helpers;
 using Tomlyn;
 
 namespace CoAttribution.Cli.Commands;
@@ -16,10 +15,12 @@ namespace CoAttribution.Cli.Commands;
 public class ConfigCommand
 {
     private readonly IConfiguration _configuration;
+    private readonly IConfigResolver _configResolver;
 
-    public ConfigCommand(IConfiguration configuration)
+    public ConfigCommand(IConfiguration configuration, IConfigResolver configResolver)
     {
         _configuration = configuration;
+        _configResolver = configResolver;
     }
     
     [CliArgument(Order = 0,
@@ -39,7 +40,11 @@ public class ConfigCommand
     [CliCommand(Name = "get", Description = "Get config value.")]
     public async Task<int> GetValueAsync(CancellationToken cancellationToken = default)
     {
-        ConfigPath = FileHelper.ResolveExistingConfigFile(_configuration).FullName;
+        if (string.IsNullOrEmpty(ConfigPath))
+        {
+            AppConfig config = await _configResolver.ResolveAppConfig(_configuration, cancellationToken);
+            ConfigPath = _configuration["config-file"] ?? _configuration["coauthor_config_file"] ?? "";
+        }
 
         try
         {
@@ -66,6 +71,12 @@ public class ConfigCommand
     [CliCommand(Name = "set", Description = "Set config value.")]
     public async Task<int> SetValueAsync(CancellationToken cancellationToken = default)
     {
+        if (string.IsNullOrEmpty(ConfigPath))
+        {
+            await _configResolver.ResolveAppConfig(_configuration, cancellationToken);
+            ConfigPath = _configuration["config-file"] ?? _configuration["coauthor_config_file"] ?? "";
+        }
+
         try
         {
             await SetValueAsync(Key, Value, cancellationToken);

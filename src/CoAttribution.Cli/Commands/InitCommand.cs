@@ -38,33 +38,18 @@ public class InitCommand
     
     public async Task<int> RunAsync(CliContext cliContext)
     {
-        //TODO: Add Config file path checking.
-        /*
-        
-        ConfigFilePath = FileHelper.ResolveExistingConfigFile(_configuration).FullName;
-        */
-        
-        /*if (Interactive)
+        if (string.IsNullOrEmpty(ConfigFilePath))
         {
-            IApplication application = Application.Create().Init();
-
-            application = await application.RunAsync<SetupDialog>(CancellationToken.None);
-
-            application.RequestStop();
-            
-            /*bool exitedSuccess = application  ? 0 : 1;#1#
-            /*return exitedSuccess;#1#
-            //TODO: Replace with actual code
-            return 0;
-        }*/
+            ConfigFilePath = _configuration["config-file"] ?? _configuration["coauthor_config_file"] ?? "";
+        }
 
         try
         {
-            if(Config)
+            if (!string.IsNullOrEmpty(ConfigFilePath) && !File.Exists(ConfigFilePath))
+            {
+                await CreateConfigFileAsync(cliContext.CancellationToken);
+            }
             
-            await CreateConfigFileAsync(cliContext.CancellationToken);
-            
-            //TODO Move to Resx
             await Console.Out.WriteLineAsync(string.Format(Resources.Commands_Init_ConfigFileCreated, ConfigFilePath));
             
             await CreateAuthorsTomlFileAsync(cliContext.CancellationToken);
@@ -76,7 +61,7 @@ public class InitCommand
             await Console.Out.WriteLineAsync(Resources.Commands_Init_Failed);
 
             await Console.Error.WriteLineAsync(string.Format(Resources.Commands_Exceptions_Details, exception.Message));
-                
+                 
             return 1;
         }
     }

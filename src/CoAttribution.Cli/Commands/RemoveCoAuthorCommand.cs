@@ -29,6 +29,8 @@ public class RemoveCoAuthorCommand
 
     public async Task<int> RunAsync(CliContext cliContext)
     {
+        FileInfo? authorsFile = await _authorRegistry.GetRegistryFileAsync(cliContext.CancellationToken);
+
         try
         {
             await _authorRegistry.RemoveAsync(Ids, cliContext.CancellationToken);
@@ -37,7 +39,7 @@ public class RemoveCoAuthorCommand
         }
         catch (Exception exception)
         {
-            Console.WriteLine(Resources.Commands_Authors_Remove_Failed, string.Join(", ", Ids), authorsFile.FullName);
+            Console.WriteLine(Resources.Commands_Authors_Remove_Failed, string.Join(", ", Ids), authorsFile?.FullName ?? "N/A");
             
             if (Verbose)
             {
