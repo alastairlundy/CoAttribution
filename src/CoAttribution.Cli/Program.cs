@@ -8,7 +8,7 @@
  */
 
 using System.CommandLine;
-using CoAttribution.Cli.Helpers;
+using CoAttribution.Cli;
 using CliInvoke.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -28,6 +28,7 @@ Cli.Ext.ConfigureServices(services =>
 {
     services.AddCliInvoke();
     services.AddSingleton<IRegistryPathResolver, AppConfigRegistryPathResolver>();
+    services.AddSingleton<IConfigResolver, ConfigResolver>();
     services.AddSingleton<IAuthorRegistry, AuthorRegistry>();
     services.AddSingleton<ICommitMessageBuilder, CommitMessageBuilder>();
     services.AddSingleton<IGitClient, CliGitClient>();
@@ -39,7 +40,6 @@ CliSettings settings = new()
 {
     EnablePosixBundling = true,
     EnableDefaultExceptionHandler = true,
-    
 };
 
 return await Cli.RunAsync<RootCommand>(args, settings);

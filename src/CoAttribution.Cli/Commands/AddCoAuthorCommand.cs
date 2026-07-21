@@ -11,8 +11,6 @@
 using Terminal.Gui.App;
 using Terminal.Gui.Views;*/
 
-using CoAttribution.Cli.Abstractions;
-
 namespace CoAttribution.Cli.Commands;
 
 [CliCommand(Name = "add", Parent = typeof(AuthorRootCommand))]
@@ -20,12 +18,15 @@ public class AddCoAuthorCommand
 {
     private readonly IAuthorRegistry _authorRegistry;
     private readonly IConfigResolver _configResolver;
+    private readonly IConfiguration _configuration;
 
     public AddCoAuthorCommand(IAuthorRegistry authorRegistry,
-        IConfigResolver configResolver)
+        IConfigResolver configResolver,
+        IConfiguration configuration)
     {
         _authorRegistry = authorRegistry;
         _configResolver = configResolver;
+        _configuration = configuration;
     }
     
     [CliArgument(Name = "<Configuration_Id>", Order = 0, Required = true, Arity =  CliArgumentArity.ExactlyOne)]
@@ -50,32 +51,8 @@ public class AddCoAuthorCommand
     public async Task<int> RunAsync(CliContext cliContext)
     {
         AppConfig configuration = await _configResolver.ResolveAppConfig(_configuration, cliContext.CancellationToken);
-        
-        /*if (!cliContext.Result.HasTokens)
-        {
-            using IApplication application = Application.Create().Init();
 
-            AddAuthorDialog dialog = new();
-
-            await Task.FromResult(application.Run(dialog));
-
-            if (dialog.Result is not null)
-            {
-                AuthorName = dialog.Result.Name;
-                AuthorEmail = dialog.Result.Email;
-                DefaultAttributionType = dialog.Result.DefaultAttributionType == AttributionType.CoAuthor ? "coauthor" : "assist";
-                AuthorType = dialog.Result.Type == ContributorType.Agent ? "agent" : "human";
-                Id = dialog.Result.CoAuthorId;
-            }
-            else
-            {
-                await Task.FromResult(MessageBox.Query(application, Resources.Labels_MessageBoxes_Authors_Add_Failed,
-                    string.Format(Resources.Commands_Authors_Add_Failed,
-                        Resources.Labels_Authors_Undefined, configFile), Resources.Labels_Buttons_Okay));
-
-                return 1;
-            }
-        }*/
+        FileInfo? authorsFile = await _authorRegistry.GetRegistryFileAsync(cliContext.CancellationToken);
         
         GitCoAuthor newCoAuthor = new()
         {
@@ -96,13 +73,13 @@ public class AddCoAuthorCommand
         {
             await _authorRegistry.AddAsync(newCoAuthor, cliContext.CancellationToken);
 
-            Console.Out.WriteLine(Resources.Commands_Authors_Add_Successful, newCoAuthor, authorsFile.FullName);
+            Console.Out.WriteLine(Resources.Commands_Authors_Add_Successful, newCoAuthor, authorsFile?.FullName ?? "N/A");
 
             return 0;
         }
         catch (Exception exception)
         {
-            Console.WriteLine(Resources.Commands_Authors_Add_Failed, newCoAuthor, authorsFile.FullName);
+            Console.WriteLine(Resources.Commands_Authors_Add_Failed, newCoAuthor, authorsFile?.FullName ?? "N/A");
             
             if (Verbose)
             {
