@@ -7,11 +7,6 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-/*
-using CoAttribution.Cli.Components.Windows;
-using Terminal.Gui.App;
-*/
-
 namespace CoAttribution.Cli.Commands;
 
 [CliCommand(Name = "")]

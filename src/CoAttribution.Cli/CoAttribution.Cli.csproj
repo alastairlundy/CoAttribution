@@ -34,6 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <EmbeddedResource Include="DEFAULT_AUTHORS.toml" />
       <None Update="DEFAULT_AUTHORS.toml">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
@@ -58,8 +59,5 @@
       <ProjectReference Include="..\CoAttribution.Lib\CoAttribution.Lib.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Components\Windows\" />
-    </ItemGroup>
 
 </Project>
