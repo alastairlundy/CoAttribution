@@ -24,7 +24,7 @@ public class ConfigCommand
     }
     
     [CliArgument(Order = 0,
-        AllowedValues = ["authors.global.path",
+        AllowedValues = ["authors_registry.paths.global",
             "trailers.default", "trailers.assistance", "trailers.coauthorship"],
         Required = true,
         Arity = CliArgumentArity.ExactlyOne)]
@@ -45,7 +45,7 @@ public class ConfigCommand
         if (string.IsNullOrEmpty(ConfigPath))
         {
             config = await _configResolver.ResolveAppConfig(_configuration, cancellationToken);
-            ConfigPath = _configuration["config-path"] ?? _configuration["coauthor_config_file"] ?? "";
+            ConfigPath = _configuration["config-file"] ?? "";
         }
         else
         {
@@ -84,7 +84,7 @@ public class ConfigCommand
         if (string.IsNullOrEmpty(ConfigPath))
         {
             config = await _configResolver.ResolveAppConfig(_configuration, cancellationToken);
-            ConfigPath = _configuration["config-path"] ?? _configuration["coauthor_config_file"] ?? "";
+            ConfigPath = _configuration["config-file"] ?? "";
         }
         else
         {

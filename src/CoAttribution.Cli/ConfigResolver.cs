@@ -15,7 +15,7 @@ public class ConfigResolver : IConfigResolver
 {
     public async Task<AppConfig> ResolveAppConfig(IConfiguration configuration, CancellationToken cancellationToken)
     {
-        string? configFile = configuration["config-file"] ?? configuration["coauthor_config_file"];
+        string? configFile = configuration["config-file"];
 
         if (string.IsNullOrEmpty(configFile))
         {

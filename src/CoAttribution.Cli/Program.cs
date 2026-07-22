@@ -9,17 +9,27 @@
 
 using System.CommandLine;
 using CoAttribution.Cli;
+using CoAttribution.Lib;
+using CoAttribution.Lib.Abstractions;
 using CliInvoke.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
 const string appName = "CoAuthor";
 
+var switchMappings = new Dictionary<string, string>
+{
+    { "--config-path", "config-file" }
+};
+
 IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
-    .AddCommandLine(args)
+    .AddCommandLine(args, switchMappings)
     .AddEnvironmentVariables();
 
 if (!args.Contains("--config-path", StringComparer.OrdinalIgnoreCase)) 
-    configurationBuilder.Properties.Add("config-path", DetermineDefaultConfigFilePath());
+    configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
+    {
+        ["config-file"] = DetermineDefaultConfigFilePath()
+    });
 
 
 IConfiguration configuration = configurationBuilder.Build();
@@ -31,6 +41,7 @@ Cli.Ext.ConfigureServices(services =>
     services.AddSingleton<IConfigResolver, ConfigResolver>();
     services.AddSingleton<IAuthorRegistry, AuthorRegistry>();
     services.AddSingleton<ICommitMessageBuilder, CommitMessageBuilder>();
+    services.AddSingleton<ICommitOrchestrator, CommitOrchestrator>();
     services.AddSingleton<IGitClient, CliGitClient>();
     
     services.AddSingleton(configuration);
