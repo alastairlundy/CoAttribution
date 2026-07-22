@@ -1,8 +1,8 @@
 ---
+id: TK002
 title: ConfigCommand AllowedValues and model fix
-classification: Independent
-blocked_by: []
-parent: IMPLEMENTATION-audit-fixes.md
+status: ready
+Depends on: none
 ---
 
 ## Goal

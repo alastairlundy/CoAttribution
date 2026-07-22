@@ -26,7 +26,7 @@ public partial class GitConfigClient : Abstractions.IGitConfigClient
         _processInvoker = processInvoker;
     }
 
-    public bool TryGet(string key, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out string? value)
+    public async Task<(bool Found, string? Value)> TryGetAsync(string key)
     {
         ArgumentNullException.ThrowIfNull(key);
         ValidateKeyNamespace(key);
@@ -37,21 +37,18 @@ public partial class GitConfigClient : Abstractions.IGitConfigClient
             .RedirectStandardError(true)
             .Build();
 
-        BufferedProcessResult result = _processInvoker.ExecuteBufferedAsync(processConfiguration)
-            .GetAwaiter()
-            .GetResult();
+        BufferedProcessResult result = await _processInvoker.ExecuteBufferedAsync(processConfiguration);
 
         if (result.ExitCode != 0)
         {
-            value = null;
-            return false;
+            return (false, null);
         }
 
-        value = result.StandardOutput.TrimEnd('\r', '\n');
-        return !string.IsNullOrEmpty(value);
+        string value = result.StandardOutput.TrimEnd('\r', '\n');
+        return (!string.IsNullOrEmpty(value), value);
     }
 
-    public void Set(string key, string value)
+    public async Task SetAsync(string key, string value)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(value);
@@ -63,7 +60,7 @@ public partial class GitConfigClient : Abstractions.IGitConfigClient
             .RedirectStandardError(true)
             .Build();
 
-        _processInvoker.ExecuteBufferedAsync(processConfiguration).GetAwaiter().GetResult();
+        await _processInvoker.ExecuteBufferedAsync(processConfiguration);
     }
 
     private static void ValidateKeyNamespace(string key)

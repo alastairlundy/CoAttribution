@@ -1,8 +1,8 @@
 ---
+id: TK005
 title: Init command implementation and code cleanup
-classification: Independent
-blocked_by: []
-parent: IMPLEMENTATION-audit-fixes.md
+status: ready
+Depends on: none
 ---
 
 ## Goal

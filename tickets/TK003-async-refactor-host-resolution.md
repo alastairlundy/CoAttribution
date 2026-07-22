@@ -1,8 +1,8 @@
 ---
+id: TK003
 title: Async refactor of IGitConfigClient and IHostResolver
-classification: Independent
-blocked_by: []
-parent: IMPLEMENTATION-audit-fixes.md
+status: ready
+Depends on: none
 ---
 
 ## Goal
