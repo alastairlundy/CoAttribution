@@ -27,7 +27,7 @@ public class AppConfigRegistryPathResolver : IRegistryPathResolver
         if (_resolved)
             return await Task.FromResult(_cachedPath);
 
-        string? configFile = _configuration["config-file"] ?? _configuration["coauthor_config_file"];
+        string? configFile = _configuration["config-file"];
 
         if (string.IsNullOrEmpty(configFile) || !File.Exists(configFile))
         {

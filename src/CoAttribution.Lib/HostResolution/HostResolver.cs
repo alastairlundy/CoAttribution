@@ -31,7 +31,7 @@ public partial class HostResolver : IHostResolver
         _appConfig = appConfig ?? throw new ArgumentNullException(nameof(appConfig));
     }
 
-    public HostResolutionResult ResolveHost(string? hostInput)
+    public async Task<HostResolutionResult> ResolveHostAsync(string? hostInput)
     {
         // Step 1: caller-supplied host key (CLI flag / TUI selector).
         if (HostKeyValidator.IsValid(hostInput))
@@ -45,7 +45,8 @@ public partial class HostResolver : IHostResolver
         }
 
         // Step 2: git config "coattribution.host".
-        if (_gitConfigClient.TryGet(GitConfigHostKey, out string? configuredHost)
+        var (found, configuredHost) = await _gitConfigClient.TryGetAsync(GitConfigHostKey);
+        if (found
             && HostKeyValidator.IsValid(configuredHost))
         {
             return new HostResolutionResult
@@ -57,7 +58,7 @@ public partial class HostResolver : IHostResolver
         }
 
         // Step 3: remote URL probe -> hostname -> DefaultHostMap ∪ user aliases.
-        string? remoteUrl = _gitRemoteProbe.GetPrimaryRemoteUrlAsync().GetAwaiter().GetResult();
+        string? remoteUrl = await _gitRemoteProbe.GetPrimaryRemoteUrlAsync(default);
         if (!string.IsNullOrWhiteSpace(remoteUrl))
         {
             string? hostname = ExtractHostname(remoteUrl);

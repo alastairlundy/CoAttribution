@@ -21,5 +21,5 @@ public interface IHostResolver
     /// Optional caller-supplied normalised host key that wins the precedence chain
     /// at the top of D003. May be null when the caller has no candidate to offer.
     /// </param>
-    HostResolutionResult ResolveHost(string? hostInput);
+    Task<HostResolutionResult> ResolveHostAsync(string? hostInput);
 }

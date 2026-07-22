@@ -7,11 +7,8 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+using System.Reflection;
 using DotExtensions.IO.Directories;
-
-/*using Terminal.Gui.App;
- using CoAttribution.Cli.Components.Dialogs;
-*/
 
 namespace CoAttribution.Cli.Commands;
 
@@ -19,10 +16,12 @@ namespace CoAttribution.Cli.Commands;
 public class InitCommand
 {
     private readonly IConfiguration _configuration;
+    private readonly IRegistryPathResolver _pathResolver;
 
-    public InitCommand(IConfiguration configuration)
+    public InitCommand(IConfiguration configuration, IRegistryPathResolver pathResolver)
     {
         _configuration = configuration;
+        _pathResolver = pathResolver;
     }
     
     /*[CliOption(Name = "interactive", Alias = "i", Arity = CliArgumentArity.ZeroOrOne,
@@ -40,7 +39,7 @@ public class InitCommand
     {
         if (string.IsNullOrEmpty(ConfigFilePath))
         {
-            ConfigFilePath = _configuration["config-file"] ?? _configuration["coauthor_config_file"] ?? "";
+            ConfigFilePath = _configuration["config-file"] ?? "";
         }
 
         try
@@ -80,13 +79,39 @@ public class InitCommand
 
     private async Task CreateAuthorsTomlFileAsync(CancellationToken cancellationToken)
     {
+        string targetPath;
+
         if (CreateGlobalFile)
         {
-            
+            string? globalPath = await _pathResolver.GetGlobalRegistryPathAsync(cancellationToken);
+
+            targetPath = globalPath ?? Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "CoAttribution",
+                "authors.toml");
         }
         else
         {
-            
+            targetPath = Path.Combine(Environment.CurrentDirectory, ".coauthor", "authors.toml");
+        }
+
+        string? directory = Path.GetDirectoryName(targetPath);
+        if (!string.IsNullOrEmpty(directory))
+        {
+            Directory.CreateDirectory(directory);
+        }
+
+        await using Stream? resourceStream = Assembly.GetExecutingAssembly()
+            .GetManifestResourceStream("DEFAULT_AUTHORS.toml");
+
+        if (resourceStream is not null)
+        {
+            await using FileStream fileStream = File.Create(targetPath);
+            await resourceStream.CopyToAsync(fileStream, cancellationToken);
+        }
+        else
+        {
+            await File.WriteAllTextAsync(targetPath, string.Empty, cancellationToken);
         }
     }
 }

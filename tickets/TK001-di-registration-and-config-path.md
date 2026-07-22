@@ -1,8 +1,8 @@
 ---
+id: TK001
 title: DI registration and config-path plumbing
-classification: Independent
-blocked_by: []
-parent: IMPLEMENTATION-audit-fixes.md
+status: ready
+Depends on: none
 ---
 
 ## Goal

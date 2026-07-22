@@ -8,6 +8,8 @@
  */
 
 using CoAttribution.Lib.Builders;
+using CoAttribution.Lib.HostResolution;
+using CoAttribution.Lib.HostResolution.Abstractions;
 
 namespace CoAttribution.Lib;
 
@@ -16,14 +18,17 @@ public class CommitOrchestrator : ICommitOrchestrator
     private readonly ICommitMessageBuilder _commitMessageBuilder;
     private readonly IAuthorRegistry _authorRegistry;
     private readonly IGitClient _gitClient;
+    private readonly IHostResolver _hostResolver;
 
     public CommitOrchestrator(ICommitMessageBuilder commitMessageBuilder,
         IAuthorRegistry authorRegistry,
-        IGitClient gitClient)
+        IGitClient gitClient,
+        IHostResolver hostResolver)
     {
         _commitMessageBuilder = commitMessageBuilder;
         _authorRegistry = authorRegistry;
         _gitClient = gitClient;
+        _hostResolver = hostResolver;
     }
     
     public async Task<CommitMessage> BuildCommitMessageAsync(CommitRequest commitRequest, CancellationToken cancellationToken)
@@ -33,9 +38,14 @@ public class CommitOrchestrator : ICommitOrchestrator
         GitCoAuthorConfig authorConfig = await _authorRegistry.GetAuthorConfigAsync(cancellationToken);
 
         GitCoAuthor[] coAuthors = authorConfig.GetCoAuthors();
+
+        HostResolutionResult hostResult = await _hostResolver.ResolveHostAsync(null);
+        string[] mergedDefaultIds = hostResult.Variant == HostResolutionVariant.Resolved && hostResult.HostKey is not null
+            ? [..commitRequest.DefaultIds, hostResult.HostKey]
+            : commitRequest.DefaultIds;
         
         ResolvedCoAuthor[] actualCoAuthors = AttributionPolicy.Resolve(
-            coAuthors, commitRequest.DefaultIds,
+            coAuthors, mergedDefaultIds,
             commitRequest.CoAuthorIds, commitRequest.AssistIds);
         
         _commitMessageBuilder.AddCoAuthors(actualCoAuthors);

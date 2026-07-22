@@ -1,8 +1,8 @@
 ---
+id: TK004
 title: Wire IHostResolver into CommitOrchestrator
-classification: Independent
-blocked_by: [TK003]
-parent: IMPLEMENTATION-audit-fixes.md
+status: ready
+Depends on: TK003
 ---
 
 ## Goal

@@ -7,8 +7,6 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using System.Diagnostics.CodeAnalysis;
-
 namespace CoAttribution.Lib.HostResolution.Abstractions;
 
 /// <summary>
@@ -17,13 +15,14 @@ namespace CoAttribution.Lib.HostResolution.Abstractions;
 public interface IGitConfigClient
 {
     /// <summary>
-    /// Reads a single <c>.git/config</c> value. Returns <c>true</c> when the key is set.
+    /// Reads a single <c>.git/config</c> value. Returns a tuple indicating whether
+    /// the key was found and its value.
     /// </summary>
-    bool TryGet(string key, [NotNullWhen(true)] out string? value);
+    Task<(bool Found, string? Value)> TryGetAsync(string key);
 
     /// <summary>
     /// Writes a <c>.git/config</c> value. Only <c>coattribution.*</c> keys are accepted;
     /// any other key throws <see cref="ArgumentException"/>.
     /// </summary>
-    void Set(string key, string value);
+    Task SetAsync(string key, string value);
 }
