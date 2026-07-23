@@ -20,6 +20,27 @@ CoAttribution is strictly an **Attribution Metadata Orchestrator**. Its sole pur
 - **Library**: `src/CoAttribution.Lib/` - Core logic, abstractions, and implementations. Reusable logic must reside here.
 - **Solution**: Managed via `src/CoAttribution.slnx`.
 
+### CLI Framework
+
+The CLI uses **DotMake.CommandLine** (class-based model) as its command-line framework.
+
+**Entry Point**
+- `Program.cs` calls `Cli.RunAsync<RootCommand>(args, settings)` with DI wired via `Cli.Ext.ConfigureServices()` before the run call.
+
+**Command Hierarchy**
+- Subcommands use **standalone classes** with `Parent = typeof(RootCommand)` in the `[CliCommand]` attribute — NOT nested classes.
+- All command classes live under `src/CoAttribution.Cli/Commands/`.
+- `RootCommand` is defined with bare `[CliCommand]` (no explicit `Name`).
+
+**⚠ System.CommandLine Pitfall**
+- `DotMake.CommandLine` pulls `System.CommandLine` as a transitive dependency, which exposes its own `RootCommand` class.
+- `Program.cs` must **not** have `using System.CommandLine;` — it causes `RootCommand` to resolve to the wrong type and fail at runtime.
+
+**Short Alias Management**
+- Auto-generated short form aliases (first letter of command name) can conflict — e.g. `commit` and `config` both alias to `c`.
+- Disable globally via `[CliCommand(ShortFormAutoGenerate = CliNameAutoGenerate.None)]` on the root command; inherited by subcommands.
+- Explicit per-command aliases use `Alias = "cfg"` in `[CliCommand]`.
+
 ## Constraints & Conventions
 - **NativeAOT**: The CLI must maintain NativeAOT compatibility. 
   - `IsTrimmable` and `IsAoTCompatible` are enabled in `.csproj` files.
