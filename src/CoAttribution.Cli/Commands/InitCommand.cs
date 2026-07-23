@@ -51,7 +51,8 @@ public class InitCommand
             
             await Console.Out.WriteLineAsync(string.Format(Resources.Commands_Init_ConfigFileCreated, ConfigFilePath));
             
-            await CreateAuthorsTomlFileAsync(cliContext.CancellationToken);
+            string authorsFilePath = await CreateAuthorsTomlFileAsync(cliContext.CancellationToken);
+            await Console.Out.WriteLineAsync(string.Format(Resources.Commands_Init_AuthorsFileCreated, authorsFilePath));
             
             return 0;
         }
@@ -77,7 +78,7 @@ public class InitCommand
         await File.WriteAllTextAsync(ConfigFilePath, defaultConfigTomlContents, cancellationToken);
     }
 
-    private async Task CreateAuthorsTomlFileAsync(CancellationToken cancellationToken)
+    private async Task<string> CreateAuthorsTomlFileAsync(CancellationToken cancellationToken)
     {
         string targetPath;
 
@@ -113,5 +114,7 @@ public class InitCommand
         {
             await File.WriteAllTextAsync(targetPath, string.Empty, cancellationToken);
         }
+
+        return targetPath;
     }
 }

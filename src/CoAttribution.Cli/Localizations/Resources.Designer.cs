@@ -138,6 +138,15 @@ namespace CoAttribution.Cli.Localizations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Authors file created at: {0}.
+        /// </summary>
+        internal static string Commands_Init_AuthorsFileCreated {
+            get {
+                return ResourceManager.GetString("Commands.Init.AuthorsFileCreated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Couldn&apos;t initialise the config file.
         /// </summary>
         internal static string Commands_Init_Failed {
