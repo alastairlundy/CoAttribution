@@ -9,7 +9,7 @@
 
 namespace CoAttribution.Cli.Commands;
 
-[CliCommand]
+[CliCommand(ShortFormAutoGenerate = CliNameAutoGenerate.None)]
 public class RootCommand
 {
     public Task<int> RunAsync(CliContext context)
