@@ -34,7 +34,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <EmbeddedResource Include="DEFAULT_AUTHORS.toml" />
+      <EmbeddedResource Include="DEFAULT_AUTHORS.toml" LogicalName="DEFAULT_AUTHORS.toml" />
       <None Update="DEFAULT_AUTHORS.toml">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>

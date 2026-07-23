@@ -13,7 +13,7 @@ using CoAttribution.Lib.Abstractions;
 using CliInvoke.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 
-const string appName = "CoAuthor";
+const string appName = "CoAttribution";
 
 var switchMappings = new Dictionary<string, string>
 {
@@ -57,20 +57,22 @@ return await Cli.RunAsync<RootCommand>(args, settings);
 
 static string DetermineDefaultConfigFilePath()
 {
+    const string configFileName = "config.toml";
+    
     if (OperatingSystem.IsWindows())
     {
-        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName);
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), appName, configFileName);
     }
     if (OperatingSystem.IsMacOS() || OperatingSystem.IsMacCatalyst())
     {
-        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library", "Application Support", appName);
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Library", "Application Support", appName, configFileName);
     }
     if (OperatingSystem.IsLinux() || OperatingSystem.IsFreeBSD())
     {
         string configDirectory = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME") ??
                                  Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), ".config");
             
-        return Path.Combine(configDirectory, appName);
+        return Path.Combine(configDirectory, appName, configFileName);
     }
         
     throw new PlatformNotSupportedException();
