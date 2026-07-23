@@ -9,7 +9,7 @@
 
 namespace CoAttribution.Cli.Commands;
 
-[CliCommand(Name = "")]
+[CliCommand]
 public class RootCommand
 {
     public Task<int> RunAsync(CliContext context)
