@@ -11,7 +11,7 @@ using Tomlyn;
 
 namespace CoAttribution.Cli.Commands;
 
-[CliCommand(Name = "config", Parent = typeof(RootCommand))]
+[CliCommand(Name = "config", Alias = "cfg", Parent = typeof(RootCommand))]
 public class ConfigCommand
 {
     private readonly IConfiguration _configuration;
