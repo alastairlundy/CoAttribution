@@ -65,3 +65,7 @@ Standard canonical labels are used (`needs-triage`, `needs-info`, etc.). See `do
 ### Domain docs
 
 Single-context layout (`CONTEXT.md` and `docs/adr/` at root). See `docs/agents/domain.md`.
+
+### Repo-specific skills
+
+- **dotmake-command-line** (`.agents/skills/dotmake-command-line/SKILL.md`): Use when any work being done touches CLI commands — adding or modifying command classes, the entry point in `Program.cs`, `[CliCommand]`/`[CliOption]`/`[CliArgument]` attributes, or troubleshooting `DotMake.CommandLine` runtime errors.
