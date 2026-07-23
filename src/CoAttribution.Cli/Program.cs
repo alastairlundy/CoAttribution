@@ -7,7 +7,6 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using System.CommandLine;
 using CoAttribution.Cli;
 using CoAttribution.Lib;
 using CoAttribution.Lib.Abstractions;

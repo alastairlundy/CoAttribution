@@ -1,6 +1,7 @@
 ﻿// Global using directives
 
 global using CoAttribution.Cli.Abstractions;
+global using CoAttribution.Cli.Commands;
 global using CoAttribution.Cli.Contexts;
 global using CoAttribution.Cli.DataAccess;
 global using CoAttribution.Cli.Localizations;
