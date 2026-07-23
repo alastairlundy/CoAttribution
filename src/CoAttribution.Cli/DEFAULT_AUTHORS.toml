@@ -2,14 +2,34 @@
 [agents.copilot]
 name = "GitHub Copilot"
 email = "copilot@github.com"
- 
+
+[agents.copilot.host.github]
+name = "Copilot"
+email = "copilot@github.com"
+
 [agents.opencode]
-name = "opencode"
+name = "OpenCode"
 email = "noreply@opencode.ai"
+
+[agents.opencode.host.github]
+name = "opencode-agent"
+email = "noreply@opencode.ai"
+
+[agents.kilo.host.github]
+name = "kilocode-bot"
+email = "noreply@kilocode.ai"
 
 [agents.claude]
 name = "Claude"
 email = "noreply@anthropic.com"
+
+[agents.claude.host.github]
+name = "claude"
+email = "noreply@anthropic.com"
+
+[agents.cursor.host.github]
+name = "cursoragent"
+email = "cursoragent@cursor.com"
 
 # Need sourcing
 [agents.cursor]
@@ -32,16 +52,17 @@ email = ""
 name = "Junie"
 email = ""
 
-[agents.pi]
-name = "Pi"
-email = ""
-
 # Unofficial
 [agents.kilo]
 name = "Kilo AI"
-email = "norely@kilocode.ai"
+email = "noreply@kilocode.ai"
+
 
 # Generic placeholders for common agent types
 [agents.generic_llm]
+name = "AI Agent"
+email = "noreply@example.com"
+
+[agents.generic_llm.host.github]
 name = "AI Agent"
 email = "noreply@example.com"
