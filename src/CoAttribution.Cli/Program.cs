@@ -8,9 +8,9 @@
  */
 
 using CoAttribution.Cli;
-using CoAttribution.Lib;
-using CoAttribution.Lib.Abstractions;
 using CliInvoke.Extensions;
+using CoAttribution.Lib.HostResolution;
+using CoAttribution.Lib.HostResolution.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
 const string appName = "CoAttribution";
