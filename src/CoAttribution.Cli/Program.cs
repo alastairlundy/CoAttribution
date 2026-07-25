@@ -36,6 +36,7 @@ IConfiguration configuration = configurationBuilder.Build();
 Cli.Ext.ConfigureServices(services =>
 {
     services.AddCliInvoke();
+    services.AddSingleton<IHostResolver, HostResolver>();
     services.AddSingleton<IRegistryPathResolver, AppConfigRegistryPathResolver>();
     services.AddSingleton<IConfigResolver, ConfigResolver>();
     services.AddSingleton<IAuthorRegistry, AuthorRegistry>();
