@@ -49,7 +49,7 @@ public static partial class HostKeyValidator
             return true;
         }
 
-        var invalidCharacters = key
+        string[] invalidCharacters = key
             .Where(static c => !IsLowercaseAsciiLetter(c))
             .Distinct()
             .Select(static c => $"'{c}'")

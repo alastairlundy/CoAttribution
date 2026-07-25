@@ -15,7 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 const string appName = "CoAttribution";
 
-var switchMappings = new Dictionary<string, string>
+Dictionary<string, string> switchMappings = new()
 {
     { "--config-path", "config-file" }
 };

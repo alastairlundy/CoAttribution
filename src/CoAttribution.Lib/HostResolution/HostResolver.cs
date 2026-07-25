@@ -45,7 +45,7 @@ public partial class HostResolver : IHostResolver
         }
 
         // Step 2: git config "coattribution.host".
-        var (found, configuredHost) = await _gitConfigClient.TryGetAsync(GitConfigHostKey);
+        (bool found, string? configuredHost) = await _gitConfigClient.TryGetAsync(GitConfigHostKey);
         if (found
             && HostKeyValidator.IsValid(configuredHost))
         {
