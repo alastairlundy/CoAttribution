@@ -14,7 +14,7 @@ Closes #(issue)
 
 ## Scope Check
 
-- [ ] I have reviewed `README.md` and `CONTEXT.md` and confirm this change is within the project's scope
+- [ ] I have reviewed `README.md` and `GLOSSARY.md` and confirm this change is within the project's scope
 
 ## Checklist
 

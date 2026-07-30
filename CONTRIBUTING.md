@@ -4,7 +4,7 @@ Thank you for your interest in contributing to CoAttribution. This guide explain
 
 ## Before You Start
 
-CoAttribution is strictly an **Attribution Metadata Orchestrator** — it manages the 'Who' and 'How' of Git commit trailers. Review `README.md` and `CONTEXT.md` to understand the project's scope and boundaries before contributing.
+CoAttribution is strictly an **Attribution Metadata Orchestrator** — it manages the 'Who' and 'How' of Git commit trailers. Review `README.md` and `GLOSSARY.md` to understand the project's scope and boundaries before contributing.
 
 Contributions that fall outside the project's scope or roadmap may not be merged, even if well-intentioned. If you're unsure whether a change is in scope, open an issue to discuss it first.
 
