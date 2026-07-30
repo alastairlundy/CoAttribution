@@ -142,7 +142,7 @@ public class AuthorRegistryTests : IDisposable
         await Assert.That(result).IsNull();
     }
 
-    [Test]
+    [Test, NotInParallel]
     public async Task GetByIdAsync_UnknownId_ReturnsNull()
     {
         _temp.WriteAuthorsToml("""
