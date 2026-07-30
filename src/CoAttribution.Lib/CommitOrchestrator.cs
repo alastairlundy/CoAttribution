@@ -65,8 +65,7 @@ public class CommitOrchestrator : ICommitOrchestrator
 
                 FileInfo? registryFile = await _authorRegistry.GetRegistryFileAsync(cancellationToken);
                 string registryPath = registryFile?.FullName ?? "N/A";
-                string section = author.Type == ContributorType.Agent ? "agents" : "humans";
-                string snippet = $"[{section}.{author.CoAuthorId}.host.{hostResult.HostKey}]\nname = \"{author.Name}\"\nemail = \"{author.Email}\"";
+                string snippet = $"[agents.{author.CoAuthorId}.host.{hostResult.HostKey}]\nname = \"{author.Name}\"\nemail = \"{author.Email}\"";
 
                 missingBlocks.Add(new MissingHostBlockDiagnostic(
                     hostResult.HostKey,
