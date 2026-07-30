@@ -7,23 +7,22 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+using CoAttribution.Lib.Models.DTOs;
+
 namespace CoAttribution.Lib;
 
 public static class AttributionPolicy
 {
-    public static ResolvedCoAuthor[] Resolve(GitCoAuthor[] availableAuthors,
-        string[] defaultIds,
-        string[] coAuthorIds,
-        string[] assistIds)
+    public static ResolvedCoAuthor[] Resolve(CoAuthorResolutionRequest request)
     {
-        IEnumerable<KeyValuePair<string, AttributionType>> prioritized = coAuthorIds
+        IEnumerable<KeyValuePair<string, AttributionType>> prioritized = request.CoAuthorIds
             .Select(coAuthorId => new KeyValuePair<string, AttributionType>(coAuthorId, AttributionType.CoAuthor))
-            .Concat(assistIds.Select(assistId => new KeyValuePair<string, AttributionType>(assistId, AttributionType.Assisted)))
-            .Concat(defaultIds.Select(defaultId => new KeyValuePair<string, AttributionType>(defaultId, AttributionType.DefaultOrCoAuthor)))
+            .Concat(request.AssistIds.Select(assistId => new KeyValuePair<string, AttributionType>(assistId, AttributionType.Assisted)))
+            .Concat(request.DefaultIds.Select(defaultId => new KeyValuePair<string, AttributionType>(defaultId, AttributionType.DefaultOrCoAuthor)))
             .DistinctBy(kvp => kvp.Key);
 
         return prioritized
-            .Join(availableAuthors,
+            .Join(request.AvailableAuthors,
                 kvp => kvp.Key,
                 author => author.CoAuthorId,
                 (kvp, author) => new ResolvedCoAuthor(author, kvp.Value))
