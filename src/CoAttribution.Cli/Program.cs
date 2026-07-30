@@ -9,7 +9,6 @@
 
 using CoAttribution.Cli;
 using CliInvoke.Extensions;
-using CoAttribution.Lib.HostResolution;
 using CoAttribution.Lib.HostResolution.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 

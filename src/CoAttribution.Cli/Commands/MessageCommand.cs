@@ -8,7 +8,6 @@
  */
 
 using CoAttribution.Cli.HostResolution;
-using CoAttribution.Lib.Exceptions;
 
 namespace CoAttribution.Cli.Commands;
 

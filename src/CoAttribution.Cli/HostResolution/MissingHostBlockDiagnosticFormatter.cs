@@ -7,8 +7,6 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using CoAttribution.Lib.HostResolution;
-
 namespace CoAttribution.Cli.HostResolution;
 
 /// <summary>

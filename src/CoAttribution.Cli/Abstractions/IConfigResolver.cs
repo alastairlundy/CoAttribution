@@ -1,6 +1,4 @@
-﻿using CoAttribution.Lib.Models;
-
-namespace CoAttribution.Cli.Abstractions;
+﻿namespace CoAttribution.Cli.Abstractions;
 
 public interface IConfigResolver
 {

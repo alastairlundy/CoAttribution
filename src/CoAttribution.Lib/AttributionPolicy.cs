@@ -7,8 +7,6 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using CoAttribution.Lib.Models.DTOs;
-
 namespace CoAttribution.Lib;
 
 public static class AttributionPolicy

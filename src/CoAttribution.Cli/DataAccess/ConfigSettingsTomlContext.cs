@@ -7,7 +7,6 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using CoAttribution.Lib.Models;
 using Tomlyn.Serialization;
 
 namespace CoAttribution.Cli.DataAccess;

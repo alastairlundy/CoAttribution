@@ -8,7 +8,6 @@
  */
 
 using CoAttribution.Lib.HostResolution.Abstractions;
-using CoAttribution.Lib.Models;
 
 namespace CoAttribution.Lib.HostResolution;
 

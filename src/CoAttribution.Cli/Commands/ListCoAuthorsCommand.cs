@@ -8,7 +8,6 @@
  */
 
 using System.Text.Json;
-using CoAttribution.Lib.Models.DTOs;
 
 namespace CoAttribution.Cli.Commands;
 

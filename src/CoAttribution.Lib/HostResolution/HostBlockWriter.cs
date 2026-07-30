@@ -7,9 +7,6 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using CoAttribution.Lib.Models;
-using CoAttribution.Lib.Models.DTOs;
-
 namespace CoAttribution.Lib.HostResolution;
 
 // ReSharper disable once PartialTypeWithSinglePart
