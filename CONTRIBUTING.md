@@ -36,7 +36,16 @@ dotnet build src/CoAttribution.slnx
 dotnet test src/CoAttribution.slnx
 ```
 
-Ensure NativeAOT compatibility is maintained — the CLI must build with `IsTrimmable` and `IsAotCompatible` enabled.
+Ensure NativeAOT compatibility is maintained — the CLI must build with `IsTrimmable` and `IsAotCompatible` enabled. See `docs/adr/0001-native-aot-constraint.md`.
+
+## Scope Boundaries
+
+CoAttribution has hard design boundaries that must not be crossed:
+
+- **No Index Manipulation**: Do not call `git add` or manage the staging area. The tool assumes changes are already staged.
+- **No Intelligence**: Do not integrate with LLMs or generate commit messages. The tool only appends trailers to user-provided messages.
+- **No Remote Integration**: Do not contact GitHub/GitLab/Bitbucket APIs. Relies entirely on local config files and local Git binaries.
+- **No Prompt Management**: Do not add prompt engineering or AI agent management features.
 
 ### 4. Submit a Pull Request
 
