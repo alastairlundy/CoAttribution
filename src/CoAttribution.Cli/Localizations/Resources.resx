@@ -63,6 +63,12 @@
     <data name="Labels.MessageBoxes.Authors.Add.Failed" xml:space="preserve">
         <value>Failed to add CoAuthor</value>
     </data>
+    <data name="Labels.MessageBoxes.Authors.Add.ValidationError.Title" xml:space="preserve">
+        <value>Validation Error</value>
+    </data>
+    <data name="Labels.MessageBoxes.Authors.Add.ValidationError.Message" xml:space="preserve">
+        <value>Name, Email, and Contributor Type are required fields.</value>
+    </data>
     <data name="Labels.Authors.Undefined" xml:space="preserve">
         <value>Undefined coauthor</value>
     </data>
