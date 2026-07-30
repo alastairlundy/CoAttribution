@@ -30,7 +30,6 @@ if (!args.Contains("--config-path", StringComparer.OrdinalIgnoreCase))
         ["config-file"] = DetermineDefaultConfigFilePath()
     });
 
-
 IConfiguration configuration = configurationBuilder.Build();
 
 Cli.Ext.ConfigureServices(services =>
@@ -43,8 +42,17 @@ Cli.Ext.ConfigureServices(services =>
     services.AddSingleton<ICommitMessageBuilder, CommitMessageBuilder>();
     services.AddSingleton<ICommitOrchestrator, CommitOrchestrator>();
     services.AddSingleton<IGitClient, CliGitClient>();
+    services.AddSingleton<IGitConfigClient, GitConfigClient>();
+    services.AddSingleton<IGitRemoteProbe, GitRemoteProbe>();
     
     services.AddSingleton(configuration);
+    
+    services.AddSingleton<AppConfig>(sp =>
+    {
+        IConfigResolver configResolver = sp.GetRequiredService<IConfigResolver>();
+        IConfiguration cfg = sp.GetRequiredService<IConfiguration>();
+        return configResolver.ResolveAppConfig(cfg, CancellationToken.None).GetAwaiter().GetResult();
+    });
 });
 
 CliSettings settings = new()

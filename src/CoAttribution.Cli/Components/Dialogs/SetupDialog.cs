@@ -7,11 +7,15 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+#if TUI
 using Terminal.Gui.Views;
+#endif
 
 namespace CoAttribution.Cli.Components.Dialogs;
 
+#if TUI
 public class SetupDialog : Dialog
 {
     
 }
+#endif

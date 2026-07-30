@@ -8,8 +8,10 @@
  */
 
 using CoAttribution.Lib.HostResolution;
+#if TUI
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
+#endif
 
 namespace CoAttribution.Cli.Components.Dialogs;
 
@@ -19,6 +21,7 @@ namespace CoAttribution.Cli.Components.Dialogs;
 /// Does NOT perform the registry write itself; the caller dispatches on
 /// <see cref="Choice"/> and calls <c>HostBlockWriter</c>.
 /// </summary>
+#if TUI
 public sealed class MissingHostBlockDialog : Dialog
 {
     private MissingHostBlockChoice _choice;
@@ -95,3 +98,4 @@ public sealed class MissingHostBlockDialog : Dialog
         AddButton(useFallbackButton);
     }
 }
+#endif

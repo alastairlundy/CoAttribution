@@ -13,6 +13,7 @@
         <RepositoryUrl>https://github.com/alastairlundy/CoAttribution</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageTags>attribution, assisted-by, coauthored-by</PackageTags>
+        <DefineConstants Condition="'$(EnableTui)' == 'true'">$(DefineConstants);TUI</DefineConstants>
         <IsPackable>true</IsPackable>
         <IsTrimmable>true</IsTrimmable>
         <IsAoTCompatible>true</IsAoTCompatible>

@@ -7,10 +7,13 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+#if TUI
 using Terminal.Gui.Views;
+#endif
 
 namespace CoAttribution.Cli.Components.Windows;
 
+#if TUI
 public sealed class MainWindow : Window
 {
     public MainWindow()
@@ -21,3 +24,4 @@ public sealed class MainWindow : Window
     
     
 }
+#endif
