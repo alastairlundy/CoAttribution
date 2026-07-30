@@ -17,6 +17,7 @@
         <IsPackable>true</IsPackable>
         <IsTrimmable>true</IsTrimmable>
         <IsAoTCompatible>true</IsAoTCompatible>
+        <PublishAot Condition="'$(DotNetPublish)' == 'true'">true</PublishAot>
         <PackageReleaseNotes>Initial Release</PackageReleaseNotes>
         <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
