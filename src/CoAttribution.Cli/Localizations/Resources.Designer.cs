@@ -264,7 +264,7 @@ namespace CoAttribution.Cli.Localizations {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Contrbutor Type.
+        ///   Looks up a localized string similar to Contributor Type.
         /// </summary>
         internal static string Labels_Input_ContributorType {
             get {
