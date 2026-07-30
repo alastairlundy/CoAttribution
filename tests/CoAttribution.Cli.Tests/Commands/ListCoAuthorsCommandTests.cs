@@ -115,5 +115,6 @@ public class ListCoAuthorsCommandTests
         int exitCode = await command.RunAsync(ctx);
 
         await Assert.That(exitCode).IsEqualTo(0);
+        await Assert.That(console.StandardOutput.Trim()).IsEmpty();
     }
 }
