@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTrimmable>false</IsTrimmable>
+    <RootNamespace>CoAttribution.Cli.Tests</RootNamespace>
+    <AssemblyName>CoAttribution.Cli.Tests</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TUnit" />
+    <PackageReference Include="NSubstitute" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\CoAttribution.Cli\CoAttribution.Cli.csproj" />
+    <ProjectReference Include="..\..\src\CoAttribution.Lib\CoAttribution.Lib.csproj" />
+  </ItemGroup>
+
+</Project>

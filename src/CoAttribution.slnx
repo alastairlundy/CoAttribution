@@ -1,4 +1,5 @@
 <Solution>
   <Project Path="CoAttribution.Cli/CoAttribution.Cli.csproj" />
   <Project Path="CoAttribution.Lib/CoAttribution.Lib.csproj" />
+  <Project Path="../tests/CoAttribution.Cli.Tests/CoAttribution.Cli.Tests.csproj" />
 </Solution>
