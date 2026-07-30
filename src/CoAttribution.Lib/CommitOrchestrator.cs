@@ -8,6 +8,7 @@
  */
 
 using CoAttribution.Lib.Builders;
+using CoAttribution.Lib.Exceptions;
 using CoAttribution.Lib.HostResolution;
 using CoAttribution.Lib.HostResolution.Abstractions;
 
@@ -44,10 +45,42 @@ public class CommitOrchestrator : ICommitOrchestrator
             ? [..commitRequest.DefaultIds, hostResult.HostKey]
             : commitRequest.DefaultIds;
         
-        ResolvedCoAuthor[] actualCoAuthors = AttributionPolicy.Resolve(
+        ResolvedCoAuthor[] actualCoAuthors = AttributionPolicy.Resolve(new CoAuthorResolutionRequest(
             coAuthors, mergedDefaultIds,
-            commitRequest.CoAuthorIds, commitRequest.AssistIds);
-        
+            commitRequest.CoAuthorIds, commitRequest.AssistIds));
+
+        if (hostResult.Variant == HostResolutionVariant.Resolved && hostResult.HostKey is not null)
+        {
+            List<MissingHostBlockDiagnostic> missingBlocks = [];
+
+            foreach (ResolvedCoAuthor resolved in actualCoAuthors)
+            {
+                GitCoAuthor author = resolved.Author;
+
+                if (author.Type != ContributorType.Agent)
+                    continue;
+
+                if (author.Host.ContainsKey(hostResult.HostKey))
+                    continue;
+
+                FileInfo? registryFile = await _authorRegistry.GetRegistryFileAsync(cancellationToken);
+                string registryPath = registryFile?.FullName ?? "N/A";
+                string section = author.Type == ContributorType.Agent ? "agents" : "humans";
+                string snippet = $"[{section}.{author.CoAuthorId}.host.{hostResult.HostKey}]\nname = \"{author.Name}\"\nemail = \"{author.Email}\"";
+
+                missingBlocks.Add(new MissingHostBlockDiagnostic(
+                    hostResult.HostKey,
+                    author.CoAuthorId,
+                    registryPath,
+                    snippet));
+            }
+
+            if (missingBlocks.Count > 0)
+            {
+                throw new MissingHostBlockException(missingBlocks.AsReadOnly());
+            }
+        }
+
         _commitMessageBuilder.AddCoAuthors(actualCoAuthors);
         
         return _commitMessageBuilder.Build();
