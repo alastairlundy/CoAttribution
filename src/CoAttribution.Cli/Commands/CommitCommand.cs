@@ -7,6 +7,9 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+using CoAttribution.Cli.HostResolution;
+using CoAttribution.Lib.Exceptions;
+
 namespace CoAttribution.Cli.Commands;
 
 [CliCommand(Name = "commit", Parent = typeof(RootCommand))]
@@ -51,6 +54,18 @@ public class CommitCommand
             Console.WriteLine();
 
             return result.ExitCode;
+        }
+        catch (MissingHostBlockException mhbEx)
+        {
+            MissingHostBlockDiagnosticFormatter formatter = new();
+
+            foreach (MissingHostBlockDiagnostic diagnostic in mhbEx.Diagnostics)
+            {
+                await Console.Error.WriteLineAsync(formatter.Format(diagnostic));
+                await Console.Error.WriteLineAsync();
+            }
+
+            return 1;
         }
         catch(Exception exception)
         {
