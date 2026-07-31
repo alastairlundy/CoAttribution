@@ -32,6 +32,16 @@ public class CommitOrchestrator : ICommitOrchestrator
         _hostResolver = hostResolver;
     }
     
+    /// <summary>
+    /// Builds a <see cref="CommitMessage"/> from a <see cref="CommitRequest"/>.
+    /// </summary>
+    /// <remarks>
+    /// After attribution resolution and per-host block validation, this method
+    /// applies the resolved host's identity override (if any) to each resolved
+    /// co-author. The substitution is non-destructive: a new
+    /// <see cref="GitCoAuthor"/> record copy is produced via a <c>with</c>
+    /// expression so the shared registry instance remains untouched.
+    /// </remarks>
     public async Task<CommitMessage> BuildCommitMessageAsync(CommitRequest commitRequest, CancellationToken cancellationToken)
     {
         _commitMessageBuilder.SetContent(commitRequest.MessageSubject, commitRequest.MessageBody);
@@ -44,7 +54,7 @@ public class CommitOrchestrator : ICommitOrchestrator
         string[] mergedDefaultIds = hostResult.Variant == HostResolutionVariant.Resolved && hostResult.HostKey is not null
             ? [..commitRequest.DefaultIds, hostResult.HostKey]
             : commitRequest.DefaultIds;
-        
+
         ResolvedCoAuthor[] actualCoAuthors = AttributionPolicy.Resolve(new CoAuthorResolutionRequest(
             coAuthors, mergedDefaultIds,
             commitRequest.CoAuthorIds, commitRequest.AssistIds));
@@ -78,11 +88,37 @@ public class CommitOrchestrator : ICommitOrchestrator
             {
                 throw new MissingHostBlockException(missingBlocks.AsReadOnly());
             }
+
+            actualCoAuthors = ApplyHostOverride(actualCoAuthors, hostResult.HostKey);
         }
 
         _commitMessageBuilder.AddCoAuthors(actualCoAuthors);
-        
+
         return _commitMessageBuilder.Build();
+    }
+
+    private static ResolvedCoAuthor[] ApplyHostOverride(ResolvedCoAuthor[] coAuthors, string hostKey)
+    {
+        ResolvedCoAuthor[] result = new ResolvedCoAuthor[coAuthors.Length];
+        for (int i = 0; i < coAuthors.Length; i++)
+        {
+            ResolvedCoAuthor current = coAuthors[i];
+
+            if (current.Author.Host.TryGetValue(hostKey, out HostOverride? block) is false
+                || block is null)
+            {
+                result[i] = current;
+                continue;
+            }
+
+            GitCoAuthor overridden = current.Author with
+            {
+                Name = block.Name,
+                Email = block.Email,
+            };
+            result[i] = current with { Author = overridden };
+        }
+        return result;
     }
 
     public async Task<GitResult> ExecuteCommitAsync(CommitMessage commitMessage, CancellationToken cancellationToken)

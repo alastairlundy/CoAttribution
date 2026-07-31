@@ -23,6 +23,14 @@ public readonly record struct HostResolutionResult
     /// <summary>
     /// The per-host identity override block, populated for the Resolved variant.
     /// </summary>
+    /// <remarks>
+    /// This field is currently not populated by <see cref="HostResolver"/>: the
+    /// resolver is contributor-agnostic and does not have access to the author
+    /// registry, so the per-(author, host) override lookup is performed by
+    /// <c>CommitOrchestrator.ApplyHostOverride</c> instead. This property is
+    /// retained on the public record-struct API for future contributor-scoped
+    /// resolution paths and should be left in place.
+    /// </remarks>
     public Models.DTOs.HostOverride? Override { get; init; }
 
     /// <summary>
