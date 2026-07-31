@@ -100,18 +100,16 @@ public sealed class AddAuthorDialog : Dialog<GitCoAuthor>
 
         addButton.Accepting += (sender, args) =>
         {
-            if(!string.IsNullOrEmpty(nameText.Text))
+            if (!string.IsNullOrEmpty(nameText.Text))
                 _gitCoAuthor.Name = nameText.Text;
-            else
-                
-            
-            if(!string.IsNullOrEmpty(emailAddressText.Text))
+
+            if (!string.IsNullOrEmpty(emailAddressText.Text))
                 _gitCoAuthor.Email = emailAddressText.Text;
 
             if (coAuthorTypeSelector.Value is not null)
                 _gitCoAuthor.Type = (ContributorType)coAuthorTypeSelector.Value;
             
-            if(defaultAttributionType.Value is not null)
+            if (defaultAttributionType.Value is not null)
                 _gitCoAuthor.DefaultAttributionType = (AttributionType)defaultAttributionType.Value;
         };
         
@@ -122,11 +120,6 @@ public sealed class AddAuthorDialog : Dialog<GitCoAuthor>
     
     protected override bool OnAccepting (CommandEventArgs args)
     {
-        /*if (base.OnAccepting (args))
-        {
-            return true;
-        }*/
-
         if (!string.IsNullOrEmpty(_gitCoAuthor.Name) && !string.IsNullOrEmpty(_gitCoAuthor.Email)
                                                      && _gitCoAuthor.Type != ContributorType.NotDefined)
         {
@@ -134,6 +127,12 @@ public sealed class AddAuthorDialog : Dialog<GitCoAuthor>
             RequestStop();
             return true;
         }
+        
+        MessageBox.ErrorQuery(
+            App,
+            Resources.Labels_MessageBoxes_Authors_Add_ValidationError_Title,
+            Resources.Labels_MessageBoxes_Authors_Add_ValidationError_Message,
+            Resources.Labels_Buttons_Okay);
         
         return false;
     }

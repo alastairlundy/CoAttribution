@@ -300,6 +300,24 @@ namespace CoAttribution.Cli.Localizations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Validation Error.
+        /// </summary>
+        internal static string Labels_MessageBoxes_Authors_Add_ValidationError_Title {
+            get {
+                return ResourceManager.GetString("Labels.MessageBoxes.Authors.Add.ValidationError.Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name, Email, and Contributor Type are required fields..
+        /// </summary>
+        internal static string Labels_MessageBoxes_Authors_Add_ValidationError_Message {
+            get {
+                return ResourceManager.GetString("Labels.MessageBoxes.Authors.Add.ValidationError.Message", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No per-host identity block is configured for host &apos;{0}&apos;..
         /// </summary>
         internal static string Diagnostics_MissingHostBlock_Header {
