@@ -4,3 +4,7 @@ project = "CoAttribution.slnx"
 [github]
 user = "alastairlundy"
 repo = "CoAttribution"
+version_prefix = "v"
+branches = ["main"]
+[nuget]
+publish = false
