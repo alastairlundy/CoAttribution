@@ -129,6 +129,7 @@ public sealed class AddAuthorDialog : Dialog<GitCoAuthor>
         }
         
         MessageBox.ErrorQuery(
+            App,
             Resources.Labels_MessageBoxes_Authors_Add_ValidationError_Title,
             Resources.Labels_MessageBoxes_Authors_Add_ValidationError_Message,
             Resources.Labels_Buttons_Okay);
