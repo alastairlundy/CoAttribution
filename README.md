@@ -12,7 +12,57 @@ CoAttribution is a CLI that streamlines Git commit attribution by appending `Co-
 ## Benefits
 - **Speed**: Eliminates manual entry of co-author details.
 - **Automation**: Simplifies attribution for AI agents.
-- **Consistency**: Standardizes Git trailer formatting.
+- **Consistency**: Standardises Git trailer formatting.
+
+## Usage
+
+### Initialise configuration
+
+```bash
+co-attr init
+```
+
+Creates a global config file and an `authors.toml` registry pre-populated with common AI agents.
+
+### Add a co-author
+
+```bash
+co-attr author add my-agent --type agent --name "Agent Name" --email "agent@example.com"
+```
+
+### List registered authors
+
+```bash
+co-attr author list
+```
+
+### Commit with co-author attribution
+
+```bash
+git add .
+co-attr commit -m "Implement new feature" --coauthor copilot
+```
+
+This appends a `Co-authored-by: copilot <copilot@github.com>` trailer to the commit message and runs `git commit`.
+
+### Commit with assisted-by attribution
+
+```bash
+git add .
+co-attr commit -m "Fix bug" --assist kilo
+```
+
+### Commit with multiple authors
+
+```bash
+co-attr commit -m "Refactor module" --coauthor copilot --assist kilo
+```
+
+### Dry-run (preview without committing)
+
+```bash
+co-attr commit -m "Draft change" --coauthor copilot --verbose
+```
 
 ## Project Scope
 
