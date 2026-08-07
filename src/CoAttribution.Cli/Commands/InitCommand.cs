@@ -8,7 +8,6 @@
  */
 
 using System.Reflection;
-using DotExtensions.IO.Directories;
 
 namespace CoAttribution.Cli.Commands;
 
@@ -70,10 +69,11 @@ public class InitCommand
     {
         string defaultConfigTomlContents = "";
                 
-        FileInfo file = new(ConfigFilePath);
-        DirectoryInfo directory = file.GetDirectory();
-                
-        Directory.CreateDirectory(directory.FullName);
+        string? directoryPath = Path.GetDirectoryName(ConfigFilePath);
+        if (!string.IsNullOrEmpty(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+        }
             
         await File.WriteAllTextAsync(ConfigFilePath, defaultConfigTomlContents, cancellationToken);
     }
