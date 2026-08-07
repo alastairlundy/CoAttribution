@@ -26,6 +26,7 @@
         <PackageId>CoAttribution</PackageId>
         <Description>
 CoAttribution is a command-line tool that tags your Git commits with `Co-authored-by` and `Assisted-by` trailers, pulling author identities from a local TOML registry.</Description>
+        <Version>0.1.0</Version>
     </PropertyGroup>
 
     <ItemGroup>
