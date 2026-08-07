@@ -10,7 +10,7 @@
 namespace CoAttribution.Cli.HostResolution;
 
 /// <summary>
-/// Renders a <see cref="MissingHostBlockDiagnostic"/> as a localized, multi-line
+/// Renders a <see cref="MissingHostBlockDiagnostic"/> as a localised, multi-line
 /// string. Lives under <c>Cli/HostResolution/</c> (not under
 /// <c>Cli/Components/Dialogs/</c>) because it is consumed by the CLI command path,
 /// not the TUI dialog path. Does not call into Tomlyn; the TOML snippet arrives
@@ -20,7 +20,7 @@ public sealed class MissingHostBlockDiagnosticFormatter
 {
     /// <summary>
     /// Formats a <paramref name="diagnostic"/> using <c>Resources.resx</c> for
-    /// localization, substituting the four fields
+    /// localisation, substituting the four fields
     /// (<c>HostKey</c>, <c>ContributorId</c>, <c>RegistryPath</c>, <c>TomlSnippet</c>).
     /// </summary>
     public string Format(MissingHostBlockDiagnostic diagnostic)
