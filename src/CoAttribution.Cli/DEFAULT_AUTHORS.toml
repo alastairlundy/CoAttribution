@@ -31,27 +31,6 @@ email = "noreply@anthropic.com"
 name = "cursoragent"
 email = "cursoragent@cursor.com"
 
-# Need sourcing
-[agents.cursor]
-name = "Cursor"
-email = ""
-
-[agents.cline]
-name = "Cline"
-email = ""
-
-[agents.codex]
-name = "Codex"
-email = ""
-
-[agents.antigravity]
-name = "Antigravity"
-email = ""
-
-[agents.junie]
-name = "Junie"
-email = ""
-
 # Unofficial
 [agents.kilo]
 name = "Kilo AI"
