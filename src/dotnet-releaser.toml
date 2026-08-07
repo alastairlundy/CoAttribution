@@ -1,9 +1,11 @@
 # configuration file for dotnet-releaser
 [msbuild]
 project = "CoAttribution.slnx"
+[msbuild.properties]
+PublishAot = true
 [github]
 user = "alastairlundy"
 repo = "CoAttribution"
 version_prefix = "v"
 [nuget]
-publish = false
+publish = true
