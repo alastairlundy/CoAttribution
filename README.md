@@ -1,18 +1,18 @@
 # CoAttribution
 
-CoAttribution is a CLI that streamlines Git commit attribution by appending `Co-authored-by` and `Assisted-by` trailers using a preset author registry.
+CoAttribution is a command-line tool that tags your Git commits with `Co-authored-by` and `Assisted-by` trailers, pulling author identities from a local TOML registry.
 
 ## Key Features
-- **Author Presets**: Alias-to-identity mapping via TOML.
-- **TUI**: Ergonomic, interactive author selection.
-- **CLI Wrapper**: Appends attribution and executes `git commit`.
-- **Dry-run**: Preview messages without execution.
-- **NativeAOT**: Optimized for instant startup.
+- **Author registry**: Map short aliases to names and emails in a TOML file.
+- **TUI**: Pick authors interactively from a terminal UI.
+- **Commit wrapping**: Adds the trailers, then runs `git commit` for you.
+- **Dry-run**: Print the resulting message without committing.
+- **NativeAOT**: Compiled ahead-of-time for near-instant startup.
 
-## Benefits
-- **Speed**: Eliminates manual entry of co-author details.
-- **Automation**: Simplifies attribution for AI agents.
-- **Consistency**: Standardises Git trailer formatting.
+## Why use it
+- **Less typing**: No more hand-writing co-author blocks on every commit.
+- **Agent-friendly**: Let AI coding agents attribute themselves without ceremony.
+- **Consistent**: One format, applied the same way every time.
 
 ## Usage
 
