@@ -6,7 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AssemblyName>co-attr</AssemblyName>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
         <Title>CoAttribution</Title>
         <Authors>Alastair Lundy</Authors>
         <Copyright>Copyright (c) Alastair Lundy 2026</Copyright>
