@@ -1,6 +1,6 @@
 # CoAttribution
 
-CoAuthorCli streamlines Git commit attribution by appending `Co-authored-by` and `Assisted-by` trailers using a preset author registry.
+CoAttribution is a CLI that streamlines Git commit attribution by appending `Co-authored-by` and `Assisted-by` trailers using a preset author registry.
 
 ## Key Features
 - **Author Presets**: Alias-to-identity mapping via TOML.
