@@ -14,6 +14,28 @@ CoAttribution is a command-line tool that tags your Git commits with `Co-authore
 - **Agent-friendly**: Let AI coding agents attribute themselves without ceremony.
 - **Consistent**: One format, applied the same way every time.
 
+## Installation
+
+### Via NuGet (as a .NET tool)
+
+Install CoAttribution globally as a dotnet tool:
+
+```bash
+dotnet tool install --global CoAttribution
+```
+
+To update to the latest version:
+
+```bash
+dotnet tool update --global CoAttribution
+```
+
+See the package page for current versions: [nuget.org/packages/CoAttribution](https://www.nuget.org/packages/CoAttribution/).
+
+### Via GitHub Releases
+
+Download the latest prebuilt binary for your platform from the [GitHub Releases](https://github.com/alastairlundy/CoAttribution/releases) page, then extract it and place the `co-attr` executable on your `PATH`.
+
 ## Usage
 
 ### Initialise configuration
