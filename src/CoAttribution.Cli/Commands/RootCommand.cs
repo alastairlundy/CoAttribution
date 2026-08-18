@@ -7,11 +7,9 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-#if TUI
-using Terminal.Gui.App;
+﻿using Terminal.Gui.App;
 using Terminal.Gui.Views;
 using CoAttribution.Cli.Components.Windows;
-#endif
 
 namespace CoAttribution.Cli.Commands;
 
@@ -20,7 +18,6 @@ public class RootCommand
 {
     public Task<int> RunAsync(CliContext context)
     {
-#if TUI
         try
         {
             using IApplication app = Application.Create().Init();
@@ -35,9 +32,5 @@ public class RootCommand
 
             return Task.FromException<int>(exception);
         }
-#else
-        context.ShowHelp();
-        return Task.FromResult(1);
-#endif
     }
 }

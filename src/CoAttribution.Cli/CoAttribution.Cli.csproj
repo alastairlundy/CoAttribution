@@ -14,7 +14,6 @@
         <RepositoryType>git</RepositoryType>
         <PackageTags>attribution, assisted-by, coauthored-by, coattribution, co-attribution, co-author</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <DefineConstants Condition="'$(EnableTui)' == 'true'">$(DefineConstants);TUI</DefineConstants>
         <IsPackable>true</IsPackable>
         <IsTrimmable>true</IsTrimmable>
         <IsAoTCompatible>true</IsAoTCompatible>

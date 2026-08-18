@@ -1,12 +1,8 @@
-﻿#if TUI
-using Terminal.Gui.Views;
-#endif
+﻿using Terminal.Gui.Views;
 
 namespace CoAttribution.Cli.Components.Windows;
 
-#if TUI
 public class MessageWindow : Window
 {
     
 }
-#endif
