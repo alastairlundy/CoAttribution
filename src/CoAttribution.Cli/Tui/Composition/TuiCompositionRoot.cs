@@ -7,11 +7,18 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+using CoAttribution.Cli.Tui.Views;
+using Microsoft.Extensions.DependencyInjection;
+using Terminal.Gui.App;
+using Terminal.Gui.Views;
+
 namespace CoAttribution.Cli.Tui.Composition;
 
 /// <summary>
-/// Cross-cutting plumbing that will initialize Terminal.Gui v2 and run
-/// the application. Currently a stub — full implementation in TK005–TK013.
+/// Cross-cutting plumbing that initializes Terminal.Gui v2 and runs
+/// the main TUI application. Resolves <see cref="MainWindow"/> from the
+/// shared DI container, applies <see cref="StatusBarComposer"/>, and
+/// manages the application lifecycle.
 /// </summary>
 public sealed class TuiCompositionRoot
 {
@@ -23,11 +30,30 @@ public sealed class TuiCompositionRoot
     }
 
     /// <summary>
-    /// Launches the TUI application. Stub until v2 components are wired up.
+    /// Initializes Terminal.Gui v2, builds <see cref="MainWindow"/> with
+    /// its status bar, and runs the application until the user exits.
     /// </summary>
     public async Task<int> LaunchAsync()
     {
-        // TODO: Terminal.Gui v2 application setup (TK005–TK013)
+#pragma warning disable CS0618 // Static Application API — will migrate to IApplication
+        Application.Init();
+
+        try
+        {
+            MainWindow mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+            mainWindow.Initialize();
+
+            StatusBar statusBar = StatusBarComposer.Build(mainWindow);
+            mainWindow.Add(statusBar);
+
+            Application.Run(mainWindow);
+        }
+        finally
+        {
+            Application.Shutdown();
+        }
+#pragma warning restore CS0618
+
         return await Task.FromResult(0);
     }
 }
