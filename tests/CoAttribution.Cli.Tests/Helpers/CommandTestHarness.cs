@@ -1,3 +1,5 @@
+using CoAttribution.Cli.Tui.Dialogs;
+
 namespace CoAttribution.Cli.Tests.Helpers;
 
 using Microsoft.Extensions.Configuration;
@@ -40,8 +42,8 @@ public static class CommandTestHarness
     public static AuthorRootCommand BuildAuthorRootCommand() => new();
 
     /// <summary>Builds a <see cref="RootCommand"/>.</summary>
-    public static RootCommand BuildRootCommand(IAuthorRegistry authorRegistry, TuiCompositionRoot compositionRoot)
-        => new(authorRegistry, compositionRoot);
+    public static RootCommand BuildRootCommand(IAuthorRegistry authorRegistry, TuiCompositionRoot compositionRoot, SetupDialog setupDialog)
+        => new(authorRegistry, compositionRoot, setupDialog);
 
     /// <summary>
     /// Returns an empty in-memory <see cref="IConfiguration"/> with a single key/value

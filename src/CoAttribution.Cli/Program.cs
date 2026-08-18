@@ -69,6 +69,7 @@ Cli.Ext.ConfigureServices(services =>
     services.AddTransient<AuthorSelectionView>();
     services.AddTransient<PreviewModal>();
     services.AddTransient<QuitDialog>();
+    services.AddTransient<SetupDialog>();
     services.AddTransient<MainWindow>();
 });
 

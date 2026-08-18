@@ -3,6 +3,8 @@ using CoAttribution.Cli.Tests.Helpers;
 using CoAttribution.Cli.Tui.Composition;
 using CoAttribution.Lib.Abstractions;
 
+using CoAttribution.Cli.Tui.Dialogs;
+
 namespace CoAttribution.Cli.Tests.Commands;
 
 [NotInParallel]
@@ -17,7 +19,8 @@ public class RootCommandTests
         IAuthorRegistry registry = Substitute.For<IAuthorRegistry>();
         IServiceProvider serviceProvider = Substitute.For<IServiceProvider>();
         TuiCompositionRoot compositionRoot = new(serviceProvider);
-        RootCommand command = CommandTestHarness.BuildRootCommand(registry, compositionRoot);
+        SetupDialog setupDialog = new(registry);
+        RootCommand command = CommandTestHarness.BuildRootCommand(registry, compositionRoot, setupDialog);
         CliContext ctx = CliContextFactory.Create();
 
         int exitCode = await command.RunAsync(ctx);
