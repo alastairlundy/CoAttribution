@@ -8,6 +8,9 @@
  */
 
 using System.Reflection;
+using CoAttribution.Cli.DataAccess;
+using CoAttribution.Lib.Models;
+using Tomlyn;
 
 namespace CoAttribution.Cli.Commands;
 
@@ -37,15 +40,16 @@ public class InitCommand
 
         try
         {
+            // Create the authors file first so we know its path for the config.
+            string authorsFilePath = await CreateAuthorsTomlFileAsync(cliContext.CancellationToken);
+            await Console.Out.WriteLineAsync(string.Format(Resources.Commands_Init_AuthorsFileCreated, authorsFilePath));
+
             if (!string.IsNullOrEmpty(configFilePath) && !File.Exists(configFilePath))
             {
-                await CreateConfigFileAsync(configFilePath, cliContext.CancellationToken);
+                await CreateConfigFileAsync(configFilePath, authorsFilePath, cliContext.CancellationToken);
             }
             
             await Console.Out.WriteLineAsync(string.Format(Resources.Commands_Init_ConfigFileCreated, configFilePath));
-            
-            string authorsFilePath = await CreateAuthorsTomlFileAsync(cliContext.CancellationToken);
-            await Console.Out.WriteLineAsync(string.Format(Resources.Commands_Init_AuthorsFileCreated, authorsFilePath));
             
             return 0;
         }
@@ -59,9 +63,17 @@ public class InitCommand
         }
     }
 
-    private async Task CreateConfigFileAsync(string configFilePath, CancellationToken cancellationToken)
+    private async Task CreateConfigFileAsync(string configFilePath, string authorsFilePath, CancellationToken cancellationToken)
     {
-        string defaultConfigTomlContents = "";
+        AppConfig appConfig = new()
+        {
+            PathsSettings = new Dictionary<string, string>
+            {
+                ["global_registry"] = authorsFilePath
+            }
+        };
+
+        string defaultConfigTomlContents = TomlSerializer.Serialize(appConfig, ConfigSettingsTomlContext.Default);
                 
         string? directoryPath = Path.GetDirectoryName(configFilePath);
         if (!string.IsNullOrEmpty(directoryPath))

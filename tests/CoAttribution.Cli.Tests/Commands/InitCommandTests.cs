@@ -37,6 +37,10 @@ public class InitCommandTests
 
             await Assert.That(exitCode).IsEqualTo(0);
             await Assert.That(File.Exists(configPath)).IsTrue();
+
+            // Verify the config contains the global_registry path.
+            string configContents = await File.ReadAllTextAsync(configPath);
+            await Assert.That(configContents).Contains("global_registry");
         }
         finally
         {
@@ -72,6 +76,10 @@ public class InitCommandTests
 
             await Assert.That(exitCode).IsEqualTo(0);
             await Assert.That(File.Exists(configPath)).IsTrue();
+
+            // Verify the config contains the global_registry path.
+            string configContents = await File.ReadAllTextAsync(configPath);
+            await Assert.That(configContents).Contains("global_registry");
         }
         finally
         {
