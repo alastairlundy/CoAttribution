@@ -16,35 +16,32 @@ using Terminal.Gui.Views;
 namespace CoAttribution.Cli.Tui.Dialogs;
 
 /// <summary>
-/// Placeholder quit dialog (TK013).
-/// Offers Save draft / Discard / Cancel when the user presses Esc or Ctrl+C
-/// with an in-progress commit form.
+/// Quit dialog shown when the user presses Esc or Ctrl+C with an in-progress
+/// commit form. Offers Save draft / Discard / Cancel.
 /// </summary>
 public sealed class QuitDialog : Window, IStatusBarProvider
 {
     private readonly CommitFormViewModel _formViewModel;
     private readonly DraftStore _draftStore;
+    private readonly Button _saveDraftButton;
+    private readonly Button _discardButton;
+    private readonly Button _cancelButton;
+    private readonly Label _errorLabel;
 
     /// <summary>
     /// Raised when the user chooses to save a draft.
     /// </summary>
-#pragma warning disable CS0067 // Event is part of the public API for TK013
     public event Action? DraftSaved;
-#pragma warning restore CS0067
 
     /// <summary>
     /// Raised when the user chooses to discard and close.
     /// </summary>
-#pragma warning disable CS0067 // Event is part of the public API for TK013
     public event Action? Discarded;
-#pragma warning restore CS0067
 
     /// <summary>
     /// Raised when the user cancels the quit and returns to the form.
     /// </summary>
-#pragma warning disable CS0067 // Event is part of the public API for TK013
     public event Action? Cancelled;
-#pragma warning restore CS0067
 
     public QuitDialog(CommitFormViewModel formViewModel, DraftStore draftStore)
     {
@@ -53,18 +50,74 @@ public sealed class QuitDialog : Window, IStatusBarProvider
 
         Title = "Quit?";
 
-        Label placeholder = new()
+        Label message = new()
         {
-            Text = "Quit dialog will be implemented in TK013.\nPress S to save draft, D to discard, Esc to cancel.",
-            X = Pos.Center(),
-            Y = Pos.Center(),
+            Text = "You have an in-progress commit. What would you like to do?",
+            X = 0,
+            Y = 0,
         };
 
-        Add(placeholder);
+        _errorLabel = new Label
+        {
+            Text = string.Empty,
+            X = 0,
+            Y = 2,
+            Visible = false,
+        };
+
+        _saveDraftButton = new Button
+        {
+            Text = "_Save draft",
+            X = Pos.Center() - 16,
+            Y = 4,
+            IsDefault = true,
+        };
+        _saveDraftButton.Accepting += async (_, _) => await OnSaveDraftAsync();
+
+        _discardButton = new Button
+        {
+            Text = "_Discard",
+            X = Pos.Center() - 2,
+            Y = 4,
+        };
+        _discardButton.Accepting += (_, _) =>
+        {
+            Discarded?.Invoke();
+        };
+
+        _cancelButton = new Button
+        {
+            Text = "_Cancel",
+            X = Pos.Center() + 10,
+            Y = 4,
+        };
+        _cancelButton.Accepting += (_, _) =>
+        {
+            Cancelled?.Invoke();
+        };
+
+        Add(message, _errorLabel, _saveDraftButton, _discardButton, _cancelButton);
     }
 
     public IReadOnlyList<StatusBarKeyBinding> GetKeyBindings() =>
     [
+        new(Key.Tab, "Tab next button"),
+        new(Key.Enter, "Enter select"),
         new(Key.Esc, "Esc cancel"),
     ];
+
+    private async Task OnSaveDraftAsync()
+    {
+        try
+        {
+            _errorLabel.Visible = false;
+            await _draftStore.SaveDraftAsync(_formViewModel);
+            DraftSaved?.Invoke();
+        }
+        catch (Exception ex)
+        {
+            _errorLabel.Text = $"Error saving draft: {ex.Message}";
+            _errorLabel.Visible = true;
+        }
+    }
 }
