@@ -60,7 +60,9 @@ Cli.Ext.ConfigureServices(services =>
 
     // TUI services — resolution deferred to RootCommand handler
     services.AddSingleton<TuiCompositionRoot>();
-    services.AddSingleton<AuthorSelectionViewModel>();
+    services.AddSingleton<AuthorSelectionViewModel>(sp => new AuthorSelectionViewModel(
+        sp.GetRequiredService<IAuthorRegistry>(),
+        sp.GetRequiredService<IHostResolver>()));
     services.AddSingleton<CommitFormViewModel>();
     services.AddSingleton<DraftStore>();
     services.AddTransient<CommitFormView>();

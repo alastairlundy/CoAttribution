@@ -39,6 +39,10 @@ public sealed class MainWindow : Window, IStatusBarProvider
 
     private const string DefaultTitle = "CoAttribution";
 
+    private string[] _pendingCoAuthorIds = [];
+    private string[] _pendingAssistIds = [];
+    private string[] _pendingDefaultIds = [];
+
     public MainWindow(
         CommitFormView commitFormView,
         AuthorSelectionView authorSelectionView,
@@ -79,27 +83,25 @@ public sealed class MainWindow : Window, IStatusBarProvider
 
     private void SetupScreenSequence()
     {
-        // CommitFormView → AuthorSelectionView
-        _commitFormView.KeyDown += (_, e) =>
+        // CommitFormView → AuthorSelectionView (load data then show)
+        _commitFormView.KeyDown += async (_, e) =>
         {
             if (e == Key.Enter)
             {
+                await _authorSelectionView.LoadAsync();
                 ShowScreen(_authorSelectionView);
                 e.Handled = true;
             }
         };
 
-        // AuthorSelectionView → PreviewModal
-        _authorSelectionView.KeyDown += (_, e) =>
+        // AuthorSelectionView → PreviewModal (via Confirmed event)
+        _authorSelectionView.Confirmed += (coAuthorIds, assistIds, defaultIds) =>
         {
-            if (e == Key.Enter)
-            {
-                ShowScreen(_previewModal);
-                e.Handled = true;
-            }
+            _pendingCoAuthorIds = coAuthorIds;
+            _pendingAssistIds = assistIds;
+            _pendingDefaultIds = defaultIds;
+            ShowScreen(_previewModal);
         };
-
-        // PreviewModal → commit on confirm
         _previewModal.KeyDown += (_, e) =>
         {
             if (e == Key.Enter)
@@ -175,9 +177,9 @@ public sealed class MainWindow : Window, IStatusBarProvider
             CommitRequest request = new(
                 _formViewModel.Subject,
                 _formViewModel.Body,
-                [],  // DefaultIds — populated by AuthorSelectionView (TK008)
-                [],  // CoAuthorIds — populated by AuthorSelectionView (TK008)
-                []); // AssistIds — populated by AuthorSelectionView (TK008)
+                _pendingDefaultIds,
+                _pendingCoAuthorIds,
+                _pendingAssistIds);
 
             CancellationToken cancellationToken = CancellationToken.None;
 

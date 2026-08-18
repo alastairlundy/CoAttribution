@@ -22,4 +22,6 @@ public interface IAuthorRegistry
     
     Task<FileInfo?> GetRegistryFileAsync(CancellationToken cancellationToken);
     Task<GitCoAuthorConfig> GetAuthorConfigAsync(CancellationToken cancellationToken);
+
+    Task<IEnumerable<GitCoAuthor>> GetAllAsync(CancellationToken cancellationToken);
 }

@@ -40,7 +40,8 @@ public static class CommandTestHarness
     public static AuthorRootCommand BuildAuthorRootCommand() => new();
 
     /// <summary>Builds a <see cref="RootCommand"/>.</summary>
-    public static RootCommand BuildRootCommand() => new();
+    public static RootCommand BuildRootCommand(IAuthorRegistry authorRegistry, TuiCompositionRoot compositionRoot)
+        => new(authorRegistry, compositionRoot);
 
     /// <summary>
     /// Returns an empty in-memory <see cref="IConfiguration"/> with a single key/value
