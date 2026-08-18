@@ -1,36 +1,50 @@
 ﻿/*
     CoAttribution
     Copyright (c) Alastair Lundy 2026
- 
+
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-﻿using Terminal.Gui.App;
-using Terminal.Gui.Views;
-using CoAttribution.Cli.Components.Windows;
+using CoAttribution.Cli.Components.Dialogs;
+using CoAttribution.Cli.Tui.Composition;
+using CoAttribution.Lib.Abstractions;
+using CoAttribution.Lib.Models.DTOs;
 
 namespace CoAttribution.Cli.Commands;
 
 [CliCommand(ShortFormAutoGenerate = CliNameAutoGenerate.None)]
 public class RootCommand
 {
-    public Task<int> RunAsync(CliContext context)
+    private readonly IAuthorRegistry _authorRegistry;
+    private readonly TuiCompositionRoot _compositionRoot;
+    private readonly SetupDialog _setupDialog;
+
+    public RootCommand(IAuthorRegistry authorRegistry, TuiCompositionRoot compositionRoot, SetupDialog setupDialog)
     {
-        try
+        _authorRegistry = authorRegistry;
+        _compositionRoot = compositionRoot;
+        _setupDialog = setupDialog;
+    }
+
+    public async Task<int> RunAsync(CliContext context)
+    {
+        // Non-TTY: print help and exit 0
+        if (Console.IsOutputRedirected || Console.IsInputRedirected)
         {
-            using IApplication app = Application.Create().Init();
-
-            app.Run<MainWindow>();
-
-            return Task.FromResult(0);
+            context.ShowHelp();
+            return 0;
         }
-        catch (Exception exception)
+
+        // Empty registry: show SetupDialog first
+        GitCoAuthorConfig config = await _authorRegistry.GetAuthorConfigAsync(CancellationToken.None);
+        if (config.Agents.Count == 0 && config.Humans.Count == 0)
         {
-            Console.WriteLine(exception);
-
-            return Task.FromException<int>(exception);
+            // SetupDialog will be fully implemented in TK009
         }
+
+        // Launch TUI
+        return await _compositionRoot.LaunchAsync();
     }
 }
