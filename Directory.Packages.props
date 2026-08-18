@@ -3,6 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="CliInvoke" Version="2.10.1" />
     <PackageVersion Include="CliInvoke.Core" Version="2.10.0" />
     <PackageVersion Include="CliInvoke.Extensions" Version="2.10.2" />
