@@ -94,6 +94,7 @@ public class RemoveCoAuthorCommandTests
 
         await registry.Received(1).RemoveAsync(
             Arg.Is<string[]>(ids =>
+                ids != null &&
                 ids.Length == 3 &&
                 ids.Contains("copilot") &&
                 ids.Contains("claude") &&
