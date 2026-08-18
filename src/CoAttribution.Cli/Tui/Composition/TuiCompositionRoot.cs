@@ -35,24 +35,15 @@ public sealed class TuiCompositionRoot
     /// </summary>
     public async Task<int> LaunchAsync()
     {
-#pragma warning disable CS0618 // Static Application API — will migrate to IApplication
-        Application.Init();
+        using IApplication app = Application.Create().Init();
 
-        try
-        {
-            MainWindow mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
-            mainWindow.Initialize();
+        MainWindow mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+        mainWindow.Initialize();
 
-            StatusBar statusBar = StatusBarComposer.Build(mainWindow);
-            mainWindow.Add(statusBar);
+        StatusBar statusBar = StatusBarComposer.Build(mainWindow);
+        mainWindow.Add(statusBar);
 
-            Application.Run(mainWindow);
-        }
-        finally
-        {
-            Application.Shutdown();
-        }
-#pragma warning restore CS0618
+        app.Run(mainWindow);
 
         return await Task.FromResult(0);
     }

@@ -45,30 +45,28 @@ public class RootCommand
         GitCoAuthorConfig config = await _authorRegistry.GetAuthorConfigAsync(CancellationToken.None);
         if (config.Agents.Count == 0 && config.Humans.Count == 0)
         {
-#pragma warning disable CS0618 // Static Application API — will migrate to IApplication in TuiCompositionRoot
             bool authorAdded = false;
 
+            using IApplication app = Application.Create().Init();
+
             void OnAuthorAdded() => authorAdded = true;
-            void OnCancelled() => Application.RequestStop();
+            void OnCancelled() => app.RequestStop();
 
             _setupDialog.AuthorAdded += OnAuthorAdded;
             _setupDialog.Cancelled += OnCancelled;
 
             try
             {
-                Application.Init();
-                Application.Run(_setupDialog);
+                app.Run(_setupDialog);
             }
             finally
             {
-                Application.Shutdown();
                 _setupDialog.AuthorAdded -= OnAuthorAdded;
                 _setupDialog.Cancelled -= OnCancelled;
             }
 
             if (!authorAdded)
                 return 0;
-#pragma warning restore CS0618
         }
 
         // Launch TUI

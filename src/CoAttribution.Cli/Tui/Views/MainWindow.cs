@@ -74,7 +74,7 @@ public sealed class MainWindow : Window, IStatusBarProvider
 
     /// <summary>
     /// Initializes the commit form for a fresh commit and shows the window.
-    /// Call this before passing to <c>Application.Run()</c>.
+    /// Call this before passing to <c>app.Run()</c>.
     /// </summary>
     public void Initialize()
     {
@@ -146,21 +146,20 @@ public sealed class MainWindow : Window, IStatusBarProvider
 
     private void ShowQuitDialog()
     {
-#pragma warning disable CS0618 // Static Application API — will migrate to IApplication in TuiCompositionRoot
         void OnDraftSaved()
         {
-            Application.RequestStop();
+            App?.RequestStop();
         }
 
         void OnDiscarded()
         {
-            Application.RequestStop();
-            Application.RequestStop(); // close MainWindow
+            App?.RequestStop();
+            App?.RequestStop(); // close MainWindow
         }
 
         void OnCancelled()
         {
-            Application.RequestStop();
+            App?.RequestStop();
         }
 
         _quitDialog.DraftSaved += OnDraftSaved;
@@ -169,7 +168,7 @@ public sealed class MainWindow : Window, IStatusBarProvider
 
         try
         {
-            Application.Run(_quitDialog);
+            App?.Run(_quitDialog);
         }
         finally
         {
@@ -177,22 +176,20 @@ public sealed class MainWindow : Window, IStatusBarProvider
             _quitDialog.Discarded -= OnDiscarded;
             _quitDialog.Cancelled -= OnCancelled;
         }
-#pragma warning restore CS0618
     }
 
     private void ShowMissingHostBlockDialog(string contributorId, string hostKey)
     {
         MissingHostBlockDialog dialog = new(_authorRegistry, _hostBlockWriter, contributorId, hostKey);
 
-#pragma warning disable CS0618 // Static Application API — will migrate to IApplication in TuiCompositionRoot
         void OnHostBlockWritten()
         {
-            Application.RequestStop();
+            App?.RequestStop();
         }
 
         void OnCancelled()
         {
-            Application.RequestStop();
+            App?.RequestStop();
         }
 
         dialog.HostBlockWritten += OnHostBlockWritten;
@@ -200,14 +197,13 @@ public sealed class MainWindow : Window, IStatusBarProvider
 
         try
         {
-            Application.Run(dialog);
+            App?.Run(dialog);
         }
         finally
         {
             dialog.HostBlockWritten -= OnHostBlockWritten;
             dialog.Cancelled -= OnCancelled;
         }
-#pragma warning restore CS0618
 
         // After dialog closes, re-run LoadAsync to refresh with the new host block
         _ = _authorSelectionView.LoadAsync();
@@ -229,17 +225,15 @@ public sealed class MainWindow : Window, IStatusBarProvider
             CommitMessage message = await _commitOrchestrator.BuildCommitMessageAsync(request, cancellationToken);
             GitResult result = await _commitOrchestrator.ExecuteCommitAsync(message, cancellationToken);
 
-#pragma warning disable CS0618 // Static Application API — will migrate to IApplication in TuiCompositionRoot
             if (result.ExitCode == 0)
             {
                 Title = $"{DefaultTitle} — Commit succeeded";
-                Application.RequestStop();
+                App?.RequestStop();
             }
             else
             {
                 Title = $"{DefaultTitle} — Commit failed: {result.StandardError.Trim()}";
             }
-#pragma warning restore CS0618
         }
         catch (Exception ex)
         {
