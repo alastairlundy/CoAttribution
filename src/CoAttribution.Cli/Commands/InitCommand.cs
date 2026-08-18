@@ -44,7 +44,7 @@ public class InitCommand
             string authorsFilePath = await CreateAuthorsTomlFileAsync(cliContext.CancellationToken);
             await Console.Out.WriteLineAsync(string.Format(Resources.Commands_Init_AuthorsFileCreated, authorsFilePath));
 
-            if (!string.IsNullOrEmpty(configFilePath) && !File.Exists(configFilePath))
+            if (!string.IsNullOrEmpty(configFilePath))
             {
                 await CreateConfigFileAsync(configFilePath, authorsFilePath, cliContext.CancellationToken);
             }

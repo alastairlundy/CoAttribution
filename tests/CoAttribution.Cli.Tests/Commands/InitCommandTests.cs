@@ -88,26 +88,40 @@ public class InitCommandTests
     }
 
     [Test]
-    public async Task RunAsync_SkipsConfigFileCreation_WhenFileExists()
+    public async Task RunAsync_OverwritesConfigFile_WhenFileExists()
     {
-        using TempConfigFile existing = new("# pre-existing config");
-        IConfiguration configuration =
-            CommandTestHarness.SingleValueConfiguration("config-file", existing.FilePath);
-        IRegistryPathResolver pathResolver = Substitute.For<IRegistryPathResolver>();
-        pathResolver.GetGlobalRegistryPathAsync(Arg.Any<CancellationToken>())
-            .Returns((string?)null);
+        string tempDir = Path.Combine(
+            Path.GetTempPath(),
+            "coattribution-tests",
+            Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            string configPath = Path.Combine(tempDir, "config.toml");
+            await File.WriteAllTextAsync(configPath, "# pre-existing config");
 
-        InitCommand command = CommandTestHarness.BuildInitCommand(configuration, pathResolver);
-        command.CreateGlobalFile = true;
+            IConfiguration configuration =
+                CommandTestHarness.SingleValueConfiguration("config-file", configPath);
+            IRegistryPathResolver pathResolver = Substitute.For<IRegistryPathResolver>();
+            pathResolver.GetGlobalRegistryPathAsync(Arg.Any<CancellationToken>())
+                .Returns((string?)null);
 
-        using ConsoleCapture console = new();
-        CliContext ctx = CliContextFactory.Create();
+            InitCommand command = CommandTestHarness.BuildInitCommand(configuration, pathResolver);
+            command.CreateGlobalFile = true;
 
-        int exitCode = await command.RunAsync(ctx);
+            using ConsoleCapture console = new();
+            CliContext ctx = CliContextFactory.Create();
 
-        await Assert.That(exitCode).IsEqualTo(0);
-        string contents = await File.ReadAllTextAsync(existing.FilePath);
-        await Assert.That(contents).IsEqualTo("# pre-existing config");
+            int exitCode = await command.RunAsync(ctx);
+
+            await Assert.That(exitCode).IsEqualTo(0);
+            string contents = await File.ReadAllTextAsync(configPath);
+            await Assert.That(contents).Contains("global_registry");
+        }
+        finally
+        {
+            try { Directory.Delete(tempDir, recursive: true); } catch { }
+        }
     }
 
     [Test]
