@@ -56,10 +56,12 @@ public class RootCommand
 
             try
             {
+                Application.Init();
                 Application.Run(_setupDialog);
             }
             finally
             {
+                Application.Shutdown();
                 _setupDialog.AuthorAdded -= OnAuthorAdded;
                 _setupDialog.Cancelled -= OnCancelled;
             }
