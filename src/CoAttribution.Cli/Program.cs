@@ -8,7 +8,6 @@
  */
 
 using CoAttribution.Cli;
-using CoAttribution.Cli.Components.Dialogs;
 using CoAttribution.Cli.Tui;
 using CoAttribution.Cli.Tui.Composition;
 using CoAttribution.Cli.Tui.ViewModels;
@@ -62,7 +61,6 @@ Cli.Ext.ConfigureServices(services =>
     services.AddSingleton<AuthorSelectionViewModel>();
     services.AddSingleton<CommitFormViewModel>();
     services.AddSingleton<DraftStore>();
-    services.AddSingleton<SetupDialog>();
 });
 
 CliSettings settings = new()

@@ -7,15 +7,11 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using CoAttribution.Cli.Components.Windows;
-using Terminal.Gui.App;
-
 namespace CoAttribution.Cli.Tui.Composition;
 
 /// <summary>
-/// Cross-cutting plumbing that initializes Terminal.Gui v2, builds
-/// <see cref="MainWindow"/>, applies the <see cref="StatusBarComposer"/>,
-/// and runs the application.
+/// Cross-cutting plumbing that will initialize Terminal.Gui v2 and run
+/// the application. Currently a stub — full implementation in TK005–TK013.
 /// </summary>
 public sealed class TuiCompositionRoot
 {
@@ -27,26 +23,11 @@ public sealed class TuiCompositionRoot
     }
 
     /// <summary>
-    /// Initializes Terminal.Gui v2, resolves <see cref="MainWindow"/>,
-    /// applies the status bar, and runs the application.
+    /// Launches the TUI application. Stub until v2 components are wired up.
     /// </summary>
     public async Task<int> LaunchAsync()
     {
-        try
-        {
-            using IApplication app = Application.Create().Init();
-
-            MainWindow mainWindow = new();
-
-            app.Run(mainWindow);
-
-            return await Task.FromResult(0);
-        }
-        catch (Exception exception)
-        {
-            Console.WriteLine(exception);
-
-            return await Task.FromException<int>(exception);
-        }
+        // TODO: Terminal.Gui v2 application setup (TK005–TK013)
+        return await Task.FromResult(0);
     }
 }

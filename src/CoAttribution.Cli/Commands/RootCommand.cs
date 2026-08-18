@@ -7,7 +7,6 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using CoAttribution.Cli.Components.Dialogs;
 using CoAttribution.Cli.Tui.Composition;
 using CoAttribution.Lib.Abstractions;
 using CoAttribution.Lib.Models.DTOs;
@@ -19,13 +18,11 @@ public class RootCommand
 {
     private readonly IAuthorRegistry _authorRegistry;
     private readonly TuiCompositionRoot _compositionRoot;
-    private readonly SetupDialog _setupDialog;
 
-    public RootCommand(IAuthorRegistry authorRegistry, TuiCompositionRoot compositionRoot, SetupDialog setupDialog)
+    public RootCommand(IAuthorRegistry authorRegistry, TuiCompositionRoot compositionRoot)
     {
         _authorRegistry = authorRegistry;
         _compositionRoot = compositionRoot;
-        _setupDialog = setupDialog;
     }
 
     public async Task<int> RunAsync(CliContext context)
