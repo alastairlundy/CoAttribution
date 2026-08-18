@@ -28,27 +28,21 @@ public class InitCommand
     // ReSharper disable once RedundantDefaultMemberInitializer
     public bool Interactive { get; set; } = false;*/
     
-    [CliOption(Name = "config-path", Required = false, Arity = CliArgumentArity.ExactlyOne)]
-    public string ConfigFilePath { get; set; } = string.Empty;
-    
     [CliOption(Name = "global", Alias = "g", Required = false, Arity = CliArgumentArity.ZeroOrOne)]
     public bool CreateGlobalFile { get; set; } = true;
     
     public async Task<int> RunAsync(CliContext cliContext)
     {
-        if (string.IsNullOrEmpty(ConfigFilePath))
-        {
-            ConfigFilePath = _configuration["config-file"] ?? "";
-        }
+        string configFilePath = _configuration["config-file"] ?? "";
 
         try
         {
-            if (!string.IsNullOrEmpty(ConfigFilePath) && !File.Exists(ConfigFilePath))
+            if (!string.IsNullOrEmpty(configFilePath) && !File.Exists(configFilePath))
             {
-                await CreateConfigFileAsync(cliContext.CancellationToken);
+                await CreateConfigFileAsync(configFilePath, cliContext.CancellationToken);
             }
             
-            await Console.Out.WriteLineAsync(string.Format(Resources.Commands_Init_ConfigFileCreated, ConfigFilePath));
+            await Console.Out.WriteLineAsync(string.Format(Resources.Commands_Init_ConfigFileCreated, configFilePath));
             
             string authorsFilePath = await CreateAuthorsTomlFileAsync(cliContext.CancellationToken);
             await Console.Out.WriteLineAsync(string.Format(Resources.Commands_Init_AuthorsFileCreated, authorsFilePath));
@@ -65,17 +59,17 @@ public class InitCommand
         }
     }
 
-    private async Task CreateConfigFileAsync(CancellationToken cancellationToken)
+    private async Task CreateConfigFileAsync(string configFilePath, CancellationToken cancellationToken)
     {
         string defaultConfigTomlContents = "";
                 
-        string? directoryPath = Path.GetDirectoryName(ConfigFilePath);
+        string? directoryPath = Path.GetDirectoryName(configFilePath);
         if (!string.IsNullOrEmpty(directoryPath))
         {
             Directory.CreateDirectory(directoryPath);
         }
             
-        await File.WriteAllTextAsync(ConfigFilePath, defaultConfigTomlContents, cancellationToken);
+        await File.WriteAllTextAsync(configFilePath, defaultConfigTomlContents, cancellationToken);
     }
 
     private async Task<string> CreateAuthorsTomlFileAsync(CancellationToken cancellationToken)

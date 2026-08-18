@@ -22,6 +22,9 @@ public class RootCommand
     private readonly TuiCompositionRoot _compositionRoot;
     private readonly SetupDialog _setupDialog;
 
+    [CliOption(Name = "config-path", Required = false, Arity = CliArgumentArity.ExactlyOne, Recursive = true)]
+    public string ConfigPath { get; set; } = string.Empty;
+
     public RootCommand(IAuthorRegistry authorRegistry, TuiCompositionRoot compositionRoot, SetupDialog setupDialog)
     {
         _authorRegistry = authorRegistry;

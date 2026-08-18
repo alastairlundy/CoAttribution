@@ -20,19 +20,13 @@ using Microsoft.Extensions.DependencyInjection;
 
 const string appName = "CoAttribution";
 
-Dictionary<string, string> switchMappings = new()
-{
-    { "--config-path", "config-file" }
-};
+string configFilePath = ExtractConfigPath(args) ?? DetermineDefaultConfigFilePath();
 
 IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
-    .AddCommandLine(args, switchMappings)
-    .AddEnvironmentVariables();
-
-if (!args.Contains("--config-path", StringComparer.OrdinalIgnoreCase)) 
-    configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
+    .AddEnvironmentVariables()
+    .AddInMemoryCollection(new Dictionary<string, string?>
     {
-        ["config-file"] = DetermineDefaultConfigFilePath()
+        ["config-file"] = configFilePath
     });
 
 IConfiguration configuration = configurationBuilder.Build();
@@ -83,6 +77,18 @@ CliSettings settings = new()
 
 return await Cli.RunAsync<RootCommand>(args, settings);
 
+
+static string? ExtractConfigPath(string[] args)
+{
+    for (int i = 0; i < args.Length - 1; i++)
+    {
+        if (string.Equals(args[i], "--config-path", StringComparison.OrdinalIgnoreCase))
+        {
+            return args[i + 1];
+        }
+    }
+    return null;
+}
 
 static string DetermineDefaultConfigFilePath()
 {

@@ -16,9 +16,12 @@ public class ProgramEntryPointTests
     {
         using ConsoleCapture console = new();
 
+        // EnableDefaultExceptionHandler = true so that the DI resolution
+        // failure (RootCommand needs IAuthorRegistry etc.) is caught and
+        // returned as a non-zero exit code rather than thrown as an exception.
         int exitCode = await DotMake.CommandLine.Cli.RunAsync<RootCommand>(
             Array.Empty<string>(),
-            new DotMake.CommandLine.CliSettings { EnableDefaultExceptionHandler = false },
+            new DotMake.CommandLine.CliSettings { EnableDefaultExceptionHandler = true },
             CancellationToken.None);
 
         await Assert.That(exitCode).IsNotEqualTo(0);

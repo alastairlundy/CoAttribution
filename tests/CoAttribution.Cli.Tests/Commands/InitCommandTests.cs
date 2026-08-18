@@ -28,7 +28,6 @@ public class InitCommandTests
                 .Returns((string?)null);
 
             InitCommand command = CommandTestHarness.BuildInitCommand(configuration, pathResolver);
-            command.ConfigFilePath = configPath;
             command.CreateGlobalFile = true;
 
             using ConsoleCapture console = new();
@@ -64,7 +63,6 @@ public class InitCommandTests
                 .Returns((string?)null);
 
             InitCommand command = CommandTestHarness.BuildInitCommand(configuration, pathResolver);
-            command.ConfigFilePath = string.Empty;
             command.CreateGlobalFile = true;
 
             using ConsoleCapture console = new();
@@ -92,7 +90,6 @@ public class InitCommandTests
             .Returns((string?)null);
 
         InitCommand command = CommandTestHarness.BuildInitCommand(configuration, pathResolver);
-        command.ConfigFilePath = existing.FilePath;
         command.CreateGlobalFile = true;
 
         using ConsoleCapture console = new();
@@ -132,7 +129,6 @@ public class InitCommandTests
             {
                 InitCommand command =
                     CommandTestHarness.BuildInitCommand(configuration, pathResolver);
-                command.ConfigFilePath = configPath;
                 command.CreateGlobalFile = false;
 
                 using ConsoleCapture console = new();
