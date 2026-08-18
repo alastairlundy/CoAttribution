@@ -7,9 +7,12 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+using System.Text;
 using CoAttribution.Cli.Tui.Abstractions;
 using CoAttribution.Cli.Tui.ViewModels;
+using CoAttribution.Lib;
 using CoAttribution.Lib.Abstractions;
+using CoAttribution.Lib.Models;
 using CoAttribution.Lib.Models.DTOs;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
@@ -18,15 +21,22 @@ using Terminal.Gui.Views;
 namespace CoAttribution.Cli.Tui.Dialogs;
 
 /// <summary>
-/// Placeholder modal for commit preview (TK012).
-/// Displays the composed subject, body, and trailers for confirmation
-/// before invoking <see cref="ICommitOrchestrator"/>.
+/// Modal dialog that shows the composed subject, body, and rendered trailer list
+/// for confirmation before invoking <see cref="ICommitOrchestrator"/>.
+/// Identity text uses <see cref="CoAttribution.Lib.CommitOrchestrator.ApplyHostOverride"/>
+/// so the preview matches what will be committed (D019).
 /// </summary>
 public sealed class PreviewModal : Window, IStatusBarProvider
 {
     private readonly CommitFormViewModel _formViewModel;
     private readonly AuthorSelectionViewModel _authorViewModel;
     private readonly ICommitOrchestrator _commitOrchestrator;
+#pragma warning disable CS0618 // TextView is superseded by EditorView but is the spec'd control for this ticket
+    private readonly TextView _previewTextView;
+#pragma warning restore CS0618
+    private readonly Button _confirmButton;
+    private readonly Button _cancelButton;
+    private readonly Label _errorLabel;
 
     /// <summary>
     /// Raised with the <see cref="GitResult"/> when the user confirms and the commit executes.
@@ -53,14 +63,103 @@ public sealed class PreviewModal : Window, IStatusBarProvider
 
         Title = "Preview Commit";
 
-        Label placeholder = new()
+#pragma warning disable CS0618 // TextView is superseded by EditorView but is the spec'd control for this ticket
+        _previewTextView = new TextView
+#pragma warning restore CS0618
         {
-            Text = "Commit preview will be implemented in TK012.\nPress Enter to confirm, Esc to cancel.",
-            X = Pos.Center(),
-            Y = Pos.Center(),
+            X = 0,
+            Y = 0,
+            Width = Dim.Fill(),
+            Height = Dim.Fill(1),
+            ReadOnly = true,
+            WordWrap = true,
         };
 
-        Add(placeholder);
+        _errorLabel = new Label
+        {
+            Text = string.Empty,
+            X = 0,
+            Y = Pos.AnchorEnd(2),
+            Visible = false,
+        };
+
+        _confirmButton = new Button
+        {
+            Text = "_Confirm",
+            X = Pos.Center() - 10,
+            Y = Pos.AnchorEnd(),
+            IsDefault = true,
+        };
+        _confirmButton.Accepting += async (_, _) => await OnConfirmAsync();
+
+        _cancelButton = new Button
+        {
+            Text = "_Cancel",
+            X = Pos.Center() + 2,
+            Y = Pos.AnchorEnd(),
+        };
+        _cancelButton.Accepting += (_, _) =>
+        {
+            Cancelled?.Invoke();
+        };
+
+        Add(_previewTextView, _errorLabel, _confirmButton, _cancelButton);
+    }
+
+    /// <summary>
+    /// Refreshes the preview text to reflect the current form state and author selections.
+    /// Call this before showing the dialog.
+    /// </summary>
+    public void RefreshPreview()
+    {
+        string subject = _formViewModel.Subject;
+        string body = _formViewModel.Body;
+        string? hostKey = _authorViewModel.ResolvedHostKey;
+
+        StringBuilder sb = new();
+        sb.AppendLine(subject);
+
+        if (!string.IsNullOrWhiteSpace(body))
+        {
+            sb.AppendLine();
+            sb.AppendLine(body.TrimEnd());
+        }
+
+        // Build trailer lines for selected authors using the same override path as CommitOrchestrator
+        var (coAuthorIds, assistIds, defaultIds) = _authorViewModel.GetSelectedIds();
+        HashSet<string> selectedIds = [];
+        selectedIds.UnionWith(coAuthorIds);
+        selectedIds.UnionWith(assistIds);
+        selectedIds.UnionWith(defaultIds);
+
+        if (selectedIds.Count > 0)
+        {
+            sb.AppendLine();
+
+            foreach (AuthorRow row in _authorViewModel.Rows.Where(r => r.IsSelected && !r.IsHostRow))
+            {
+                string trailerType = row.SelectedAttributionType switch
+                {
+                    AttributionType.CoAuthor => "Co-authored-by",
+                    AttributionType.Assisted => "Assisted-by",
+                    _ => "Co-authored-by",
+                };
+
+                string trailerName = row.Author.Name;
+                string trailerEmail = row.Author.Email;
+
+                if (hostKey is not null)
+                {
+                    CommitOrchestrator.ApplyHostOverride(row.Author, hostKey,
+                        out trailerName, out trailerEmail);
+                }
+
+                sb.AppendLine($"{trailerType}: {trailerName} <{trailerEmail}>");
+            }
+        }
+
+        _previewTextView.Text = sb.ToString().TrimEnd();
+        _errorLabel.Visible = false;
     }
 
     public IReadOnlyList<StatusBarKeyBinding> GetKeyBindings() =>
@@ -68,4 +167,33 @@ public sealed class PreviewModal : Window, IStatusBarProvider
         new(Key.Enter, "Enter confirm"),
         new(Key.Esc, "Esc cancel"),
     ];
+
+    private async Task OnConfirmAsync()
+    {
+        try
+        {
+            _errorLabel.Visible = false;
+
+            var (coAuthorIds, assistIds, defaultIds) = _authorViewModel.GetSelectedIds();
+
+            CommitRequest request = new(
+                _formViewModel.Subject,
+                _formViewModel.Body,
+                defaultIds,
+                coAuthorIds,
+                assistIds);
+
+            CancellationToken cancellationToken = CancellationToken.None;
+
+            CommitMessage message = await _commitOrchestrator.BuildCommitMessageAsync(request, cancellationToken);
+            GitResult result = await _commitOrchestrator.ExecuteCommitAsync(message, cancellationToken);
+
+            CommitCompleted?.Invoke(result);
+        }
+        catch (Exception ex)
+        {
+            _errorLabel.Text = $"Error: {ex.Message}";
+            _errorLabel.Visible = true;
+        }
+    }
 }

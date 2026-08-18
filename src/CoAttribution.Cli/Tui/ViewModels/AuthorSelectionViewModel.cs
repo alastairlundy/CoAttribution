@@ -142,6 +142,12 @@ public sealed partial class AuthorSelectionViewModel : ObservableObject
     /// The resolved host key from the most recent resolution attempt.
     /// Null when no host was detected.
     /// </summary>
+    public string? ResolvedHostKey => _resolvedHostKey;
+
+    /// <summary>
+    /// The resolved host key from the most recent resolution attempt.
+    /// Null when no host was detected.
+    /// </summary>
     private string? _resolvedHostKey;
 
     /// <summary>
