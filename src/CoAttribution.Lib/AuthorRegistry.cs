@@ -99,6 +99,22 @@ public class AuthorRegistry : IAuthorRegistry
         await File.WriteAllTextAsync(registryFile.FullName, authorsTomlString, cancellationToken);
     }
 
+    /// <inheritdoc />
+    public async Task SaveConfigAsync(GitCoAuthorConfig config, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(config);
+
+        string toml = TomlSerializer.Serialize(config, CoAuthorTomlContext.Default);
+
+        FileInfo? registryFile = await GetRegistryFileAsync(cancellationToken);
+
+        if (registryFile is null)
+            throw new InvalidOperationException("Cannot save config because the registry file does not exist.");
+
+        await File.WriteAllTextAsync(registryFile.FullName, toml, cancellationToken);
+    }
+
+    /// <inheritdoc />
     public async Task RemoveAsync(string coAuthorId, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrEmpty(coAuthorId);

@@ -12,6 +12,7 @@ using CoAttribution.Cli.Tui.Composition;
 using CoAttribution.Cli.Tui.Dialogs;
 using CoAttribution.Cli.Tui.ViewModels;
 using CoAttribution.Lib.Abstractions;
+using CoAttribution.Lib.HostResolution;
 using CoAttribution.Lib.Models.DTOs;
 using Terminal.Gui.App;
 using Terminal.Gui.Drawing;
@@ -36,6 +37,8 @@ public sealed class MainWindow : Window, IStatusBarProvider
     private readonly CommitFormViewModel _formViewModel;
     private readonly ICommitOrchestrator _commitOrchestrator;
     private readonly DraftStore _draftStore;
+    private readonly IAuthorRegistry _authorRegistry;
+    private readonly HostBlockWriter _hostBlockWriter;
 
     private const string DefaultTitle = "CoAttribution";
 
@@ -50,7 +53,9 @@ public sealed class MainWindow : Window, IStatusBarProvider
         QuitDialog quitDialog,
         CommitFormViewModel formViewModel,
         ICommitOrchestrator commitOrchestrator,
-        DraftStore draftStore)
+        DraftStore draftStore,
+        IAuthorRegistry authorRegistry,
+        HostBlockWriter hostBlockWriter)
     {
         _commitFormView = commitFormView;
         _authorSelectionView = authorSelectionView;
@@ -59,6 +64,8 @@ public sealed class MainWindow : Window, IStatusBarProvider
         _formViewModel = formViewModel;
         _commitOrchestrator = commitOrchestrator;
         _draftStore = draftStore;
+        _authorRegistry = authorRegistry;
+        _hostBlockWriter = hostBlockWriter;
 
         Title = DefaultTitle;
 
@@ -113,6 +120,9 @@ public sealed class MainWindow : Window, IStatusBarProvider
 
         // Esc from any screen → quit dialog
         KeyDown += OnMainWindowKeyDown;
+
+        // HostBlockMissing → MissingHostBlockDialog
+        _authorSelectionView.HostBlockMissing += ShowMissingHostBlockDialog;
     }
 
     private void OnMainWindowKeyDown(object? sender, Key e)
@@ -168,6 +178,39 @@ public sealed class MainWindow : Window, IStatusBarProvider
             _quitDialog.Cancelled -= OnCancelled;
         }
 #pragma warning restore CS0618
+    }
+
+    private void ShowMissingHostBlockDialog(string contributorId, string hostKey)
+    {
+        MissingHostBlockDialog dialog = new(_authorRegistry, _hostBlockWriter, contributorId, hostKey);
+
+#pragma warning disable CS0618 // Static Application API — will migrate to IApplication in TuiCompositionRoot
+        void OnHostBlockWritten()
+        {
+            Application.RequestStop();
+        }
+
+        void OnCancelled()
+        {
+            Application.RequestStop();
+        }
+
+        dialog.HostBlockWritten += OnHostBlockWritten;
+        dialog.Cancelled += OnCancelled;
+
+        try
+        {
+            Application.Run(dialog);
+        }
+        finally
+        {
+            dialog.HostBlockWritten -= OnHostBlockWritten;
+            dialog.Cancelled -= OnCancelled;
+        }
+#pragma warning restore CS0618
+
+        // After dialog closes, re-run LoadAsync to refresh with the new host block
+        _ = _authorSelectionView.LoadAsync();
     }
 
     private async Task RunCommitAsync()

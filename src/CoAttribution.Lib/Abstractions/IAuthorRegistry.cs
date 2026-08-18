@@ -23,5 +23,12 @@ public interface IAuthorRegistry
     Task<FileInfo?> GetRegistryFileAsync(CancellationToken cancellationToken);
     Task<GitCoAuthorConfig> GetAuthorConfigAsync(CancellationToken cancellationToken);
 
+    /// <summary>
+    /// Persists a modified <see cref="GitCoAuthorConfig"/> back to the registry file on disk.
+    /// Use this after modifying the config returned by <see cref="GetAuthorConfigAsync"/>
+    /// (e.g. via <see cref="CoAttribution.Lib.HostResolution.HostBlockWriter.Write"/>).
+    /// </summary>
+    Task SaveConfigAsync(GitCoAuthorConfig config, CancellationToken cancellationToken);
+
     Task<IEnumerable<GitCoAuthor>> GetAllAsync(CancellationToken cancellationToken);
 }

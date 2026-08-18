@@ -41,6 +41,12 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
     /// </summary>
     public event Action? AddAuthorRequested;
 
+    /// <summary>
+    /// Raised when host resolution fails with a missing host block.
+    /// Carries the contributor ID and host key needed to create the block.
+    /// </summary>
+    public event Action<string, string>? HostBlockMissing;
+
     public AuthorSelectionView(AuthorSelectionViewModel viewModel)
     {
         _viewModel = viewModel;
@@ -230,6 +236,12 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
         {
             _errorLabel.Text = $"⚠ Host resolution: {_viewModel.HostErrorMessage}";
             _errorLabel.Visible = true;
+
+            // Notify MainWindow so it can open MissingHostBlockDialog
+            if (_viewModel.MissingHostContributorId is not null && _viewModel.MissingHostKey is not null)
+            {
+                HostBlockMissing?.Invoke(_viewModel.MissingHostContributorId, _viewModel.MissingHostKey);
+            }
         }
         else
         {

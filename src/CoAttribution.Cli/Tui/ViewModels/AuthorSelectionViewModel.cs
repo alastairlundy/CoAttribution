@@ -119,6 +119,18 @@ public sealed partial class AuthorSelectionViewModel : ObservableObject
     private string _hostErrorMessage = string.Empty;
 
     /// <summary>
+    /// The contributor ID whose host block is missing (populated when <see cref="HasHostError"/> is true
+    /// due to a <see cref="MissingHostBlockException"/>).
+    /// </summary>
+    public string? MissingHostContributorId { get; private set; }
+
+    /// <summary>
+    /// The host key whose block is missing (populated when <see cref="HasHostError"/> is true
+    /// due to a <see cref="MissingHostBlockException"/>).
+    /// </summary>
+    public string? MissingHostKey { get; private set; }
+
+    /// <summary>
     /// When true, the advanced view is active (per-row tri-state selector).
     /// When false, attribution is auto-determined by ContributorType.
     /// </summary>
@@ -244,6 +256,10 @@ public sealed partial class AuthorSelectionViewModel : ObservableObject
         {
             HasHostError = true;
             HostErrorMessage = ex.Message;
+
+            MissingHostBlockDiagnostic? diagnostic = ex.Diagnostics.FirstOrDefault();
+            MissingHostContributorId = diagnostic?.ContributorId;
+            MissingHostKey = diagnostic?.HostKey;
         }
     }
 
