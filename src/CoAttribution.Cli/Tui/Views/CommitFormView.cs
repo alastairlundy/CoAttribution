@@ -10,6 +10,7 @@
 using CoAttribution.Cli.Tui.Abstractions;
 using CoAttribution.Cli.Tui.ViewModels;
 using Terminal.Gui.Drawing;
+using Terminal.Gui.Editor;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
@@ -71,18 +72,16 @@ public sealed class CommitFormView : View, IStatusBarProvider
         };
 
         // Body field (multi-line)
-#pragma warning disable CS0618 // TextView is superseded by EditorView but is the spec'd control for this ticket
-        TextView bodyField = new()
-#pragma warning restore CS0618
+        Editor bodyField = new()
         {
             X = 0,
             Y = 4,
             Width = Dim.Fill(),
             Height = Dim.Fill(),
         };
-        bodyField.TextChanged += (_, _) =>
+        bodyField.ContentChanged += (_, _) =>
         {
-            _viewModel.Body = bodyField.Text?.ToString() ?? string.Empty;
+            _viewModel.Body = bodyField.Text ?? string.Empty;
         };
 
         Add(subjectLabel, _counterLabel, subjectField, bodyLabel, bodyField);

@@ -14,6 +14,7 @@ using CoAttribution.Lib;
 using CoAttribution.Lib.Abstractions;
 using CoAttribution.Lib.Models;
 using CoAttribution.Lib.Models.DTOs;
+using Terminal.Gui.Editor;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
@@ -31,9 +32,7 @@ public sealed class PreviewModal : Window, IStatusBarProvider
     private readonly CommitFormViewModel _formViewModel;
     private readonly AuthorSelectionViewModel _authorViewModel;
     private readonly ICommitOrchestrator _commitOrchestrator;
-#pragma warning disable CS0618 // TextView is superseded by EditorView but is the spec'd control for this ticket
-    private readonly TextView _previewTextView;
-#pragma warning restore CS0618
+    private readonly Editor _previewEditor;
     private readonly Button _confirmButton;
     private readonly Button _cancelButton;
     private readonly Label _errorLabel;
@@ -63,9 +62,7 @@ public sealed class PreviewModal : Window, IStatusBarProvider
 
         Title = "Preview Commit";
 
-#pragma warning disable CS0618 // TextView is superseded by EditorView but is the spec'd control for this ticket
-        _previewTextView = new TextView
-#pragma warning restore CS0618
+        _previewEditor = new Editor
         {
             X = 0,
             Y = 0,
@@ -103,7 +100,7 @@ public sealed class PreviewModal : Window, IStatusBarProvider
             Cancelled?.Invoke();
         };
 
-        Add(_previewTextView, _errorLabel, _confirmButton, _cancelButton);
+        Add(_previewEditor, _errorLabel, _confirmButton, _cancelButton);
     }
 
     /// <summary>
@@ -158,7 +155,7 @@ public sealed class PreviewModal : Window, IStatusBarProvider
             }
         }
 
-        _previewTextView.Text = sb.ToString().TrimEnd();
+        _previewEditor.Text = sb.ToString().TrimEnd();
         _errorLabel.Visible = false;
     }
 
