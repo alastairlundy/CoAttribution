@@ -10,7 +10,9 @@
 using CoAttribution.Cli;
 using CoAttribution.Cli.Tui;
 using CoAttribution.Cli.Tui.Composition;
+using CoAttribution.Cli.Tui.Dialogs;
 using CoAttribution.Cli.Tui.ViewModels;
+using CoAttribution.Cli.Tui.Views;
 using CliInvoke.Extensions;
 using CoAttribution.Lib.HostResolution.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
@@ -61,6 +63,11 @@ Cli.Ext.ConfigureServices(services =>
     services.AddSingleton<AuthorSelectionViewModel>();
     services.AddSingleton<CommitFormViewModel>();
     services.AddSingleton<DraftStore>();
+    services.AddTransient<CommitFormView>();
+    services.AddTransient<AuthorSelectionView>();
+    services.AddTransient<PreviewModal>();
+    services.AddTransient<QuitDialog>();
+    services.AddTransient<MainWindow>();
 });
 
 CliSettings settings = new()
