@@ -8,6 +8,10 @@
  */
 
 using CoAttribution.Cli;
+using CoAttribution.Cli.Components.Dialogs;
+using CoAttribution.Cli.Tui;
+using CoAttribution.Cli.Tui.Composition;
+using CoAttribution.Cli.Tui.ViewModels;
 using CliInvoke.Extensions;
 using CoAttribution.Lib.HostResolution.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
@@ -52,6 +56,13 @@ Cli.Ext.ConfigureServices(services =>
         IConfiguration cfg = sp.GetRequiredService<IConfiguration>();
         return configResolver.ResolveAppConfig(cfg, CancellationToken.None).GetAwaiter().GetResult();
     });
+
+    // TUI services — resolution deferred to RootCommand handler
+    services.AddSingleton<TuiCompositionRoot>();
+    services.AddSingleton<AuthorSelectionViewModel>();
+    services.AddSingleton<CommitFormViewModel>();
+    services.AddSingleton<DraftStore>();
+    services.AddSingleton<SetupDialog>();
 });
 
 CliSettings settings = new()
