@@ -14,7 +14,7 @@ using Terminal.Gui.Drawing;
 namespace CoAttribution.Cli.Tui.ViewModels;
 
 /// <summary>
-/// Backs the commit form with subject/body fields and a live N/72 subject counter.
+/// Backs the commit form with subject/body fields and live character counters.
 /// </summary>
 public sealed partial class CommitFormViewModel : ObservableObject
 {
@@ -22,6 +22,9 @@ public sealed partial class CommitFormViewModel : ObservableObject
 
     public const int SubjectWarningThreshold = 50;
     public const int SubjectMaxThreshold = 72;
+
+    public const int BodySoftThreshold = 500;
+    public const int BodyHardThreshold = 1000;
 
     public CommitFormViewModel(IServiceProvider serviceProvider)
     {
@@ -40,6 +43,8 @@ public sealed partial class CommitFormViewModel : ObservableObject
     /// The commit message body (multi-line).
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(BodyLength))]
+    [NotifyPropertyChangedFor(nameof(BodyColor))]
     private string _body = string.Empty;
 
     /// <summary>
@@ -54,6 +59,21 @@ public sealed partial class CommitFormViewModel : ObservableObject
     {
         >= SubjectMaxThreshold => ColorName16.Red,
         >= SubjectWarningThreshold => ColorName16.BrightYellow,
+        _ => ColorName16.Green
+    };
+
+    /// <summary>
+    /// Current character count of <see cref="Body"/>.
+    /// </summary>
+    public int BodyLength => Body.Length;
+
+    /// <summary>
+    /// Color for the body counter label based on body length thresholds.
+    /// </summary>
+    public ColorName16 BodyColor => BodyLength switch
+    {
+        >= BodyHardThreshold => ColorName16.Red,
+        >= BodySoftThreshold => ColorName16.BrightYellow,
         _ => ColorName16.Green
     };
 }

@@ -24,8 +24,11 @@ namespace CoAttribution.Cli.Tui.Views;
 public sealed class CommitFormView : View, IStatusBarProvider
 {
     private readonly CommitFormViewModel _viewModel;
-    private readonly Label _counterLabel;
+    private readonly Label _subjectCounterLabel;
     private readonly TextField _subjectField;
+    private readonly Label _bodyCounterLabel;
+    private bool _suppressSubjectChange;
+    private bool _suppressBodyChange;
 
     public CommitFormView(CommitFormViewModel viewModel)
     {
@@ -37,7 +40,7 @@ public sealed class CommitFormView : View, IStatusBarProvider
         CanFocus = true;
         Padding.Thickness = new Thickness(1, 0, 1, 0);
 
-        // Subject label
+        // --- Subject section ---
         Label subjectLabel = new()
         {
             Text = "Subject:",
@@ -45,16 +48,14 @@ public sealed class CommitFormView : View, IStatusBarProvider
             Y = 0,
         };
 
-        // N/72 counter — right-aligned next to the subject field
-        _counterLabel = new Label
+        _subjectCounterLabel = new Label
         {
-            Text = FormatCounter(0),
-            X = Pos.AnchorEnd(6),
+            Text = FormatSubjectCounter(0),
+            X = Pos.AnchorEnd(8),
             Y = 0,
         };
-        UpdateCounterColor();
+        UpdateSubjectCounterColor();
 
-        // Subject field (single-line, 2 rows tall for better visibility)
         _subjectField = new TextField
         {
             X = 0,
@@ -63,14 +64,39 @@ public sealed class CommitFormView : View, IStatusBarProvider
             Height = 2,
             CanFocus = true,
         };
-        _subjectField.TextChanged += (_, _) =>
+
+        // Block characters beyond the hard cap
+        _subjectField.KeyDown += (_, e) =>
         {
-            _viewModel.Subject = _subjectField.Text?.ToString() ?? string.Empty;
-            _counterLabel.Text = FormatCounter(_viewModel.SubjectLength);
-            UpdateCounterColor();
+            if (_viewModel.SubjectLength >= CommitFormViewModel.SubjectMaxThreshold
+                && !IsNavigationKey(e))
+            {
+                e.Handled = true;
+            }
         };
 
-        // Body label
+        _subjectField.TextChanged += (_, _) =>
+        {
+            if (_suppressSubjectChange)
+                return;
+
+            string text = _subjectField.Text?.ToString() ?? string.Empty;
+
+            // Truncate if paste exceeded the cap
+            if (text.Length > CommitFormViewModel.SubjectMaxThreshold)
+            {
+                _suppressSubjectChange = true;
+                _subjectField.Text = text[..CommitFormViewModel.SubjectMaxThreshold];
+                _suppressSubjectChange = false;
+                text = _subjectField.Text?.ToString() ?? string.Empty;
+            }
+
+            _viewModel.Subject = text;
+            _subjectCounterLabel.Text = FormatSubjectCounter(_viewModel.SubjectLength);
+            UpdateSubjectCounterColor();
+        };
+
+        // --- Body section ---
         Label bodyLabel = new()
         {
             Text = "Body:",
@@ -78,7 +104,14 @@ public sealed class CommitFormView : View, IStatusBarProvider
             Y = 4,
         };
 
-        // Body field (multi-line)
+        _bodyCounterLabel = new Label
+        {
+            Text = FormatBodyCounter(0),
+            X = Pos.AnchorEnd(12),
+            Y = 4,
+        };
+        UpdateBodyCounterColor();
+
         Editor bodyField = new()
         {
             X = 0,
@@ -86,28 +119,41 @@ public sealed class CommitFormView : View, IStatusBarProvider
             Width = Dim.Fill(),
             Height = Dim.Fill(1),
             CanFocus = true,
+            BorderStyle = LineStyle.Rounded,
             ViewportSettings = ViewportSettingsFlags.HasScrollBars,
         };
+
         bodyField.ContentChanged += (_, _) =>
         {
-            _viewModel.Body = bodyField.Text ?? string.Empty;
+            if (_suppressBodyChange)
+                return;
+
+            string text = bodyField.Text ?? string.Empty;
+
+            // Truncate if content exceeded the hard cap
+            if (text.Length > CommitFormViewModel.BodyHardThreshold)
+            {
+                _suppressBodyChange = true;
+                bodyField.Text = text[..CommitFormViewModel.BodyHardThreshold];
+                _suppressBodyChange = false;
+                text = bodyField.Text ?? string.Empty;
+            }
+
+            _viewModel.Body = text;
+            _bodyCounterLabel.Text = FormatBodyCounter(_viewModel.BodyLength);
+            UpdateBodyCounterColor();
         };
 
-        Add(subjectLabel, _counterLabel, _subjectField, bodyLabel, bodyField);
+        Add(subjectLabel, _subjectCounterLabel, _subjectField,
+            bodyLabel, _bodyCounterLabel, bodyField);
     }
 
-    /// <summary>
-    /// Resets the form to a clean state for a new commit.
-    /// </summary>
     public void Initialize()
     {
         _viewModel.Subject = string.Empty;
         _viewModel.Body = string.Empty;
     }
 
-    /// <summary>
-    /// Sets focus on the subject text field so the user can start typing immediately.
-    /// </summary>
     public void FocusSubject()
     {
         _subjectField.SetFocus();
@@ -120,13 +166,32 @@ public sealed class CommitFormView : View, IStatusBarProvider
         new(Key.Esc, "Esc quit"),
     ];
 
-    private static string FormatCounter(int length) => $"{length}/72";
+    private static string FormatSubjectCounter(int length) => $"{length}/72";
 
-    private void UpdateCounterColor()
+    private static string FormatBodyCounter(int length) => $"{length}/1000";
+
+    private void UpdateSubjectCounterColor()
     {
-        _counterLabel.SetScheme(new Scheme
+        _subjectCounterLabel.SetScheme(new Scheme
         {
             Normal = new Terminal.Gui.Drawing.Attribute(_viewModel.SubjectColor, ColorName16.Black),
         });
+    }
+
+    private void UpdateBodyCounterColor()
+    {
+        _bodyCounterLabel.SetScheme(new Scheme
+        {
+            Normal = new Terminal.Gui.Drawing.Attribute(_viewModel.BodyColor, ColorName16.Black),
+        });
+    }
+
+    private static bool IsNavigationKey(Key e)
+    {
+        return e == Key.Backspace || e == Key.Delete
+            || e == Key.CursorLeft || e == Key.CursorRight
+            || e == Key.Home || e == Key.End
+            || e == Key.C.WithCtrl || e == Key.V.WithCtrl
+            || e == Key.X.WithCtrl || e == Key.A.WithCtrl;
     }
 }
