@@ -13,7 +13,6 @@ using CoAttribution.Lib.Abstractions;
 using CoAttribution.Lib.Models.DTOs;
 using Microsoft.Extensions.Logging;
 using Terminal.Gui.App;
-using Terminal.Gui.Configuration;
 
 namespace CoAttribution.Cli.Commands;
 
@@ -51,7 +50,14 @@ public class RootCommand
         {
             bool authorAdded = false;
 
-            ApplyThemeConfiguration();
+            try
+            {
+                ThemeConfigurationHelper.ApplyTheme();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not apply CoAttribution theme — falling back to defaults");
+            }
 
             using IApplication app = Application.Create().Init();
 
@@ -77,19 +83,5 @@ public class RootCommand
 
         // Launch TUI
         return await _compositionRoot.LaunchAsync();
-    }
-
-    private void ApplyThemeConfiguration()
-    {
-        try
-        {
-            Terminal.Gui.Configuration.ConfigurationManager.Enable(ConfigLocations.AppResources);
-            ThemeManager.Theme = "CoAttribution";
-            Terminal.Gui.Configuration.ConfigurationManager.Apply();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Could not apply CoAttribution theme — falling back to defaults");
-        }
     }
 }

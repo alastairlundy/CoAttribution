@@ -11,7 +11,6 @@ using CoAttribution.Cli.Tui.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Terminal.Gui.App;
-using Terminal.Gui.Configuration;
 using Terminal.Gui.Views;
 
 namespace CoAttribution.Cli.Tui.Composition;
@@ -39,7 +38,14 @@ public sealed class TuiCompositionRoot
     /// </summary>
     public async Task<int> LaunchAsync()
     {
-        ApplyThemeConfiguration();
+        try
+        {
+            ThemeConfigurationHelper.ApplyTheme();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not apply CoAttribution theme — falling back to defaults");
+        }
 
         using IApplication app = Application.Create().Init();
 
@@ -52,19 +58,5 @@ public sealed class TuiCompositionRoot
         app.Run(mainWindow);
 
         return await Task.FromResult(0);
-    }
-
-    private void ApplyThemeConfiguration()
-    {
-        try
-        {
-            Terminal.Gui.Configuration.ConfigurationManager.Enable(ConfigLocations.AppResources);
-            ThemeManager.Theme = "CoAttribution";
-            Terminal.Gui.Configuration.ConfigurationManager.Apply();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Could not apply CoAttribution theme — falling back to defaults");
-        }
     }
 }
