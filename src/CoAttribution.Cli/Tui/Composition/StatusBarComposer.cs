@@ -42,6 +42,7 @@ public static class StatusBarComposer
                 Title = binding.Label,
                 Key = Key.Empty,
                 BindKeyToApplication = false,
+                MouseHighlightStates = MouseState.None,
             };
             shortcuts.Add(shortcut);
         }

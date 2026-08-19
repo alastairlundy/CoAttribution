@@ -34,6 +34,7 @@ public sealed class CommitFormView : View, IStatusBarProvider
         Title = "Commit Message";
         Width = Dim.Fill();
         Height = Dim.Fill();
+        CanFocus = true;
         Padding.Thickness = new Thickness(1, 0, 1, 0);
 
         // Subject label
@@ -53,13 +54,14 @@ public sealed class CommitFormView : View, IStatusBarProvider
         };
         UpdateCounterColor();
 
-        // Subject field (single-line)
+        // Subject field (single-line, 2 rows tall for better visibility)
         _subjectField = new TextField
         {
             X = 0,
             Y = 1,
             Width = Dim.Fill(),
-            Height = 1,
+            Height = 2,
+            CanFocus = true,
         };
         _subjectField.TextChanged += (_, _) =>
         {
@@ -73,16 +75,17 @@ public sealed class CommitFormView : View, IStatusBarProvider
         {
             Text = "Body:",
             X = 0,
-            Y = 3,
+            Y = 4,
         };
 
         // Body field (multi-line)
         Editor bodyField = new()
         {
             X = 0,
-            Y = 4,
+            Y = 5,
             Width = Dim.Fill(),
             Height = Dim.Fill(1),
+            CanFocus = true,
         };
         bodyField.ContentChanged += (_, _) =>
         {

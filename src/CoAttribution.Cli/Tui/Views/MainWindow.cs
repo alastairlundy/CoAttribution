@@ -86,8 +86,8 @@ public sealed class MainWindow : Window, IStatusBarProvider
 
     public IReadOnlyList<StatusBarKeyBinding> GetKeyBindings() =>
     [
-        new(Key.Esc, "Esc quit"),
-        new(Key.Enter, "Enter next"),
+        new(Key.Esc, "ESC quit"),
+        new(Key.Enter, "ENTER next"),
     ];
 
     private void SetupScreenSequence()
@@ -143,7 +143,16 @@ public sealed class MainWindow : Window, IStatusBarProvider
         Remove(_previewModal);
 
         Add(screen);
-        screen.SetFocus();
+
+        // For CommitFormView, focus the subject field directly instead of the parent view
+        if (screen == _commitFormView)
+        {
+            _commitFormView.FocusSubject();
+        }
+        else
+        {
+            screen.SetFocus();
+        }
     }
 
     private void ShowQuitDialog()
