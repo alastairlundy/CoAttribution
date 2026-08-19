@@ -37,6 +37,7 @@ CoAttribution is a command-line tool that tags your Git commits with `Co-authore
       <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+      <PackageReference Include="Microsoft.Extensions.Logging" />
       <PackageReference Include="Terminal.Gui" />
       <PackageReference Include="Terminal.Gui.Editor" />
       <PackageReference Include="Tomlyn" />
@@ -45,6 +46,10 @@ CoAttribution is a command-line tool that tags your Git commits with `Co-authore
     <ItemGroup>
       <EmbeddedResource Include="DEFAULT_AUTHORS.toml" LogicalName="DEFAULT_AUTHORS.toml" />
       <None Update="DEFAULT_AUTHORS.toml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <EmbeddedResource Include="Resources\config.json" LogicalName="Resources.config.json" />
+      <None Update="Resources\config.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
       <None Include="..\..\README.md" Pack="true" PackagePath="\"/>

@@ -11,7 +11,9 @@ using CoAttribution.Cli.Tui.Composition;
 using CoAttribution.Cli.Tui.Dialogs;
 using CoAttribution.Lib.Abstractions;
 using CoAttribution.Lib.Models.DTOs;
+using Microsoft.Extensions.Logging;
 using Terminal.Gui.App;
+using Terminal.Gui.Configuration;
 
 namespace CoAttribution.Cli.Commands;
 
@@ -21,15 +23,17 @@ public class RootCommand
     private readonly IAuthorRegistry _authorRegistry;
     private readonly TuiCompositionRoot _compositionRoot;
     private readonly SetupDialog _setupDialog;
+    private readonly ILogger<RootCommand> _logger;
 
     [CliOption(Name = "config-path", Required = false, Arity = CliArgumentArity.ExactlyOne, Recursive = true)]
     public string ConfigPath { get; set; } = string.Empty;
 
-    public RootCommand(IAuthorRegistry authorRegistry, TuiCompositionRoot compositionRoot, SetupDialog setupDialog)
+    public RootCommand(IAuthorRegistry authorRegistry, TuiCompositionRoot compositionRoot, SetupDialog setupDialog, ILogger<RootCommand> logger)
     {
         _authorRegistry = authorRegistry;
         _compositionRoot = compositionRoot;
         _setupDialog = setupDialog;
+        _logger = logger;
     }
 
     public async Task<int> RunAsync(CliContext context)
@@ -46,6 +50,8 @@ public class RootCommand
         if (config.Agents.Count == 0 && config.Humans.Count == 0)
         {
             bool authorAdded = false;
+
+            ApplyThemeConfiguration();
 
             using IApplication app = Application.Create().Init();
 
@@ -71,5 +77,19 @@ public class RootCommand
 
         // Launch TUI
         return await _compositionRoot.LaunchAsync();
+    }
+
+    private void ApplyThemeConfiguration()
+    {
+        try
+        {
+            Terminal.Gui.Configuration.ConfigurationManager.Enable(ConfigLocations.AppResources);
+            ThemeManager.Theme = "CoAttribution";
+            Terminal.Gui.Configuration.ConfigurationManager.Apply();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Could not apply CoAttribution theme — falling back to defaults");
+        }
     }
 }

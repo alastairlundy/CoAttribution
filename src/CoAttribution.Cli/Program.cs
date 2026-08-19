@@ -17,6 +17,7 @@ using CliInvoke.Extensions;
 using CoAttribution.Lib.HostResolution;
 using CoAttribution.Lib.HostResolution.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 const string appName = "CoAttribution";
 
@@ -34,6 +35,10 @@ IConfiguration configuration = configurationBuilder.Build();
 Cli.Ext.ConfigureServices(services =>
 {
     services.AddCliInvoke();
+    services.AddLogging(builder =>
+    {
+        builder.AddProvider(new FileLoggerProvider(FileLogger.GetDefaultLogDirectory()));
+    });
     services.AddSingleton<IHostResolver, HostResolver>();
     services.AddSingleton<IRegistryPathResolver, AppConfigRegistryPathResolver>();
     services.AddSingleton<IConfigResolver, ConfigResolver>();
