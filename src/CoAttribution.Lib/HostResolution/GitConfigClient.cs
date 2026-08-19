@@ -37,7 +37,13 @@ public partial class GitConfigClient : Abstractions.IGitConfigClient
             .RedirectStandardError(true)
             .Build();
 
-        BufferedProcessResult result = await _processInvoker.ExecuteBufferedAsync(processConfiguration);
+        ProcessExitConfiguration exitConfig = new(
+            ProcessTimeoutPolicy.Default,
+            ProcessResultValidation.None,
+            ProcessCancellationExceptionBehavior.SuppressException);
+
+        BufferedProcessResult result = await _processInvoker.ExecuteBufferedAsync(
+            processConfiguration, exitConfig);
 
         if (result.ExitCode != 0)
         {

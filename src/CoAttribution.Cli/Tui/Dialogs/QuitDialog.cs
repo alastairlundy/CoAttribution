@@ -8,6 +8,7 @@
  */
 
 using CoAttribution.Cli.Tui.Abstractions;
+using CoAttribution.Cli.Tui.Composition;
 using CoAttribution.Cli.Tui.ViewModels;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.Input;
@@ -104,6 +105,10 @@ public sealed class QuitDialog : Window, IStatusBarProvider
         };
 
         Add(message, _errorLabel, _saveDraftButton, _discardButton, _cancelButton);
+
+        // Add status bar so key hints are visible and prevent parent StatusBar bleed-through
+        StatusBar statusBar = StatusBarComposer.Build(this);
+        Add(statusBar);
 
         // Explicit key bindings so Enter and Esc work regardless of focus chain.
         // Directly invoke the handler on the focused button instead of using

@@ -39,6 +39,7 @@ public sealed class MainWindow : Window, IStatusBarProvider
     private readonly DraftStore _draftStore;
     private readonly IAuthorRegistry _authorRegistry;
     private readonly HostBlockWriter _hostBlockWriter;
+    private readonly IRepositoryContext _repositoryContext;
 
     private const string DefaultTitle = "CoAttribution";
 
@@ -55,7 +56,8 @@ public sealed class MainWindow : Window, IStatusBarProvider
         ICommitOrchestrator commitOrchestrator,
         DraftStore draftStore,
         IAuthorRegistry authorRegistry,
-        HostBlockWriter hostBlockWriter)
+        HostBlockWriter hostBlockWriter,
+        IRepositoryContext repositoryContext)
     {
         _commitFormView = commitFormView;
         _authorSelectionView = authorSelectionView;
@@ -66,8 +68,9 @@ public sealed class MainWindow : Window, IStatusBarProvider
         _draftStore = draftStore;
         _authorRegistry = authorRegistry;
         _hostBlockWriter = hostBlockWriter;
+        _repositoryContext = repositoryContext;
 
-        Title = DefaultTitle;
+        Title = GetMainWindowTitle();
         Padding.Thickness = new Thickness(1, 0, 1, 0);
 
         SetupScreenSequence();
@@ -92,12 +95,21 @@ public sealed class MainWindow : Window, IStatusBarProvider
         new(Key.Tab, "TAB next field"),
     ];
 
+    /// <summary>
+    /// Builds the main window title with repo context: "CoAttribution — owner/repo".
+    /// </summary>
+    private string GetMainWindowTitle()
+    {
+        string repoName = _repositoryContext.GetRepositoryNameAsync().GetAwaiter().GetResult();
+        return $"{DefaultTitle} — {repoName}";
+    }
+
     private void SetupScreenSequence()
     {
-        // CommitFormView → AuthorSelectionView (Ctrl+Enter from subject field)
+        // CommitFormView → AuthorSelectionView (Ctrl+Enter from any field)
         _commitFormView.KeyDown += async (_, e) =>
         {
-            if (e == Key.Enter.WithCtrl && _commitFormView.SubjectField.HasFocus)
+            if (e == Key.Enter.WithCtrl)
             {
                 await _authorSelectionView.LoadAsync();
                 ShowScreen(_authorSelectionView);
@@ -248,17 +260,17 @@ public sealed class MainWindow : Window, IStatusBarProvider
 
             if (result.ExitCode == 0)
             {
-                Title = $"{DefaultTitle} — Commit succeeded";
+                Title = $"{GetMainWindowTitle()} — Commit succeeded";
                 App?.RequestStop();
             }
             else
             {
-                Title = $"{DefaultTitle} — Commit failed: {result.StandardError.Trim()}";
+                Title = $"{GetMainWindowTitle()} — Commit failed: {result.StandardError.Trim()}";
             }
         }
         catch (Exception ex)
         {
-            Title = $"{DefaultTitle} — Error: {ex.Message}";
+            Title = $"{GetMainWindowTitle()} — Error: {ex.Message}";
         }
     }
 }

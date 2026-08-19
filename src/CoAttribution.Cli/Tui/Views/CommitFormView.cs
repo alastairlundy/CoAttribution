@@ -9,6 +9,7 @@
 
 using CoAttribution.Cli.Tui.Abstractions;
 using CoAttribution.Cli.Tui.ViewModels;
+using CoAttribution.Lib.Abstractions;
 using Terminal.Gui.Drawing;
 using Terminal.Gui.Editor;
 using Terminal.Gui.Input;
@@ -24,6 +25,7 @@ namespace CoAttribution.Cli.Tui.Views;
 public sealed class CommitFormView : View, IStatusBarProvider
 {
     private readonly CommitFormViewModel _viewModel;
+    private readonly IRepositoryContext _repositoryContext;
     private readonly Label _subjectCounterLabel;
     private readonly TextField _subjectField;
     private readonly Label _bodyCounterLabel;
@@ -35,9 +37,10 @@ public sealed class CommitFormView : View, IStatusBarProvider
     /// </summary>
     public TextField SubjectField => _subjectField;
 
-    public CommitFormView(CommitFormViewModel viewModel)
+    public CommitFormView(CommitFormViewModel viewModel, IRepositoryContext repositoryContext)
     {
         _viewModel = viewModel;
+        _repositoryContext = repositoryContext;
 
         Title = "Commit Message";
         Width = Dim.Fill();
@@ -45,26 +48,34 @@ public sealed class CommitFormView : View, IStatusBarProvider
         CanFocus = true;
         Padding.Thickness = new Thickness(1, 0, 1, 0);
 
+        // --- Repository context header ---
+        Label repoLabel = new()
+        {
+            Text = GetRepoContextLabel(),
+            X = 0,
+            Y = 0,
+        };
+
         // --- Subject section ---
         Label subjectLabel = new()
         {
             Text = "Subject:",
             X = 0,
-            Y = 0,
+            Y = 2,
         };
 
         _subjectCounterLabel = new Label
         {
             Text = FormatSubjectCounter(0),
             X = Pos.AnchorEnd(8),
-            Y = 0,
+            Y = 2,
         };
         UpdateSubjectCounterColor();
 
         _subjectField = new TextField
         {
             X = 0,
-            Y = 1,
+            Y = 3,
             Width = Dim.Fill(),
             Height = 1,
             CanFocus = true,
@@ -106,21 +117,21 @@ public sealed class CommitFormView : View, IStatusBarProvider
         {
             Text = "Body:",
             X = 0,
-            Y = 3,
+            Y = 5,
         };
 
         _bodyCounterLabel = new Label
         {
             Text = FormatBodyCounter(0),
             X = Pos.AnchorEnd(8),
-            Y = 3,
+            Y = 5,
         };
         UpdateBodyCounterColor();
 
         Editor bodyField = new()
         {
             X = 0,
-            Y = 4,
+            Y = 6,
             Width = Dim.Fill(),
             Height = Dim.Fill(1),
             CanFocus = true,
@@ -134,6 +145,9 @@ public sealed class CommitFormView : View, IStatusBarProvider
             if (e == Key.Tab)
             {
                 _subjectField.SetFocus();
+                // Terminal.Gui v2 TextField auto-selects all text on keyboard focus;
+                // move the caret to the end so the user can keep typing.
+                _subjectField.InsertionPoint = _subjectField.Text?.Length ?? 0;
                 e.Handled = true;
             }
         };
@@ -159,7 +173,7 @@ public sealed class CommitFormView : View, IStatusBarProvider
             UpdateBodyCounterColor();
         };
 
-        Add(subjectLabel, _subjectCounterLabel, _subjectField,
+        Add(repoLabel, subjectLabel, _subjectCounterLabel, _subjectField,
             bodyLabel, _bodyCounterLabel, bodyField);
     }
 
@@ -167,6 +181,16 @@ public sealed class CommitFormView : View, IStatusBarProvider
     {
         _viewModel.Subject = string.Empty;
         _viewModel.Body = string.Empty;
+    }
+
+    /// <summary>
+    /// Builds the repo context label text: "owner/repo @ branch".
+    /// </summary>
+    private string GetRepoContextLabel()
+    {
+        string repoName = _repositoryContext.GetRepositoryNameAsync().GetAwaiter().GetResult();
+        string branch = _repositoryContext.GetCurrentBranch();
+        return $"{repoName} @ {branch}";
     }
 
     public void FocusSubject()
