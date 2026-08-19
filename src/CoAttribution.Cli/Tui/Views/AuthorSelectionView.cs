@@ -52,6 +52,8 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
         _viewModel = viewModel;
 
         Title = "Select Authors";
+        Width = Dim.Fill();
+        Height = Dim.Fill();
 
         // --- Type-ahead filter ---
         Label filterLabel = new()

@@ -25,12 +25,16 @@ public sealed class CommitFormView : View, IStatusBarProvider
 {
     private readonly CommitFormViewModel _viewModel;
     private readonly Label _counterLabel;
+    private readonly TextField _subjectField;
 
     public CommitFormView(CommitFormViewModel viewModel)
     {
         _viewModel = viewModel;
 
         Title = "Commit Message";
+        Width = Dim.Fill();
+        Height = Dim.Fill();
+        Padding.Thickness = new Thickness(1, 0, 1, 0);
 
         // Subject label
         Label subjectLabel = new()
@@ -50,15 +54,16 @@ public sealed class CommitFormView : View, IStatusBarProvider
         UpdateCounterColor();
 
         // Subject field (single-line)
-        TextField subjectField = new()
+        _subjectField = new TextField
         {
             X = 0,
             Y = 1,
             Width = Dim.Fill(),
+            Height = 1,
         };
-        subjectField.TextChanged += (_, _) =>
+        _subjectField.TextChanged += (_, _) =>
         {
-            _viewModel.Subject = subjectField.Text?.ToString() ?? string.Empty;
+            _viewModel.Subject = _subjectField.Text?.ToString() ?? string.Empty;
             _counterLabel.Text = FormatCounter(_viewModel.SubjectLength);
             UpdateCounterColor();
         };
@@ -77,14 +82,14 @@ public sealed class CommitFormView : View, IStatusBarProvider
             X = 0,
             Y = 4,
             Width = Dim.Fill(),
-            Height = Dim.Fill(),
+            Height = Dim.Fill(1),
         };
         bodyField.ContentChanged += (_, _) =>
         {
             _viewModel.Body = bodyField.Text ?? string.Empty;
         };
 
-        Add(subjectLabel, _counterLabel, subjectField, bodyLabel, bodyField);
+        Add(subjectLabel, _counterLabel, _subjectField, bodyLabel, bodyField);
     }
 
     /// <summary>
@@ -94,6 +99,14 @@ public sealed class CommitFormView : View, IStatusBarProvider
     {
         _viewModel.Subject = string.Empty;
         _viewModel.Body = string.Empty;
+    }
+
+    /// <summary>
+    /// Sets focus on the subject text field so the user can start typing immediately.
+    /// </summary>
+    public void FocusSubject()
+    {
+        _subjectField.SetFocus();
     }
 
     public IReadOnlyList<StatusBarKeyBinding> GetKeyBindings() =>

@@ -68,6 +68,7 @@ public sealed class MainWindow : Window, IStatusBarProvider
         _hostBlockWriter = hostBlockWriter;
 
         Title = DefaultTitle;
+        Padding.Thickness = new Thickness(1, 0, 1, 0);
 
         SetupScreenSequence();
     }
@@ -80,6 +81,7 @@ public sealed class MainWindow : Window, IStatusBarProvider
     {
         _commitFormView.Initialize();
         ShowScreen(_commitFormView);
+        _commitFormView.FocusSubject();
     }
 
     public IReadOnlyList<StatusBarKeyBinding> GetKeyBindings() =>
@@ -146,15 +148,18 @@ public sealed class MainWindow : Window, IStatusBarProvider
 
     private void ShowQuitDialog()
     {
+        bool shouldExit = false;
+
         void OnDraftSaved()
         {
+            shouldExit = true;
             App?.RequestStop();
         }
 
         void OnDiscarded()
         {
+            shouldExit = true;
             App?.RequestStop();
-            App?.RequestStop(); // close MainWindow
         }
 
         void OnCancelled()
@@ -175,6 +180,11 @@ public sealed class MainWindow : Window, IStatusBarProvider
             _quitDialog.DraftSaved -= OnDraftSaved;
             _quitDialog.Discarded -= OnDiscarded;
             _quitDialog.Cancelled -= OnCancelled;
+        }
+
+        if (shouldExit)
+        {
+            App?.RequestStop();
         }
     }
 
