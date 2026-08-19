@@ -68,9 +68,7 @@ public sealed class CommitFormView : View, IStatusBarProvider
             Width = Dim.Fill(),
             Height = 1,
             CanFocus = true,
-            BorderStyle = LineStyle.Rounded,
         };
-        _subjectField.Padding.Thickness = new Thickness(1, 0, 1, 0);
 
         // Block characters beyond the hard cap
         _subjectField.KeyDown += (_, e) =>

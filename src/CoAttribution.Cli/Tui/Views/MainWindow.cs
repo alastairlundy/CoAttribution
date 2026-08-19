@@ -97,7 +97,7 @@ public sealed class MainWindow : Window, IStatusBarProvider
         // CommitFormView → AuthorSelectionView (Ctrl+Enter from subject field)
         _commitFormView.KeyDown += async (_, e) =>
         {
-            if (e == Key.Enter.WithCtrl && Focused == _commitFormView.SubjectField)
+            if (e == Key.Enter.WithCtrl && _commitFormView.SubjectField.HasFocus)
             {
                 await _authorSelectionView.LoadAsync();
                 ShowScreen(_authorSelectionView);
