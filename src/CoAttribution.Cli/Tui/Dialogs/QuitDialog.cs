@@ -51,7 +51,7 @@ public sealed class QuitDialog : Window, IStatusBarProvider
 
         Title = "Quit?";
         Width = 70;
-        Height = 10;
+        Height = 12;
         X = Pos.Center();
         Y = Pos.Center();
         Padding.Thickness = new Thickness(2);
@@ -60,7 +60,7 @@ public sealed class QuitDialog : Window, IStatusBarProvider
         {
             Text = "You have an in-progress commit. What would you like to do?",
             X = Pos.Center(),
-            Y = 0,
+            Y = 1,
             TextAlignment = Alignment.Center,
         };
 
@@ -68,24 +68,24 @@ public sealed class QuitDialog : Window, IStatusBarProvider
         {
             Text = string.Empty,
             X = Pos.Center(),
-            Y = 2,
+            Y = 3,
             Visible = false,
             TextAlignment = Alignment.Center,
         };
 
         _saveDraftButton = new Button
         {
-            Text = "_Save draft",
+            Text = "Save draft",
             X = Pos.Center() - 20,
-            Y = 4,
+            Y = 6,
         };
         _saveDraftButton.Accepting += async (_, _) => await OnSaveDraftAsync();
 
         _discardButton = new Button
         {
-            Text = "_Discard",
+            Text = "Discard",
             X = Pos.Center() - 5,
-            Y = 4,
+            Y = 6,
         };
         _discardButton.Accepting += (_, _) =>
         {
@@ -94,9 +94,9 @@ public sealed class QuitDialog : Window, IStatusBarProvider
 
         _cancelButton = new Button
         {
-            Text = "_Cancel",
+            Text = "Cancel",
             X = Pos.Center() + 10,
-            Y = 4,
+            Y = 6,
         };
         _cancelButton.Accepting += (_, _) =>
         {

@@ -88,24 +88,20 @@ public sealed class MainWindow : Window, IStatusBarProvider
     [
         new(Key.Esc, "ESC quit"),
         new(Key.Enter, "ENTER newline"),
+        new(Key.Enter.WithCtrl, "CTRL+ENTER next"),
         new(Key.Tab, "TAB next field"),
     ];
 
     private void SetupScreenSequence()
     {
-        // CommitFormView → AuthorSelectionView (load data then show)
+        // CommitFormView → AuthorSelectionView (Ctrl+Enter from subject field)
         _commitFormView.KeyDown += async (_, e) =>
         {
-            if (e == Key.Enter)
+            if (e == Key.Enter.WithCtrl && Focused == _commitFormView.SubjectField)
             {
-                // Only advance to next screen from subject field;
-                // Enter in the body inserts a newline (handled by Editor)
-                if (Focused == _commitFormView.SubjectField)
-                {
-                    await _authorSelectionView.LoadAsync();
-                    ShowScreen(_authorSelectionView);
-                    e.Handled = true;
-                }
+                await _authorSelectionView.LoadAsync();
+                ShowScreen(_authorSelectionView);
+                e.Handled = true;
             }
         };
 
