@@ -11,6 +11,7 @@ using CoAttribution.Cli.Tui.Abstractions;
 using CoAttribution.Lib.Abstractions;
 using CoAttribution.Lib.Models;
 using CoAttribution.Lib.Models.DTOs;
+using Terminal.Gui.Drawing;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
@@ -27,9 +28,7 @@ public sealed class SetupDialog : Window, IStatusBarProvider
     private readonly IAuthorRegistry _authorRegistry;
     private readonly TextField _nameField;
     private readonly TextField _emailField;
-    private readonly CheckBox _coAuthorRadio;
-    private readonly CheckBox _assistedRadio;
-    private readonly CheckBox _defaultRadio;
+    private readonly OptionSelector _attributionRadio;
     private readonly Button _addButton;
     private readonly Button _cancelButton;
     private readonly Label _errorLabel;
@@ -49,109 +48,79 @@ public sealed class SetupDialog : Window, IStatusBarProvider
         _authorRegistry = authorRegistry;
 
         Title = "Setup — Add Your First Author";
+        Padding.Thickness = new Thickness(2);
+        BorderStyle = LineStyle.Rounded;
 
         // --- Name field ---
         Label nameLabel = new()
         {
             Text = "Name:",
-            X = 0,
-            Y = 0,
+            X = Pos.Center() - 15,
+            Y = 2,
         };
 
         _nameField = new TextField
         {
-            X = 10,
-            Y = 0,
-            Width = Dim.Fill(),
+            X = Pos.Center() - 10,
+            Y = 2,
+            Width = Dim.Fill(2),
         };
 
         // --- Email field ---
         Label emailLabel = new()
         {
             Text = "Email:",
-            X = 0,
-            Y = 2,
+            X = Pos.Center() - 15,
+            Y = 4,
         };
 
         _emailField = new TextField
         {
-            X = 10,
-            Y = 2,
-            Width = Dim.Fill(),
+            X = Pos.Center() - 10,
+            Y = 4,
+            Width = Dim.Fill(2),
         };
 
         // --- Default attribution type selector ---
         Label attrLabel = new()
         {
             Text = "Default attribution:",
-            X = 0,
-            Y = 4,
+            X = Pos.Center() - 15,
+            Y = 6,
         };
 
-        _coAuthorRadio = new CheckBox
+        _attributionRadio = new OptionSelector
         {
-            Text = "Co-author",
-            X = 0,
-            Y = 5,
-            Value = CheckState.Checked,
-        };
-
-        _assistedRadio = new CheckBox
-        {
-            Text = "Assisted-by",
-            X = 20,
-            Y = 5,
-        };
-
-        _defaultRadio = new CheckBox
-        {
-            Text = "Default",
-            X = 40,
-            Y = 5,
-        };
-
-        // Make the radio buttons mutually exclusive
-        _coAuthorRadio.ValueChanged += (_, args) =>
-        {
-            if (args.NewValue == CheckState.Checked)
-            {
-                _assistedRadio.Value = CheckState.UnChecked;
-                _defaultRadio.Value = CheckState.UnChecked;
-            }
-        };
-        _assistedRadio.ValueChanged += (_, args) =>
-        {
-            if (args.NewValue == CheckState.Checked)
-            {
-                _coAuthorRadio.Value = CheckState.UnChecked;
-                _defaultRadio.Value = CheckState.UnChecked;
-            }
-        };
-        _defaultRadio.ValueChanged += (_, args) =>
-        {
-            if (args.NewValue == CheckState.Checked)
-            {
-                _coAuthorRadio.Value = CheckState.UnChecked;
-                _assistedRadio.Value = CheckState.UnChecked;
-            }
+            X = Pos.Center() - 15,
+            Y = 7,
+            Labels = ["Co-author", "Assisted-by", "Default"],
         };
 
         // --- Error label (hidden by default) ---
         _errorLabel = new Label
         {
             Text = string.Empty,
-            X = 0,
-            Y = 7,
+            X = Pos.Center() - 15,
+            Y = 10,
             Visible = false,
+        };
+
+        // --- Separator ---
+        Line separator = new()
+        {
+            X = Pos.Center() - 15,
+            Y = 11,
+            Width = Dim.Fill(2),
         };
 
         // --- Buttons ---
         _addButton = new Button
         {
             Text = "_Add author",
-            X = Pos.Center() - 10,
-            Y = 9,
+            X = Pos.Center() - 15,
+            Y = 12,
             IsDefault = true,
+            Width = 14,
         };
         _addButton.Accepting += async (_, _) => await OnAddAsync();
 
@@ -159,7 +128,8 @@ public sealed class SetupDialog : Window, IStatusBarProvider
         {
             Text = "_Cancel",
             X = Pos.Center() + 2,
-            Y = 9,
+            Y = 12,
+            Width = 14,
         };
         _cancelButton.Accepting += (_, _) =>
         {
@@ -168,8 +138,9 @@ public sealed class SetupDialog : Window, IStatusBarProvider
 
         Add(nameLabel, _nameField,
             emailLabel, _emailField,
-            attrLabel, _coAuthorRadio, _assistedRadio, _defaultRadio,
+            attrLabel, _attributionRadio,
             _errorLabel,
+            separator,
             _addButton, _cancelButton);
     }
 
@@ -218,11 +189,12 @@ public sealed class SetupDialog : Window, IStatusBarProvider
 
     private AttributionType DetermineSelectedAttributionType()
     {
-        if (_assistedRadio.Value == CheckState.Checked)
-            return AttributionType.Assisted;
-        if (_defaultRadio.Value == CheckState.Checked)
-            return AttributionType.DefaultOrCoAuthor;
-        return AttributionType.CoAuthor;
+        return _attributionRadio.Value switch
+        {
+            1 => AttributionType.Assisted,
+            2 => AttributionType.DefaultOrCoAuthor,
+            _ => AttributionType.CoAuthor,
+        };
     }
 
     /// <summary>

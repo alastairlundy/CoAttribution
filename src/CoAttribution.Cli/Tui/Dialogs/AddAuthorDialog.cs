@@ -10,6 +10,7 @@
 using CoAttribution.Cli.Tui.Abstractions;
 using CoAttribution.Lib.Abstractions;
 using CoAttribution.Lib.Models;
+using Terminal.Gui.Drawing;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
@@ -48,51 +49,55 @@ public sealed class AddAuthorDialog : Window, IStatusBarProvider
 
         Title = "Add Author";
 
+        Padding.Thickness = new Thickness(2);
+        BorderStyle = LineStyle.Rounded;
+
         Label nameLabel = new()
         {
             Text = "Name:",
-            X = 0,
-            Y = 0,
+            X = Pos.Center() - 15,
+            Y = 2,
         };
 
         _nameField = new TextField
         {
-            X = 10,
-            Y = 0,
-            Width = Dim.Fill(),
+            X = Pos.Center() - 10,
+            Y = 2,
+            Width = Dim.Fill(2),
         };
         _nameField.TextChanged += (_, _) => UpdateAddButtonState();
 
         Label emailLabel = new()
         {
             Text = "Email:",
-            X = 0,
-            Y = 2,
+            X = Pos.Center() - 15,
+            Y = 4,
         };
 
         _emailField = new TextField
         {
-            X = 10,
-            Y = 2,
-            Width = Dim.Fill(),
+            X = Pos.Center() - 10,
+            Y = 4,
+            Width = Dim.Fill(2),
         };
         _emailField.TextChanged += (_, _) => UpdateAddButtonState();
 
         _errorLabel = new Label
         {
             Text = string.Empty,
-            X = 0,
-            Y = 4,
+            X = Pos.Center() - 15,
+            Y = 6,
             Visible = false,
         };
 
         _addButton = new Button
         {
             Text = "_Add author",
-            X = Pos.Center() - 10,
-            Y = 6,
+            X = Pos.Center() - 15,
+            Y = 8,
             IsDefault = true,
             Enabled = false,
+            Width = 14,
         };
         _addButton.Accepting += async (_, _) => await OnAddAsync();
 
@@ -100,14 +105,22 @@ public sealed class AddAuthorDialog : Window, IStatusBarProvider
         {
             Text = "_Cancel",
             X = Pos.Center() + 2,
-            Y = 6,
+            Y = 8,
+            Width = 14,
         };
         _cancelButton.Accepting += (_, _) =>
         {
             Cancelled?.Invoke();
         };
 
-        Add(nameLabel, _nameField, emailLabel, _emailField, _errorLabel, _addButton, _cancelButton);
+        Line separator = new()
+        {
+            X = Pos.Center() - 15,
+            Y = 7,
+            Width = Dim.Fill(2),
+        };
+
+        Add(nameLabel, _nameField, emailLabel, _emailField, _errorLabel, separator, _addButton, _cancelButton);
     }
 
     public IReadOnlyList<StatusBarKeyBinding> GetKeyBindings() =>
