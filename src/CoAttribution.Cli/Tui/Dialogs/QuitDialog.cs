@@ -9,6 +9,7 @@
 
 using CoAttribution.Cli.Tui.Abstractions;
 using CoAttribution.Cli.Tui.ViewModels;
+using Terminal.Gui.Drawing;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
@@ -49,35 +50,41 @@ public sealed class QuitDialog : Window, IStatusBarProvider
         _draftStore = draftStore;
 
         Title = "Quit?";
+        Width = 60;
+        Height = 10;
+        X = Pos.Center();
+        Y = Pos.Center();
+        Padding.Thickness = new Thickness(2);
 
         Label message = new()
         {
             Text = "You have an in-progress commit. What would you like to do?",
-            X = 0,
+            X = Pos.Center(),
             Y = 0,
+            TextAlignment = Alignment.Center,
         };
 
         _errorLabel = new Label
         {
             Text = string.Empty,
-            X = 0,
+            X = Pos.Center(),
             Y = 2,
             Visible = false,
+            TextAlignment = Alignment.Center,
         };
 
         _saveDraftButton = new Button
         {
             Text = "_Save draft",
-            X = Pos.Center() - 16,
+            X = Pos.Center() - 20,
             Y = 4,
-            IsDefault = true,
         };
         _saveDraftButton.Accepting += async (_, _) => await OnSaveDraftAsync();
 
         _discardButton = new Button
         {
             Text = "_Discard",
-            X = Pos.Center() - 2,
+            X = Pos.Center() - 5,
             Y = 4,
         };
         _discardButton.Accepting += (_, _) =>
@@ -98,15 +105,25 @@ public sealed class QuitDialog : Window, IStatusBarProvider
 
         Add(message, _errorLabel, _saveDraftButton, _discardButton, _cancelButton);
 
-        // Explicit key bindings so Enter and Esc work regardless of focus chain
+        // Explicit key bindings so Enter and Esc work regardless of focus chain.
+        // Directly invoke the handler on the focused button instead of using
+        // InvokeCommand, which may route to the wrong button.
         KeyDown += (_, e) =>
         {
             if (e == Key.Enter)
             {
-                View focused = Focused ?? _saveDraftButton;
-                if (focused is Button btn)
+                View? focused = Focused;
+                if (focused == _saveDraftButton)
                 {
-                    btn.InvokeCommand(Command.Accept);
+                    _ = OnSaveDraftAsync();
+                }
+                else if (focused == _discardButton)
+                {
+                    Discarded?.Invoke();
+                }
+                else if (focused == _cancelButton)
+                {
+                    Cancelled?.Invoke();
                 }
                 e.Handled = true;
             }
