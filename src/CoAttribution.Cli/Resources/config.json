@@ -1,0 +1,31 @@
+{
+  "$schema": "https://tui-cs.github.io/Terminal.Gui/schemas/tui-config-schema.json",
+  "Theme": "CoAttribution",
+  "Themes": [
+    {
+      "CoAttribution": {
+        "Window.DefaultBorderStyle": "Double",
+        "Dialog.DefaultBorderStyle": "Rounded",
+        "Dialog.DefaultShadow": "Transparent",
+        "Button.DefaultShadow": "None",
+        "Schemes": [
+          {
+            "Base": {
+              "Normal": { "Foreground": "White", "Background": "Black" },
+              "Focus": { "Foreground": "Black", "Background": "Cyan" },
+              "Editable": { "Foreground": "White", "Background": "DarkGray" },
+              "Highlight": { "Foreground": "Black", "Background": "BrightCyan" }
+            }
+          },
+          {
+            "Dialog": {
+              "Normal": { "Foreground": "White", "Background": "Black" },
+              "Focus": { "Foreground": "Black", "Background": "Cyan" },
+              "Editable": { "Foreground": "White", "Background": "DarkGray" }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
