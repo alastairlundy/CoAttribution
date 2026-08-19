@@ -8,6 +8,7 @@
  */
 
 using CoAttribution.Cli.Tui.Abstractions;
+using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
 using Terminal.Gui.Views;
 
@@ -31,7 +32,18 @@ public static class StatusBarComposer
 
         foreach (StatusBarKeyBinding binding in bindings)
         {
-            shortcuts.Add(new Shortcut(binding.Key, binding.Label, null, null));
+            // Use the label as Title (displayed on the left side).
+            // Set Key to Key.Empty so the KeyView (right side) is not displayed,
+            // avoiding duplication of the key name.
+            // BindKeyToApplication = false so shortcuts are display-only and
+            // do not intercept Enter/Esc from the focused view.
+            Shortcut shortcut = new()
+            {
+                Title = binding.Label,
+                Key = Key.Empty,
+                BindKeyToApplication = false,
+            };
+            shortcuts.Add(shortcut);
         }
 
         StatusBar statusBar = new(shortcuts)
