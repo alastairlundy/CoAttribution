@@ -9,6 +9,7 @@
 
 using CoAttribution.Cli.Tui.Abstractions;
 using CoAttribution.Cli.Tui.ViewModels;
+using CoAttribution.Lib.Abstractions;
 using CoAttribution.Lib.Models;
 using Terminal.Gui.Input;
 using Terminal.Gui.ViewBase;
@@ -24,6 +25,7 @@ namespace CoAttribution.Cli.Tui.Views;
 public sealed class AuthorSelectionView : View, IStatusBarProvider
 {
     private readonly AuthorSelectionViewModel _viewModel;
+    private readonly IRepositoryContext _repositoryContext;
     private readonly TextField _filterField;
     private readonly CheckBox _advancedToggle;
     private readonly View _authorListContainer;
@@ -47,27 +49,36 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
     /// </summary>
     public event Action<string, string>? HostBlockMissing;
 
-    public AuthorSelectionView(AuthorSelectionViewModel viewModel)
+    public AuthorSelectionView(AuthorSelectionViewModel viewModel, IRepositoryContext repositoryContext)
     {
         _viewModel = viewModel;
+        _repositoryContext = repositoryContext;
 
         Title = "Select Authors";
         Width = Dim.Fill();
         Height = Dim.Fill();
         CanFocus = true;
 
+        // --- Repository context header ---
+        Label repoLabel = new()
+        {
+            Text = GetRepoContextLabel(),
+            X = 0,
+            Y = 0,
+        };
+
         // --- Type-ahead filter ---
         Label filterLabel = new()
         {
             Text = "Filter:",
             X = 0,
-            Y = 0,
+            Y = 2,
         };
 
         _filterField = new TextField
         {
             X = 8,
-            Y = 0,
+            Y = 2,
             Width = Dim.Fill(),
         };
         _filterField.TextChanged += (_, _) =>
@@ -81,7 +92,7 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
         {
             Text = "Advanced view",
             X = 0,
-            Y = 2,
+            Y = 4,
         };
         _advancedToggle.ValueChanged += (_, args) =>
         {
@@ -94,7 +105,7 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
         {
             Text = string.Empty,
             X = 0,
-            Y = 3,
+            Y = 5,
             Visible = false,
         };
 
@@ -102,7 +113,7 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
         _authorListContainer = new View
         {
             X = 0,
-            Y = 4,
+            Y = 6,
             Width = Dim.Fill(),
             Height = Dim.Fill(1), // leave room for the Add button
         };
@@ -119,7 +130,7 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
             AddAuthorRequested?.Invoke();
         };
 
-        Add(filterLabel, _filterField, _advancedToggle, _errorLabel, _authorListContainer, _addAuthorButton);
+        Add(repoLabel, filterLabel, _filterField, _advancedToggle, _errorLabel, _authorListContainer, _addAuthorButton);
 
         // Raise Confirmed on Enter with current selection
         KeyDown += (_, e) =>
@@ -259,4 +270,14 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
         AttributionType.Assisted => "Assisted-by",
         _ => "Default",
     };
+
+    /// <summary>
+    /// Builds the repo context label text: "owner/repo @ branch".
+    /// </summary>
+    private string GetRepoContextLabel()
+    {
+        string repoName = _repositoryContext.GetRepositoryNameAsync().GetAwaiter().GetResult();
+        string branch = _repositoryContext.GetCurrentBranch();
+        return $"{repoName} @ {branch}";
+    }
 }

@@ -32,6 +32,7 @@ public sealed class PreviewModal : Window, IStatusBarProvider
     private readonly CommitFormViewModel _formViewModel;
     private readonly AuthorSelectionViewModel _authorViewModel;
     private readonly ICommitOrchestrator _commitOrchestrator;
+    private readonly IRepositoryContext _repositoryContext;
     private readonly Editor _previewEditor;
     private readonly Button _confirmButton;
     private readonly Button _cancelButton;
@@ -54,18 +55,28 @@ public sealed class PreviewModal : Window, IStatusBarProvider
     public PreviewModal(
         CommitFormViewModel formViewModel,
         AuthorSelectionViewModel authorViewModel,
-        ICommitOrchestrator commitOrchestrator)
+        ICommitOrchestrator commitOrchestrator,
+        IRepositoryContext repositoryContext)
     {
         _formViewModel = formViewModel;
         _authorViewModel = authorViewModel;
         _commitOrchestrator = commitOrchestrator;
+        _repositoryContext = repositoryContext;
 
         Title = "Preview Commit";
+
+        // --- Repository context header ---
+        Label repoLabel = new()
+        {
+            Text = GetRepoContextLabel(),
+            X = 0,
+            Y = 0,
+        };
 
         _previewEditor = new Editor
         {
             X = 0,
-            Y = 0,
+            Y = 2,
             Width = Dim.Fill(),
             Height = Dim.Fill(1),
             ReadOnly = true,
@@ -100,7 +111,7 @@ public sealed class PreviewModal : Window, IStatusBarProvider
             Cancelled?.Invoke();
         };
 
-        Add(_previewEditor, _errorLabel, _confirmButton, _cancelButton);
+        Add(repoLabel, _previewEditor, _errorLabel, _confirmButton, _cancelButton);
     }
 
     /// <summary>
@@ -164,6 +175,16 @@ public sealed class PreviewModal : Window, IStatusBarProvider
         new(Key.Enter, "Enter confirm"),
         new(Key.Esc, "Esc cancel"),
     ];
+
+    /// <summary>
+    /// Builds the repo context label text: "owner/repo @ branch".
+    /// </summary>
+    private string GetRepoContextLabel()
+    {
+        string repoName = _repositoryContext.GetRepositoryNameAsync().GetAwaiter().GetResult();
+        string branch = _repositoryContext.GetCurrentBranch();
+        return $"{repoName} @ {branch}";
+    }
 
     private async Task OnConfirmAsync()
     {

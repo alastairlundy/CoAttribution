@@ -16,6 +16,7 @@ using CoAttribution.Cli.Tui.Views;
 using CliInvoke.Extensions;
 using CoAttribution.Lib.HostResolution;
 using CoAttribution.Lib.HostResolution.Abstractions;
+using CoAttribution.Lib.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -48,6 +49,7 @@ Cli.Ext.ConfigureServices(services =>
     services.AddSingleton<IGitClient, CliGitClient>();
     services.AddSingleton<IGitConfigClient, GitConfigClient>();
     services.AddSingleton<IGitRemoteProbe, GitRemoteProbe>();
+    services.AddSingleton<IRepositoryContext, RepositoryContext>();
     services.AddSingleton<HostBlockWriter>();
     
     services.AddSingleton(configuration);
