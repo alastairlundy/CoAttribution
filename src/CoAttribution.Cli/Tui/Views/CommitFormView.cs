@@ -86,6 +86,7 @@ public sealed class CommitFormView : View, IStatusBarProvider
             Width = Dim.Fill(),
             Height = Dim.Fill(1),
             CanFocus = true,
+            ViewportSettings = ViewportSettingsFlags.HasScrollBars,
         };
         bodyField.ContentChanged += (_, _) =>
         {
