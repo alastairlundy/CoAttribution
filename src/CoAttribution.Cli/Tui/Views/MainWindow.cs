@@ -87,7 +87,8 @@ public sealed class MainWindow : Window, IStatusBarProvider
     public IReadOnlyList<StatusBarKeyBinding> GetKeyBindings() =>
     [
         new(Key.Esc, "ESC quit"),
-        new(Key.Enter, "ENTER next"),
+        new(Key.Enter, "ENTER newline"),
+        new(Key.Tab, "TAB next field"),
     ];
 
     private void SetupScreenSequence()
@@ -97,9 +98,14 @@ public sealed class MainWindow : Window, IStatusBarProvider
         {
             if (e == Key.Enter)
             {
-                await _authorSelectionView.LoadAsync();
-                ShowScreen(_authorSelectionView);
-                e.Handled = true;
+                // Only advance to next screen from subject field;
+                // Enter in the body inserts a newline (handled by Editor)
+                if (Focused == _commitFormView.SubjectField)
+                {
+                    await _authorSelectionView.LoadAsync();
+                    ShowScreen(_authorSelectionView);
+                    e.Handled = true;
+                }
             }
         };
 

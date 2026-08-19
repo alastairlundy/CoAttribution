@@ -30,6 +30,11 @@ public sealed class CommitFormView : View, IStatusBarProvider
     private bool _suppressSubjectChange;
     private bool _suppressBodyChange;
 
+    /// <summary>
+    /// The subject text field, exposed for focus-chain checks from MainWindow.
+    /// </summary>
+    public TextField SubjectField => _subjectField;
+
     public CommitFormView(CommitFormViewModel viewModel)
     {
         _viewModel = viewModel;
@@ -61,8 +66,9 @@ public sealed class CommitFormView : View, IStatusBarProvider
             X = 0,
             Y = 1,
             Width = Dim.Fill(),
-            Height = 2,
+            Height = 1,
             CanFocus = true,
+            BorderStyle = LineStyle.Rounded,
         };
 
         // Block characters beyond the hard cap
@@ -101,26 +107,36 @@ public sealed class CommitFormView : View, IStatusBarProvider
         {
             Text = "Body:",
             X = 0,
-            Y = 4,
+            Y = 3,
         };
 
         _bodyCounterLabel = new Label
         {
             Text = FormatBodyCounter(0),
-            X = Pos.AnchorEnd(12),
-            Y = 4,
+            X = Pos.AnchorEnd(8),
+            Y = 3,
         };
         UpdateBodyCounterColor();
 
         Editor bodyField = new()
         {
             X = 0,
-            Y = 5,
+            Y = 4,
             Width = Dim.Fill(),
             Height = Dim.Fill(1),
             CanFocus = true,
             BorderStyle = LineStyle.Rounded,
             ViewportSettings = ViewportSettingsFlags.HasScrollBars,
+        };
+
+        // Tab moves focus back to subject (Editor uses Tab for indentation by default)
+        bodyField.KeyDown += (_, e) =>
+        {
+            if (e == Key.Tab)
+            {
+                _subjectField.SetFocus();
+                e.Handled = true;
+            }
         };
 
         bodyField.ContentChanged += (_, _) =>

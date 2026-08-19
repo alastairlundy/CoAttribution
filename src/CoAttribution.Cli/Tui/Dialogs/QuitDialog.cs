@@ -50,7 +50,7 @@ public sealed class QuitDialog : Window, IStatusBarProvider
         _draftStore = draftStore;
 
         Title = "Quit?";
-        Width = 60;
+        Width = 70;
         Height = 10;
         X = Pos.Center();
         Y = Pos.Center();
