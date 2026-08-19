@@ -97,6 +97,25 @@ public sealed class QuitDialog : Window, IStatusBarProvider
         };
 
         Add(message, _errorLabel, _saveDraftButton, _discardButton, _cancelButton);
+
+        // Explicit key bindings so Enter and Esc work regardless of focus chain
+        KeyDown += (_, e) =>
+        {
+            if (e == Key.Enter)
+            {
+                View focused = Focused ?? _saveDraftButton;
+                if (focused is Button btn)
+                {
+                    btn.InvokeCommand(Command.Accept);
+                }
+                e.Handled = true;
+            }
+            else if (e == Key.Esc)
+            {
+                Cancelled?.Invoke();
+                e.Handled = true;
+            }
+        };
     }
 
     public IReadOnlyList<StatusBarKeyBinding> GetKeyBindings() =>
