@@ -3,6 +3,8 @@ using CoAttribution.Cli.Tui.Dialogs;
 namespace CoAttribution.Cli.Tests.Helpers;
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 /// <summary>
 /// Factory helpers for the most common command-construction patterns so individual
@@ -10,6 +12,8 @@ using Microsoft.Extensions.Configuration;
 /// </summary>
 public static class CommandTestHarness
 {
+    private static readonly ILoggerFactory TestLoggerFactory = NullLoggerFactory.Instance;
+
     /// <summary>Builds an <see cref="AddCoAuthorCommand"/> with a mocked registry.</summary>
     public static AddCoAuthorCommand BuildAddCommand(IAuthorRegistry registry)
         => new(registry);
@@ -43,7 +47,7 @@ public static class CommandTestHarness
 
     /// <summary>Builds a <see cref="RootCommand"/>.</summary>
     public static RootCommand BuildRootCommand(IAuthorRegistry authorRegistry, TuiCompositionRoot compositionRoot, SetupDialog setupDialog)
-        => new(authorRegistry, compositionRoot, setupDialog);
+        => new(authorRegistry, compositionRoot, setupDialog, TestLoggerFactory.CreateLogger<RootCommand>());
 
     /// <summary>
     /// Returns an empty in-memory <see cref="IConfiguration"/> with a single key/value
