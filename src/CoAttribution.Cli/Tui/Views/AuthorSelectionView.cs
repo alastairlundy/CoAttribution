@@ -8,6 +8,8 @@
  */
 
 using CoAttribution.Cli.Tui.Abstractions;
+using System.Collections.ObjectModel;
+using CoAttribution.Cli.Tui.Composition;
 using CoAttribution.Cli.Tui.ViewModels;
 using CoAttribution.Lib.Abstractions;
 using CoAttribution.Lib.Models;
@@ -26,10 +28,14 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
 {
     private readonly AuthorSelectionViewModel _viewModel;
     private readonly IRepositoryContext _repositoryContext;
+    private readonly GlyphSet _glyphSet;
     private readonly TextField _filterField;
     private readonly CheckBox _advancedToggle;
-    private readonly View _authorListContainer;
+    private readonly AuthorSelectionPanelView _panel;
+    private readonly ObservableCollection<AuthorListRow> _listRows;
     private readonly Button _addAuthorButton;
+    private readonly Button _progressButton;
+    private readonly Button _backButton;
     private readonly Label _errorLabel;
 
     /// <summary>
@@ -44,15 +50,21 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
     public event Action? AddAuthorRequested;
 
     /// <summary>
+    /// Raised when the user requests to return to the commit message form.
+    /// </summary>
+    public event Action? BackRequested;
+
+    /// <summary>
     /// Raised when host resolution fails with a missing host block.
     /// Carries the contributor ID and host key needed to create the block.
     /// </summary>
     public event Action<string, string>? HostBlockMissing;
 
-    public AuthorSelectionView(AuthorSelectionViewModel viewModel, IRepositoryContext repositoryContext)
+    public AuthorSelectionView(AuthorSelectionViewModel viewModel, IRepositoryContext repositoryContext, GlyphSet glyphSet)
     {
         _viewModel = viewModel;
         _repositoryContext = repositoryContext;
+        _glyphSet = glyphSet;
 
         Title = "Select Authors";
         Width = Dim.Fill();
@@ -84,7 +96,7 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
         _filterField.TextChanged += (_, _) =>
         {
             _viewModel.FilterText = _filterField.Text?.ToString() ?? string.Empty;
-            RebuildCheckboxes();
+            RefreshList();
         };
 
         // --- Advanced view toggle ---
@@ -97,7 +109,7 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
         _advancedToggle.ValueChanged += (_, args) =>
         {
             _viewModel.AdvancedViewEnabled = args.NewValue == CheckState.Checked;
-            RebuildCheckboxes();
+            RefreshList();
         };
 
         // --- Error label (hidden by default) ---
@@ -109,36 +121,68 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
             Visible = false,
         };
 
-        // --- Author list ---
-        _authorListContainer = new View
+        // --- Author list (split-panel ListView) ---
+        _listRows = new ObservableCollection<AuthorListRow>();
+        _panel = new AuthorSelectionPanelView(_listRows, _glyphSet)
         {
             X = 0,
             Y = 6,
             Width = Dim.Fill(),
-            Height = Dim.Fill(1), // leave room for the Add button
+            Height = Dim.Fill(3), // leave room for the nav buttons + Add button
         };
 
-        // --- Add author button ---
+        // --- Add author button (sits above the nav buttons) ---
         _addAuthorButton = new Button
         {
             Text = "+ Add author",
             X = Pos.Center(),
-            Y = Pos.AnchorEnd(0),
+            Y = Pos.AnchorEnd(2),
         };
         _addAuthorButton.Accepting += (_, _) =>
         {
             AddAuthorRequested?.Invoke();
         };
 
-        Add(repoLabel, filterLabel, _filterField, _advancedToggle, _errorLabel, _authorListContainer, _addAuthorButton);
+        // --- Back button (returns to the commit message form) ---
+        _backButton = new Button
+        {
+            Text = "_Back",
+            X = 2,
+            Y = Pos.AnchorEnd(0),
+        };
+        _backButton.Accepting += (_, _) =>
+        {
+            BackRequested?.Invoke();
+        };
 
-        // Raise Confirmed on Enter with current selection
+        // --- Progress button (advances to the preview) ---
+        _progressButton = new Button
+        {
+            Text = "_Progress",
+            X = Pos.AnchorEnd(12),
+            Y = Pos.AnchorEnd(0),
+            IsDefault = true,
+        };
+        _progressButton.Accepting += (_, _) =>
+        {
+            var (coAuthorIds, assistIds, defaultIds) = _viewModel.GetSelectedIds();
+            Confirmed?.Invoke(coAuthorIds, assistIds, defaultIds);
+        };
+
+        Add(repoLabel, filterLabel, _filterField, _advancedToggle, _errorLabel, _panel,
+            _addAuthorButton, _backButton, _progressButton);
+
+        // Selection/attribution key handling lives on the ListView so the list stays interactive
+        // while Enter/Esc still bubble to the parent flow (D001, D006).
+        _panel.AuthorListView.KeyDown += OnListKeyDown;
+
+        // Parent-level Enter confirm covers focus outside the list (e.g. the filter field).
+        // When the ListView handles Enter it marks the event handled, so this won't double-fire.
         KeyDown += (_, e) =>
         {
             if (e == Key.Enter)
             {
-                var (coAuthorIds, assistIds, defaultIds) = _viewModel.GetSelectedIds();
-                Confirmed?.Invoke(coAuthorIds, assistIds, defaultIds);
+                ConfirmSelection();
                 e.Handled = true;
             }
         };
@@ -152,7 +196,7 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
     {
         await _viewModel.LoadAsync();
         SyncErrorState();
-        RebuildCheckboxes();
+        RefreshList();
     }
 
     /// <summary>
@@ -172,75 +216,134 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
         _advancedToggle.Value = savedAdvanced ? CheckState.Checked : CheckState.UnChecked;
 
         SyncErrorState();
-        RebuildCheckboxes();
+        RefreshList();
     }
 
     public IReadOnlyList<StatusBarKeyBinding> GetKeyBindings() =>
     [
-        new(Key.Space, "Space toggle"),
-        new(Key.Enter, "Enter confirm"),
-        new(Key.Esc, "Esc quit"),
+        new(Key.Space, "Space toggle", _glyphSet.Check),
+        new(Key.Enter, "Enter confirm", _glyphSet.KeyEnter),
+        new(Key.Esc, "Esc quit", _glyphSet.KeyEsc),
     ];
 
     /// <summary>
-    /// Rebuilds the checkbox list from the current filtered rows in the view model.
+    /// Rebuilds the bound <see cref="ListView"/> from the view model's filtered rows, preserving
+    /// scroll position and refreshing the right-pane summary (T013, D006).
     /// </summary>
-    private void RebuildCheckboxes()
+    private void RefreshList()
     {
-        _authorListContainer.RemoveAll();
+        int focused = _panel.AuthorListView.SelectedItem ?? 0;
 
-        IReadOnlyList<AuthorRow> rows = _viewModel.Rows;
-        int y = 0;
-
-        foreach (AuthorRow row in rows)
+        _listRows.Clear();
+        foreach (AuthorListRow row in _viewModel.AuthorListRows)
         {
-            CheckBox cb = new()
-            {
-                Text = row.DisplayLabel,
-                X = 0,
-                Y = y,
-                Value = row.IsSelected ? CheckState.Checked : CheckState.UnChecked,
-            };
+            row.SelectionGlyph = _glyphSet.Check;
+            _listRows.Add(row);
+        }
 
-            // Capture row in closure
-            AuthorRow capturedRow = row;
-            cb.ValueChanged += (_, args) =>
-            {
-                capturedRow.IsSelected = args.NewValue == CheckState.Checked;
-            };
+        if (_listRows.Count > 0)
+        {
+            _panel.AuthorListView.SelectedItem = Math.Min(focused, _listRows.Count - 1);
+        }
 
-            // In advanced view, show attribution selector after each checkbox
-            if (_viewModel.AdvancedViewEnabled && !capturedRow.IsHostRow)
-            {
-                Button attrButton = new()
-                {
-                    Text = FormatAttributionType(capturedRow.SelectedAttributionType),
-                    X = Pos.Right(cb) + 1,
-                    Y = y,
-                    Width = 16,
-                };
+        UpdateSummary();
+    }
 
-                Button capturedAttrButton = attrButton;
-                attrButton.Accepting += (_, _) =>
-                {
-                    // Cycle through: CoAuthor → Assisted → DefaultOrCoAuthor → CoAuthor
-                    capturedRow.SelectedAttributionType = capturedRow.SelectedAttributionType switch
-                    {
-                        AttributionType.CoAuthor => AttributionType.Assisted,
-                        AttributionType.Assisted => AttributionType.DefaultOrCoAuthor,
-                        _ => AttributionType.CoAuthor,
-                    };
-                    capturedAttrButton.Text = FormatAttributionType(capturedRow.SelectedAttributionType);
-                };
+    /// <summary>
+    /// Renders the right-pane summary of the current selection and, in advanced view, their
+    /// attribution types (T014, D006).
+    /// </summary>
+    private void UpdateSummary()
+    {
+        IEnumerable<AuthorRow> selected = _viewModel.Rows
+            .Where(r => r.IsSelected && !r.IsHostRow);
 
-                _authorListContainer.Add(cb, attrButton);
-            }
-            else
-            {
-                _authorListContainer.Add(cb);
-            }
+        if (!selected.Any())
+        {
+            _panel.SummaryLabel.Text = "(no authors selected)";
+            return;
+        }
 
-            y++;
+        _panel.SummaryLabel.Text = string.Join(
+            "\n",
+            selected.Select(r => $"{r.DisplayLabel} — {FormatAttributionType(r.SelectedAttributionType)}"));
+    }
+
+    /// <summary>
+    /// Toggles the selection of the author at <paramref name="index"/> in the bound list, mapping the
+    /// list row back to its <see cref="AuthorRow"/> so <see cref="AuthorSelectionViewModel.GetSelectedIds"/>
+    /// stays authoritative (T013, D006).
+    /// </summary>
+    private void ToggleSelectionAt(int index)
+    {
+        if (index < 0 || index >= _listRows.Count)
+            return;
+
+        AuthorListRow listRow = _listRows[index];
+        AuthorRow? authorRow = _viewModel.Rows.FirstOrDefault(r => r.Author.CoAuthorId == listRow.Id);
+        if (authorRow is null)
+            return;
+
+        authorRow.IsSelected = !authorRow.IsSelected;
+        _viewModel.RefreshRows();
+        RefreshList();
+    }
+
+    /// <summary>
+    /// Cycles the attribution type of the author at <paramref name="index"/> (advanced view only),
+    /// preserving the CommitForm→AuthorSelection→Preview flow behaviour (T013, D001).
+    /// </summary>
+    private void CycleAttributionAt(int index)
+    {
+        if (index < 0 || index >= _listRows.Count)
+            return;
+
+        AuthorListRow listRow = _listRows[index];
+        AuthorRow? authorRow = _viewModel.Rows.FirstOrDefault(r => r.Author.CoAuthorId == listRow.Id);
+        if (authorRow is null || authorRow.IsHostRow)
+            return;
+
+        authorRow.SelectedAttributionType = authorRow.SelectedAttributionType switch
+        {
+            AttributionType.CoAuthor => AttributionType.Assisted,
+            AttributionType.Assisted => AttributionType.DefaultOrCoAuthor,
+            _ => AttributionType.CoAuthor,
+        };
+        _viewModel.RefreshRows();
+        RefreshList();
+    }
+
+    /// <summary>
+    /// Raises <see cref="Confirmed"/> with the current selection (used by Enter and the Progress button).
+    /// </summary>
+    private void ConfirmSelection()
+    {
+        var (coAuthorIds, assistIds, defaultIds) = _viewModel.GetSelectedIds();
+        Confirmed?.Invoke(coAuthorIds, assistIds, defaultIds);
+    }
+
+    /// <summary>
+    /// Handles key input on the author <see cref="ListView"/>: Space toggles selection, A cycles
+    /// attribution (advanced view), Enter confirms. Esc is left to bubble to the parent flow (D001).
+    /// </summary>
+    private void OnListKeyDown(object? sender, Key e)
+    {
+        int index = _panel.AuthorListView.SelectedItem ?? 0;
+
+        if (e == Key.Space)
+        {
+            ToggleSelectionAt(index);
+            e.Handled = true;
+        }
+        else if (_viewModel.AdvancedViewEnabled && e == Key.A)
+        {
+            CycleAttributionAt(index);
+            e.Handled = true;
+        }
+        else if (e == Key.Enter)
+        {
+            ConfirmSelection();
+            e.Handled = true;
         }
     }
 

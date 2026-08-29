@@ -301,6 +301,13 @@ public sealed partial class AuthorSelectionViewModel : ObservableObject
     }
 
     /// <summary>
+    /// Re-applies the current <see cref="FilterText"/>, rebuilding <see cref="Rows"/> and
+    /// <see cref="AuthorListRows"/> in place. Used after a selection/attribution toggle so the
+    /// bound <see cref="Terminal.Gui.Views.ListView"/> reflects the latest state (T013).
+    /// </summary>
+    public void RefreshRows() => ApplyFilter();
+
+    /// <summary>
     /// Applies the current <see cref="FilterText"/> to the row list.
     /// </summary>
     private void ApplyFilter()

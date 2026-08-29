@@ -33,4 +33,18 @@ public sealed class AuthorListRow
 
     /// <summary>True for the synthetic host row (always at the top, pre-toggled).</summary>
     public required bool IsHostRow { get; init; }
+
+    /// <summary>
+    /// The glyph rendered before the label to indicate selection (defaults to the
+    /// Unicode check). Set from <c>GlyphSet.Check</c> by the presenting view (T013, D006).
+    /// </summary>
+    public string SelectionGlyph { get; set; } = "✔";
+
+    /// <summary>
+    /// Renders the row for the <see cref="Terminal.Gui.Views.ListView"/> bound to
+    /// <see cref="AuthorListRow"/>, prefixing the selection glyph when selected (T013, D006).
+    /// </summary>
+    public override string ToString() => IsSelected
+        ? $"{SelectionGlyph} {DisplayLabel}"
+        : $"  {DisplayLabel}";
 }
