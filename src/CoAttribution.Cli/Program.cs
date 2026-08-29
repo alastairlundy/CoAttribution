@@ -17,8 +17,10 @@ using CliInvoke.Extensions;
 using CoAttribution.Lib.HostResolution;
 using CoAttribution.Lib.HostResolution.Abstractions;
 using CoAttribution.Lib.Abstractions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Reflection;
 
 const string appName = "CoAttribution";
 
@@ -62,7 +64,16 @@ Cli.Ext.ConfigureServices(services =>
     });
 
     // TUI services — resolution deferred to RootCommand handler
-    services.AddSingleton(_ => GlyphSet.FromEmbeddedConfig());
+    services.AddSingleton(_ =>
+    {
+        // Load the TUI config once from its embedded resource (startup-only,
+        // trimming/AoT-safe) and expose the Glyphs section to a reflection-free GlyphSet.
+        Assembly assembly = typeof(Program).Assembly;
+        using Stream? stream = assembly.GetManifestResourceStream("Resources.config.json")
+            ?? throw new InvalidOperationException("Embedded resource 'Resources.config.json' was not found.");
+        IConfiguration resourceConfig = new ConfigurationBuilder().AddJsonStream(stream).Build();
+        return GlyphSet.FromConfiguration(resourceConfig.GetSection("Glyphs"));
+    });
     services.AddSingleton<TuiCompositionRoot>();
     services.AddSingleton<AuthorSelectionViewModel>(sp => new AuthorSelectionViewModel(
         sp.GetRequiredService<IAuthorRegistry>(),
