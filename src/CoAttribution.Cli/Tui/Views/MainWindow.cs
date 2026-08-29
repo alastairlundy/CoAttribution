@@ -35,11 +35,13 @@ public sealed class MainWindow : Window, IStatusBarProvider
     private readonly PreviewModal _previewModal;
     private readonly QuitDialog _quitDialog;
     private readonly CommitFormViewModel _formViewModel;
+    private StatusBar _statusBar;
     private readonly ICommitOrchestrator _commitOrchestrator;
     private readonly DraftStore _draftStore;
     private readonly IAuthorRegistry _authorRegistry;
     private readonly HostBlockWriter _hostBlockWriter;
     private readonly IRepositoryContext _repositoryContext;
+    private readonly FeedbackToast _feedbackToast;
 
     private const string DefaultTitle = "CoAttribution";
 
@@ -69,9 +71,15 @@ public sealed class MainWindow : Window, IStatusBarProvider
         _authorRegistry = authorRegistry;
         _hostBlockWriter = hostBlockWriter;
         _repositoryContext = repositoryContext;
+        _feedbackToast = new FeedbackToast();
 
         Title = GetMainWindowTitle();
         Padding.Thickness = new Thickness(1, 0, 1, 0);
+
+        _statusBar = StatusBarComposer.Build(this);
+        Add(_statusBar);
+
+        Add(_feedbackToast);
 
         SetupScreenSequence();
     }
@@ -123,7 +131,17 @@ public sealed class MainWindow : Window, IStatusBarProvider
             _pendingCoAuthorIds = coAuthorIds;
             _pendingAssistIds = assistIds;
             _pendingDefaultIds = defaultIds;
+            _previewModal.RefreshPreview();
             ShowScreen(_previewModal);
+        };
+        _authorSelectionView.BackRequested += () =>
+        {
+            ShowScreen(_commitFormView);
+        };
+
+        _previewModal.Cancelled += () =>
+        {
+            ShowScreen(_authorSelectionView);
         };
         _previewModal.KeyDown += (_, e) =>
         {
@@ -143,9 +161,15 @@ public sealed class MainWindow : Window, IStatusBarProvider
 
     private void OnMainWindowKeyDown(object? sender, Key e)
     {
-        if (e == Key.Esc || e == Key.C.WithCtrl)
+        if (e == Key.Esc)
         {
             ShowQuitDialog();
+            e.Handled = true;
+        }
+        else if (e == Key.C.WithCtrl)
+        {
+            // Ctrl+C immediately closes the TUI and discards the in-progress commit.
+            App?.RequestStop();
             e.Handled = true;
         }
     }
@@ -157,6 +181,15 @@ public sealed class MainWindow : Window, IStatusBarProvider
         Remove(_previewModal);
 
         Add(screen);
+
+        // Rebuild the status bar from the active screen's key bindings so the
+        // hints always match the screen the user is on.
+        if (screen is IStatusBarProvider provider)
+        {
+            Remove(_statusBar);
+            _statusBar = StatusBarComposer.Build(provider);
+            Add(_statusBar);
+        }
 
         // For CommitFormView, focus the subject field directly instead of the parent view
         if (screen == _commitFormView)
@@ -196,10 +229,13 @@ public sealed class MainWindow : Window, IStatusBarProvider
 
         try
         {
+            // Hide the main status bar so only the dialog's own status bar shows.
+            _statusBar.Visible = false;
             App?.Run(_quitDialog);
         }
         finally
         {
+            _statusBar.Visible = true;
             _quitDialog.DraftSaved -= OnDraftSaved;
             _quitDialog.Discarded -= OnDiscarded;
             _quitDialog.Cancelled -= OnCancelled;
@@ -230,10 +266,12 @@ public sealed class MainWindow : Window, IStatusBarProvider
 
         try
         {
+            _statusBar.Visible = false;
             App?.Run(dialog);
         }
         finally
         {
+            _statusBar.Visible = true;
             dialog.HostBlockWritten -= OnHostBlockWritten;
             dialog.Cancelled -= OnCancelled;
         }
@@ -260,17 +298,17 @@ public sealed class MainWindow : Window, IStatusBarProvider
 
             if (result.ExitCode == 0)
             {
-                Title = $"{GetMainWindowTitle()} — Commit succeeded";
+                _feedbackToast.Show("Commit succeeded", FeedbackKind.Success);
                 App?.RequestStop();
             }
             else
             {
-                Title = $"{GetMainWindowTitle()} — Commit failed: {result.StandardError.Trim()}";
+                _feedbackToast.Show($"Commit failed: {result.StandardError.Trim()}", FeedbackKind.Failure);
             }
         }
         catch (Exception ex)
         {
-            Title = $"{GetMainWindowTitle()} — Error: {ex.Message}";
+            _feedbackToast.Show($"Error: {ex.Message}", FeedbackKind.Error);
         }
     }
 }

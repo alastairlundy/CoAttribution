@@ -1,6 +1,15 @@
 {
   "$schema": "https://tui-cs.github.io/Terminal.Gui/schemas/tui-config-schema.json",
   "Theme": "CoAttribution",
+  "Glyphs": {
+    "Check": "✔",
+    "Arrow": "→",
+    "Warning": "⚠",
+    "KeyEnter": "⏎",
+    "KeyEsc": "Esc",
+    "KeyTab": "Tab",
+    "KeyCtrlEnter": "Ctrl+⏎"
+  },
   "Themes": [
     {
       "CoAttribution": {

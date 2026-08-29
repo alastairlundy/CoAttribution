@@ -106,6 +106,13 @@ public sealed partial class AuthorSelectionViewModel : ObservableObject
     public IReadOnlyList<AuthorRow> Rows { get; private set; } = [];
 
     /// <summary>
+    /// The same filtered rows projected onto the testable <see cref="AuthorListRow"/>
+    /// DTO (T013, T018). Preserves filter, multi-select, and advanced attribution
+    /// cycling semantics while decoupling the future list view from <see cref="AuthorRow"/>.
+    /// </summary>
+    public IReadOnlyList<AuthorListRow> AuthorListRows { get; private set; } = [];
+
+    /// <summary>
     /// When true, an error occurred during host resolution (e.g. MissingHostBlockException).
     /// The view should surface this to the user so TK011's dialog can catch it.
     /// </summary>
@@ -180,47 +187,8 @@ public sealed partial class AuthorSelectionViewModel : ObservableObject
 
             List<AuthorRow> rows = [];
 
-            // Synthetic host row at the top (pre-toggled) when host is resolved
-            if (_resolvedHostKey is not null)
-            {
-                string hostName = string.Empty;
-                string hostEmail = string.Empty;
-
-                // Try to resolve the host's own identity from any agent with a host block
-                GitCoAuthor? hostCandidate = allAuthors
-                    .Where(a => a.Type == ContributorType.Agent && a.Host.ContainsKey(_resolvedHostKey))
-                    .FirstOrDefault();
-
-                if (hostCandidate is not null)
-                {
-                    hostCandidate.Host.TryGetValue(_resolvedHostKey, out HostOverride? block);
-                    hostName = block?.Name ?? hostCandidate.Name;
-                    hostEmail = block?.Email ?? hostCandidate.Email;
-                }
-                else
-                {
-                    hostName = $"Host ({_resolvedHostKey})";
-                    hostEmail = string.Empty;
-                }
-
-                rows.Add(new AuthorRow
-                {
-                    Author = new GitCoAuthor
-                    {
-                        CoAuthorId = $"__host__{_resolvedHostKey}",
-                        Name = hostName,
-                        Email = hostEmail,
-                        Type = ContributorType.NotDefined,
-                    },
-                    DisplayName = hostName,
-                    DisplayEmail = hostEmail,
-                    IsSelected = true,
-                    IsHostRow = true,
-                    SelectedAttributionType = AttributionType.DefaultOrCoAuthor,
-                });
-            }
-
-            // Build rows for each registered author
+            // Build rows for each registered author; pre-select any agent whose
+            // host block matches the resolved host so it is co-authored automatically.
             foreach (GitCoAuthor author in allAuthors)
             {
                 string displayName = author.Name;
@@ -233,13 +201,14 @@ public sealed partial class AuthorSelectionViewModel : ObservableObject
                 }
 
                 AttributionType defaultType = author.DefaultAttributionType;
+                bool isHostMatch = _resolvedHostKey is not null && author.Host.ContainsKey(_resolvedHostKey);
 
                 rows.Add(new AuthorRow
                 {
                     Author = author,
                     DisplayName = displayName,
                     DisplayEmail = displayEmail,
-                    IsSelected = false,
+                    IsSelected = isHostMatch,
                     IsHostRow = false,
                     SelectedAttributionType = defaultType,
                     AiPrefix = BuildAiPrefix(author),
@@ -336,16 +305,34 @@ public sealed partial class AuthorSelectionViewModel : ObservableObject
     /// </summary>
     private void ApplyFilter()
     {
+        IReadOnlyList<AuthorRow> filtered;
+
         if (string.IsNullOrWhiteSpace(FilterText))
         {
-            Rows = _allRows;
-            return;
+            filtered = _allRows;
+        }
+        else
+        {
+            filtered = _allRows
+                .Where(r => r.DisplayLabel.Contains(FilterText, StringComparison.OrdinalIgnoreCase))
+                .ToList();
         }
 
-        Rows = _allRows
-            .Where(r => r.DisplayLabel.Contains(FilterText, StringComparison.OrdinalIgnoreCase))
-            .ToList();
+        Rows = filtered;
+        AuthorListRows = filtered.Select(ToAuthorListRow).ToList();
     }
+
+    /// <summary>
+    /// Maps a mutable <see cref="AuthorRow"/> onto the testable <see cref="AuthorListRow"/> DTO.
+    /// </summary>
+    private static AuthorListRow ToAuthorListRow(AuthorRow row) => new()
+    {
+        Id = row.Author.CoAuthorId,
+        DisplayLabel = row.DisplayLabel,
+        IsSelected = row.IsSelected,
+        SelectedAttributionType = row.SelectedAttributionType,
+        IsHostRow = row.IsHostRow,
+    };
 
     partial void OnFilterTextChanged(string value) => ApplyFilter();
 }
