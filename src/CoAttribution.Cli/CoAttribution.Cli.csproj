@@ -76,5 +76,9 @@ CoAttribution is a command-line tool that tags your Git commits with `Co-authore
       <ProjectReference Include="..\CoAttribution.Lib\CoAttribution.Lib.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <InternalsVisibleTo Include="CoAttribution.Cli.Tests" />
+    </ItemGroup>
+
 
 </Project>

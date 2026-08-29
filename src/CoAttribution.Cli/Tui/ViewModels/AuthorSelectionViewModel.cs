@@ -332,7 +332,7 @@ public sealed partial class AuthorSelectionViewModel : ObservableObject
     /// <summary>
     /// Maps a mutable <see cref="AuthorRow"/> onto the testable <see cref="AuthorListRow"/> DTO.
     /// </summary>
-    private static AuthorListRow ToAuthorListRow(AuthorRow row) => new()
+    internal static AuthorListRow ToAuthorListRow(AuthorRow row) => new()
     {
         Id = row.Author.CoAuthorId,
         DisplayLabel = row.DisplayLabel,
