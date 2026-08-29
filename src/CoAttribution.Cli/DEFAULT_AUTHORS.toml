@@ -36,11 +36,3 @@ email = "cursoragent@cursor.com"
 name = "Kilo AI"
 email = "noreply@kilocode.ai"
 
-# Generic placeholders for common agent types
-[agents.generic_llm]
-name = "AI Agent"
-email = "noreply@example.com"
-
-[agents.generic_llm.host.github]
-name = "AI Agent"
-email = "noreply@example.com"
