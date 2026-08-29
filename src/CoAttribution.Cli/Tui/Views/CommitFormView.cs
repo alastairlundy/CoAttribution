@@ -28,16 +28,14 @@ public sealed class CommitFormView : View, IStatusBarProvider
     private readonly CommitFormViewModel _viewModel;
     private readonly IRepositoryContext _repositoryContext;
     private readonly GlyphSet _glyphSet;
-    private readonly Label _subjectCounterLabel;
-    private readonly TextField _subjectField;
-    private readonly Label _bodyCounterLabel;
+    private readonly CommitFormSectionsView _sections;
     private bool _suppressSubjectChange;
     private bool _suppressBodyChange;
 
     /// <summary>
     /// The subject text field, exposed for focus-chain checks from MainWindow.
     /// </summary>
-    public TextField SubjectField => _subjectField;
+    public TextField SubjectField => _sections.SubjectField;
 
     public CommitFormView(CommitFormViewModel viewModel, IRepositoryContext repositoryContext, GlyphSet glyphSet)
     {
@@ -59,33 +57,17 @@ public sealed class CommitFormView : View, IStatusBarProvider
             Y = 0,
         };
 
-        // --- Subject section ---
-        Label subjectLabel = new()
-        {
-            Text = "Subject:",
-            X = 0,
-            Y = 2,
-        };
-
-        _subjectCounterLabel = new Label
-        {
-            Text = FormatSubjectCounter(0),
-            X = Pos.AnchorEnd(8),
-            Y = 2,
-        };
-        UpdateSubjectCounterColor();
-
-        _subjectField = new TextField
+        // --- Subject/Body sections (counters, caps, and Tab nav wired below) ---
+        _sections = new CommitFormSectionsView
         {
             X = 0,
-            Y = 3,
+            Y = 2,
             Width = Dim.Fill(),
-            Height = 1,
-            CanFocus = true,
+            Height = Dim.Fill(2),
         };
 
         // Block characters beyond the hard cap
-        _subjectField.KeyDown += (_, e) =>
+        _sections.SubjectField.KeyDown += (_, e) =>
         {
             if (_viewModel.SubjectLength >= CommitFormViewModel.SubjectMaxThreshold
                 && !IsNavigationKey(e))
@@ -94,90 +76,62 @@ public sealed class CommitFormView : View, IStatusBarProvider
             }
         };
 
-        _subjectField.TextChanged += (_, _) =>
+        _sections.SubjectField.TextChanged += (_, _) =>
         {
             if (_suppressSubjectChange)
                 return;
 
-            string text = _subjectField.Text?.ToString() ?? string.Empty;
+            string text = _sections.SubjectField.Text?.ToString() ?? string.Empty;
 
             // Truncate if paste exceeded the cap
             if (text.Length > CommitFormViewModel.SubjectMaxThreshold)
             {
                 _suppressSubjectChange = true;
-                _subjectField.Text = text[..CommitFormViewModel.SubjectMaxThreshold];
+                _sections.SubjectField.Text = text[..CommitFormViewModel.SubjectMaxThreshold];
                 _suppressSubjectChange = false;
-                text = _subjectField.Text?.ToString() ?? string.Empty;
+                text = _sections.SubjectField.Text?.ToString() ?? string.Empty;
             }
 
             _viewModel.Subject = text;
-            _subjectCounterLabel.Text = FormatSubjectCounter(_viewModel.SubjectLength);
+            _sections.SubjectCounterLabel.Text = FormatSubjectCounter(_viewModel.SubjectLength);
             UpdateSubjectCounterColor();
         };
 
-        // --- Body section ---
-        Label bodyLabel = new()
-        {
-            Text = "Body:",
-            X = 0,
-            Y = 5,
-        };
-
-        _bodyCounterLabel = new Label
-        {
-            Text = FormatBodyCounter(0),
-            X = Pos.AnchorEnd(8),
-            Y = 5,
-        };
-        UpdateBodyCounterColor();
-
-        Editor bodyField = new()
-        {
-            X = 0,
-            Y = 6,
-            Width = Dim.Fill(),
-            Height = Dim.Fill(1),
-            CanFocus = true,
-            BorderStyle = LineStyle.Rounded,
-            ViewportSettings = ViewportSettingsFlags.HasScrollBars,
-        };
-
         // Tab moves focus back to subject (Editor uses Tab for indentation by default)
-        bodyField.KeyDown += (_, e) =>
+        _sections.BodyField.KeyDown += (_, e) =>
         {
             if (e == Key.Tab)
             {
-                _subjectField.SetFocus();
+                _sections.SubjectField.SetFocus();
                 // Terminal.Gui v2 TextField auto-selects all text on keyboard focus;
                 // move the caret to the end so the user can keep typing.
-                _subjectField.InsertionPoint = _subjectField.Text?.Length ?? 0;
+                _sections.SubjectField.InsertionPoint = _sections.SubjectField.Text?.Length ?? 0;
                 e.Handled = true;
             }
         };
 
-        bodyField.ContentChanged += (_, _) =>
+        _sections.BodyField.ContentChanged += (_, _) =>
         {
             if (_suppressBodyChange)
                 return;
 
-            string text = bodyField.Text ?? string.Empty;
+            string text = _sections.BodyField.Text ?? string.Empty;
 
             // Truncate if content exceeded the hard cap
             if (text.Length > CommitFormViewModel.BodyHardThreshold)
             {
                 _suppressBodyChange = true;
-                bodyField.Text = text[..CommitFormViewModel.BodyHardThreshold];
+                _sections.BodyField.Text = text[..CommitFormViewModel.BodyHardThreshold];
                 _suppressBodyChange = false;
-                text = bodyField.Text ?? string.Empty;
+                text = _sections.BodyField.Text ?? string.Empty;
             }
 
             _viewModel.Body = text;
-            _bodyCounterLabel.Text = FormatBodyCounter(_viewModel.BodyLength);
+            _sections.BodyCounterLabel.Text = FormatBodyCounter(_viewModel.BodyLength);
             UpdateBodyCounterColor();
         };
 
-        Add(repoLabel, subjectLabel, _subjectCounterLabel, _subjectField,
-            bodyLabel, _bodyCounterLabel, bodyField);
+        Add(repoLabel, _sections);
     }
 
     public void Initialize()
@@ -198,7 +152,7 @@ public sealed class CommitFormView : View, IStatusBarProvider
 
     public void FocusSubject()
     {
-        _subjectField.SetFocus();
+        _sections.SubjectField.SetFocus();
     }
 
     public IReadOnlyList<StatusBarKeyBinding> GetKeyBindings() =>
@@ -214,7 +168,7 @@ public sealed class CommitFormView : View, IStatusBarProvider
 
     private void UpdateSubjectCounterColor()
     {
-        _subjectCounterLabel.SetScheme(new Scheme
+        _sections.SubjectCounterLabel.SetScheme(new Scheme
         {
             Normal = new Terminal.Gui.Drawing.Attribute(_viewModel.SubjectColor, ColorName16.Black),
         });
@@ -222,7 +176,7 @@ public sealed class CommitFormView : View, IStatusBarProvider
 
     private void UpdateBodyCounterColor()
     {
-        _bodyCounterLabel.SetScheme(new Scheme
+        _sections.BodyCounterLabel.SetScheme(new Scheme
         {
             Normal = new Terminal.Gui.Drawing.Attribute(_viewModel.BodyColor, ColorName16.Black),
         });
