@@ -137,6 +137,12 @@ public sealed class QuitDialog : Window, IStatusBarProvider
                 Cancelled?.Invoke();
                 e.Handled = true;
             }
+            else if (e == Key.C.WithCtrl)
+            {
+                // Ctrl+C immediately closes the TUI and discards the in-progress commit.
+                Discarded?.Invoke();
+                e.Handled = true;
+            }
         };
     }
 

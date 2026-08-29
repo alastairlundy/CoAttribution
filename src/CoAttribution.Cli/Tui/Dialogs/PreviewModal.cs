@@ -80,6 +80,7 @@ public sealed class PreviewModal : Window, IStatusBarProvider
             Width = Dim.Fill(),
             Height = Dim.Fill(1),
             ReadOnly = true,
+            CanFocus = false,
             WordWrap = true,
         };
 

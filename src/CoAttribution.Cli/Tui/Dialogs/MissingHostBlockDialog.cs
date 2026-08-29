@@ -8,6 +8,7 @@
  */
 
 using CoAttribution.Cli.Tui.Abstractions;
+using CoAttribution.Cli.Tui.Composition;
 using CoAttribution.Lib.Abstractions;
 using CoAttribution.Lib.HostResolution;
 using CoAttribution.Lib.Models.DTOs;
@@ -119,6 +120,10 @@ public sealed class MissingHostBlockDialog : Window, IStatusBarProvider
         };
 
         Add(nameLabel, _nameField, emailLabel, _emailField, _errorLabel, _saveButton, _cancelButton);
+
+        // Add a status bar so key hints are visible while the main bar is hidden.
+        StatusBar statusBar = StatusBarComposer.Build(this);
+        Add(statusBar);
     }
 
     public IReadOnlyList<StatusBarKeyBinding> GetKeyBindings() =>

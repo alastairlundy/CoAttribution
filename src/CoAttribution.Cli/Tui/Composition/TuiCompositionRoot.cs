@@ -52,9 +52,6 @@ public sealed class TuiCompositionRoot
         MainWindow mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
         mainWindow.Initialize();
 
-        StatusBar statusBar = StatusBarComposer.Build(mainWindow);
-        mainWindow.Add(statusBar);
-
         app.Run(mainWindow);
 
         return await Task.FromResult(0);
