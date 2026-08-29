@@ -16,7 +16,8 @@ namespace CoAttribution.Cli.Tui.Abstractions;
 /// </summary>
 /// <param name="Key">The terminal key combination.</param>
 /// <param name="Label">The human-readable label displayed next to the shortcut.</param>
-public readonly record struct StatusBarKeyBinding(Key Key, string Label);
+/// <param name="Glyph">A Unicode glyph (from <c>GlyphSet</c>) shown in a dedicated cell for discoverability. Empty for screens that do not supply one.</param>
+public readonly record struct StatusBarKeyBinding(Key Key, string Label, string Glyph = "");
 
 /// <summary>
 /// Contract that every TUI screen implements to expose its key bindings

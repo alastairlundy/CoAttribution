@@ -32,14 +32,16 @@ public static class StatusBarComposer
 
         foreach (StatusBarKeyBinding binding in bindings)
         {
-            // Use the label as Title (displayed on the left side).
-            // Set Key to Key.Empty so the KeyView (right side) is not displayed,
-            // avoiding duplication of the key name.
-            // BindKeyToApplication = false so shortcuts are display-only and
-            // do not intercept Enter/Esc from the focused view.
+            // Render the glyph in a dedicated cell followed by its label for
+            // discoverability (D005, T012, T008). The Key is kept Empty so the
+            // KeyView (right side) is not displayed, avoiding duplication of the
+            // key name. BindKeyToApplication = false keeps shortcuts display-only
+            // so Enter/Esc behavior in the focused view is unchanged.
             Shortcut shortcut = new()
             {
-                Title = binding.Label,
+                Title = string.IsNullOrEmpty(binding.Glyph)
+                    ? binding.Label
+                    : $"{binding.Glyph} {binding.Label}",
                 Key = Key.Empty,
                 BindKeyToApplication = false,
                 MouseHighlightStates = MouseState.None,

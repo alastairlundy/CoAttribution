@@ -8,6 +8,7 @@
  */
 
 using CoAttribution.Cli.Tui.Abstractions;
+using CoAttribution.Cli.Tui.Composition;
 using CoAttribution.Cli.Tui.ViewModels;
 using CoAttribution.Lib.Abstractions;
 using Terminal.Gui.Drawing;
@@ -26,6 +27,7 @@ public sealed class CommitFormView : View, IStatusBarProvider
 {
     private readonly CommitFormViewModel _viewModel;
     private readonly IRepositoryContext _repositoryContext;
+    private readonly GlyphSet _glyphSet;
     private readonly Label _subjectCounterLabel;
     private readonly TextField _subjectField;
     private readonly Label _bodyCounterLabel;
@@ -37,10 +39,11 @@ public sealed class CommitFormView : View, IStatusBarProvider
     /// </summary>
     public TextField SubjectField => _subjectField;
 
-    public CommitFormView(CommitFormViewModel viewModel, IRepositoryContext repositoryContext)
+    public CommitFormView(CommitFormViewModel viewModel, IRepositoryContext repositoryContext, GlyphSet glyphSet)
     {
         _viewModel = viewModel;
         _repositoryContext = repositoryContext;
+        _glyphSet = glyphSet;
 
         Title = "Commit Message";
         Width = Dim.Fill();
@@ -200,9 +203,9 @@ public sealed class CommitFormView : View, IStatusBarProvider
 
     public IReadOnlyList<StatusBarKeyBinding> GetKeyBindings() =>
     [
-        new(Key.Enter, "Enter next"),
-        new(Key.Tab, "Tab next field"),
-        new(Key.Esc, "Esc quit"),
+        new(Key.Enter, "Enter next", _glyphSet.KeyEnter),
+        new(Key.Tab, "Tab next field", _glyphSet.KeyTab),
+        new(Key.Esc, "Esc quit", _glyphSet.KeyEsc),
     ];
 
     private static string FormatSubjectCounter(int length) => $"{length}/72";

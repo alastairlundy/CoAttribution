@@ -42,6 +42,7 @@ public sealed class MainWindow : Window, IStatusBarProvider
     private readonly HostBlockWriter _hostBlockWriter;
     private readonly IRepositoryContext _repositoryContext;
     private readonly FeedbackToast _feedbackToast;
+    private readonly GlyphSet _glyphSet;
 
     private const string DefaultTitle = "CoAttribution";
 
@@ -59,7 +60,8 @@ public sealed class MainWindow : Window, IStatusBarProvider
         DraftStore draftStore,
         IAuthorRegistry authorRegistry,
         HostBlockWriter hostBlockWriter,
-        IRepositoryContext repositoryContext)
+        IRepositoryContext repositoryContext,
+        GlyphSet glyphSet)
     {
         _commitFormView = commitFormView;
         _authorSelectionView = authorSelectionView;
@@ -71,6 +73,7 @@ public sealed class MainWindow : Window, IStatusBarProvider
         _authorRegistry = authorRegistry;
         _hostBlockWriter = hostBlockWriter;
         _repositoryContext = repositoryContext;
+        _glyphSet = glyphSet;
         _feedbackToast = new FeedbackToast();
 
         Title = GetMainWindowTitle();
@@ -97,10 +100,10 @@ public sealed class MainWindow : Window, IStatusBarProvider
 
     public IReadOnlyList<StatusBarKeyBinding> GetKeyBindings() =>
     [
-        new(Key.Esc, "ESC quit"),
-        new(Key.Enter, "ENTER newline"),
-        new(Key.Enter.WithCtrl, "CTRL+ENTER next"),
-        new(Key.Tab, "TAB next field"),
+        new(Key.Esc, "ESC quit", _glyphSet.KeyEsc),
+        new(Key.Enter, "ENTER newline", _glyphSet.KeyEnter),
+        new(Key.Enter.WithCtrl, "CTRL+ENTER next", _glyphSet.KeyCtrlEnter),
+        new(Key.Tab, "TAB next field", _glyphSet.KeyTab),
     ];
 
     /// <summary>
