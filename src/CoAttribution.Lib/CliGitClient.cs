@@ -38,15 +38,22 @@ public class CliGitClient : IGitClient
         StringBuilder stringBuilder = new();
 
         (string message, string trailer) gitFormat = commitMessage.ToGitFormat();
-        
+
         stringBuilder.Append("commit -m ");
         stringBuilder.Append('"');
         stringBuilder.Append(gitFormat.message);
         stringBuilder.Append('"');
-        stringBuilder.Append(" --trailer");
-        stringBuilder.Append('"');
-        stringBuilder.Append(gitFormat.trailer);
-        stringBuilder.Append('"');
+
+        // Emit one --trailer "<value>" per trailer line. A missing space before
+        // the value (or collapsing all trailers into a single value) makes git
+        // reject the argument and exit with code 129.
+        foreach (string line in gitFormat.trailer
+                     .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries))
+        {
+            stringBuilder.Append(" --trailer \"");
+            stringBuilder.Append(line);
+            stringBuilder.Append('"');
+        }
 
         return stringBuilder.ToString();
     }
