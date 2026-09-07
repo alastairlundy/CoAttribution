@@ -16,6 +16,8 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <DefineConstants Condition="'$(EnableTui)' == 'true'">$(DefineConstants);TUI</DefineConstants>
         <IsPackable>true</IsPackable>
+        <PackAsTool>true</PackAsTool>
+        <ToolCommandName>co-attr</ToolCommandName>
         <IsTrimmable>true</IsTrimmable>
         <IsAoTCompatible>true</IsAoTCompatible>
         <PublishAot Condition="'$(DotNetPublish)' == 'true'">true</PublishAot>
@@ -25,7 +27,7 @@
         <RootNamespace>CoAttribution.Cli</RootNamespace>
         <PackageId>CoAttribution</PackageId>
         <Description>CoAttribution is a command-line tool that tags your Git commits with `Co-authored-by` and `Assisted-by` trailers, pulling author identities from a local TOML registry.</Description>
-        <Version>0.1.1</Version>
+        <Version>0.1.1.1</Version>
         <AssemblyVersion>0.1.1.0</AssemblyVersion>
         <FileVersion>0.1.1.0</FileVersion>
     </PropertyGroup>
