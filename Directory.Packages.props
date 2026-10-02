@@ -3,8 +3,8 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="CliInvoke" Version="2.11.0" />
-    <PackageVersion Include="CliInvoke.Core" Version="2.11.0" />
+    <PackageVersion Include="CliInvoke" Version="3.0.2" />
+    <PackageVersion Include="CliInvoke.Core" Version="3.0.2" />
     <PackageVersion Include="CliInvoke.Extensions" Version="2.11.0" />
     <PackageVersion Include="DotMake.CommandLine" Version="3.7.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.11" />
