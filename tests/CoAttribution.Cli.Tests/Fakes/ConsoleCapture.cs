@@ -17,8 +17,10 @@ public sealed class ConsoleCapture : IDisposable
     {
         _originalOut = Console.Out;
         _originalError = Console.Error;
+#pragma warning disable TUnit0055 // Intentional console capture for test isolation
         Console.SetOut(_outWriter);
         Console.SetError(_errorWriter);
+#pragma warning restore TUnit0055
     }
 
     /// <summary>Text written to <see cref="Console.Out"/> while captured.</summary>
@@ -29,8 +31,10 @@ public sealed class ConsoleCapture : IDisposable
 
     public void Dispose()
     {
+#pragma warning disable TUnit0055 // Intentional console capture for test isolation
         Console.SetOut(_originalOut);
         Console.SetError(_originalError);
+#pragma warning restore TUnit0055
         _outWriter.Dispose();
         _errorWriter.Dispose();
     }

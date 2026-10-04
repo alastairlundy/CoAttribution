@@ -8,25 +8,29 @@
  */
 
 using CoAttribution.Cli;
+using CoAttribution.Cli.Tui;
+using CoAttribution.Cli.Tui.Composition;
+using CoAttribution.Cli.Tui.Dialogs;
+using CoAttribution.Cli.Tui.ViewModels;
+using CoAttribution.Cli.Tui.Views;
 using CliInvoke.Extensions;
+using CoAttribution.Lib.HostResolution;
 using CoAttribution.Lib.HostResolution.Abstractions;
+using CoAttribution.Lib.Abstractions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System.Reflection;
 
 const string appName = "CoAttribution";
 
-Dictionary<string, string> switchMappings = new()
-{
-    { "--config-path", "config-file" }
-};
+string configFilePath = ExtractConfigPath(args) ?? DetermineDefaultConfigFilePath();
 
 IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
-    .AddCommandLine(args, switchMappings)
-    .AddEnvironmentVariables();
-
-if (!args.Contains("--config-path", StringComparer.OrdinalIgnoreCase)) 
-    configurationBuilder.AddInMemoryCollection(new Dictionary<string, string?>
+    .AddEnvironmentVariables()
+    .AddInMemoryCollection(new Dictionary<string, string?>
     {
-        ["config-file"] = DetermineDefaultConfigFilePath()
+        ["config-file"] = configFilePath
     });
 
 IConfiguration configuration = configurationBuilder.Build();
@@ -34,6 +38,10 @@ IConfiguration configuration = configurationBuilder.Build();
 Cli.Ext.ConfigureServices(services =>
 {
     services.AddCliInvoke();
+    services.AddLogging(builder =>
+    {
+        builder.AddProvider(new FileLoggerProvider(FileLogger.GetDefaultLogDirectory()));
+    });
     services.AddSingleton<IHostResolver, HostResolver>();
     services.AddSingleton<IRegistryPathResolver, AppConfigRegistryPathResolver>();
     services.AddSingleton<IConfigResolver, ConfigResolver>();
@@ -43,6 +51,8 @@ Cli.Ext.ConfigureServices(services =>
     services.AddSingleton<IGitClient, CliGitClient>();
     services.AddSingleton<IGitConfigClient, GitConfigClient>();
     services.AddSingleton<IGitRemoteProbe, GitRemoteProbe>();
+    services.AddSingleton<IRepositoryContext, RepositoryContext>();
+    services.AddSingleton<HostBlockWriter>();
     
     services.AddSingleton(configuration);
     
@@ -52,6 +62,30 @@ Cli.Ext.ConfigureServices(services =>
         IConfiguration cfg = sp.GetRequiredService<IConfiguration>();
         return configResolver.ResolveAppConfig(cfg, CancellationToken.None).GetAwaiter().GetResult();
     });
+
+    // TUI services — resolution deferred to RootCommand handler
+    services.AddSingleton(_ =>
+    {
+        // Load the TUI config once from its embedded resource (startup-only,
+        // trimming/AoT-safe) and expose the Glyphs section to a reflection-free GlyphSet.
+        Assembly assembly = typeof(Program).Assembly;
+        using Stream? stream = assembly.GetManifestResourceStream("Resources.config.json")
+            ?? throw new InvalidOperationException("Embedded resource 'Resources.config.json' was not found.");
+        IConfiguration resourceConfig = new ConfigurationBuilder().AddJsonStream(stream).Build();
+        return GlyphSet.FromConfiguration(resourceConfig.GetSection("Glyphs"));
+    });
+    services.AddSingleton<TuiCompositionRoot>();
+    services.AddSingleton<AuthorSelectionViewModel>(sp => new AuthorSelectionViewModel(
+        sp.GetRequiredService<IAuthorRegistry>(),
+        sp.GetRequiredService<IHostResolver>()));
+    services.AddSingleton<CommitFormViewModel>();
+    services.AddSingleton<DraftStore>();
+    services.AddTransient<CommitFormView>();
+    services.AddTransient<AuthorSelectionView>();
+    services.AddTransient<PreviewModal>();
+    services.AddTransient<QuitDialog>();
+    services.AddTransient<SetupDialog>();
+    services.AddTransient<MainWindow>();
 });
 
 CliSettings settings = new()
@@ -62,6 +96,18 @@ CliSettings settings = new()
 
 return await Cli.RunAsync<RootCommand>(args, settings);
 
+
+static string? ExtractConfigPath(string[] args)
+{
+    for (int i = 0; i < args.Length - 1; i++)
+    {
+        if (string.Equals(args[i], "--config-path", StringComparison.OrdinalIgnoreCase))
+        {
+            return args[i + 1];
+        }
+    }
+    return null;
+}
 
 static string DetermineDefaultConfigFilePath()
 {

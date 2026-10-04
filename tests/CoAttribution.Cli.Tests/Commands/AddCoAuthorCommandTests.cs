@@ -128,7 +128,7 @@ public class AddCoAuthorCommandTests
         _ = await command.RunAsync(ctx);
 
         await registry.Received(1).AddAsync(
-            Arg.Is<GitCoAuthor>(a => a.CoAuthorId == "copilot" && a.Type == ContributorType.Agent),
+            Arg.Is<GitCoAuthor>(a => a != null && a.CoAuthorId == "copilot" && a.Type == ContributorType.Agent),
             cts.Token);
     }
 }

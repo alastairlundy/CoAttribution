@@ -26,7 +26,6 @@ public class ConfigCommandTests
         ConfigCommand command = CommandTestHarness.BuildConfigCommand(configuration, configResolver);
         command.Key = "authors_registry.paths.global";
         command.Value = "";
-        command.ConfigPath = "";
 
         using ConsoleCapture console = new();
         CliContext ctx = CliContextFactory.Create();
@@ -54,7 +53,6 @@ public class ConfigCommandTests
         ConfigCommand command = CommandTestHarness.BuildConfigCommand(configuration, configResolver);
         command.Key = "trailers.default";
         command.Value = "";
-        command.ConfigPath = "";
 
         using ConsoleCapture console = new();
         CliContext ctx = CliContextFactory.Create();
@@ -75,7 +73,6 @@ public class ConfigCommandTests
         ConfigCommand command = CommandTestHarness.BuildConfigCommand(configuration, configResolver);
         command.Key = "totally.unknown.key";
         command.Value = "";
-        command.ConfigPath = "";
 
         using ConsoleCapture console = new();
         CliContext ctx = CliContextFactory.Create();
@@ -101,7 +98,6 @@ public class ConfigCommandTests
         ConfigCommand command = CommandTestHarness.BuildConfigCommand(configuration, configResolver);
         command.Key = "trailers.default";
         command.Value = "";
-        command.ConfigPath = "";
 
         using ConsoleCapture console = new();
         CliContext ctx = CliContextFactory.Create();
@@ -122,7 +118,6 @@ public class ConfigCommandTests
         ConfigCommand command = CommandTestHarness.BuildConfigCommand(configuration, configResolver);
         command.Key = "tui.color_scheme";
         command.Value = "dark";
-        command.ConfigPath = tmp.FilePath;
 
         using ConsoleCapture console = new();
         CliContext ctx = CliContextFactory.Create();

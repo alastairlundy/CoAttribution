@@ -32,27 +32,11 @@ public class ConfigCommand
   
     [CliArgument(Order = 2, Required = true, Arity = CliArgumentArity.ExactlyOne)]
     public string Value { get; set; } = "";
-    
-    [CliOption(Name = "config-path", Required = false,
-        Arity = CliArgumentArity.ExactlyOne)]
-    public string ConfigPath { get; set; } = "";
 
     [CliCommand(Name = "get", Description = "Get config value.")]
     public async Task<int> GetValueAsync(CancellationToken cancellationToken = default)
     {
-        AppConfig? config;
-        
-        if (string.IsNullOrEmpty(ConfigPath))
-        {
-            config = await _configResolver.ResolveAppConfig(_configuration, cancellationToken);
-            ConfigPath = _configuration["config-file"] ?? "";
-        }
-        else
-        {
-            string text = await File.ReadAllTextAsync(ConfigPath, cancellationToken);
-        
-            config = TomlSerializer.Deserialize<AppConfig>(text, ConfigSettingsTomlContext.Default);
-        }
+        AppConfig config = await _configResolver.ResolveAppConfig(_configuration, cancellationToken);
 
         try
         {
@@ -79,23 +63,12 @@ public class ConfigCommand
     [CliCommand(Name = "set", Description = "Set config value.")]
     public async Task<int> SetValueAsync(CancellationToken cancellationToken = default)
     {
-        AppConfig? config;
-        
-        if (string.IsNullOrEmpty(ConfigPath))
-        {
-            config = await _configResolver.ResolveAppConfig(_configuration, cancellationToken);
-            ConfigPath = _configuration["config-file"] ?? "";
-        }
-        else
-        {
-            string text = await File.ReadAllTextAsync(ConfigPath, cancellationToken);
-        
-            config = TomlSerializer.Deserialize<AppConfig>(text, ConfigSettingsTomlContext.Default);
-        }
+        AppConfig config = await _configResolver.ResolveAppConfig(_configuration, cancellationToken);
+        string configPath = _configuration["config-file"] ?? "";
 
         try
         {
-            await SetValueAsync(config, Key, Value, cancellationToken);
+            await SetValueAsync(config, Key, Value, configPath, cancellationToken);
 
             await Console.Out.WriteLineAsync($"Set value for {Key}");
 
@@ -159,7 +132,7 @@ public class ConfigCommand
     }
 
     private async Task SetValueAsync(AppConfig? config, string key, string value,
-        CancellationToken cancellationToken)
+        string configPath, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
         ArgumentException.ThrowIfNullOrEmpty(value);
@@ -188,6 +161,6 @@ public class ConfigCommand
         
         string text = TomlSerializer.Serialize(config, ConfigSettingsTomlContext.Default);
         
-        await File.WriteAllTextAsync(ConfigPath, text, cancellationToken);
+        await File.WriteAllTextAsync(configPath, text, cancellationToken);
     }
 }

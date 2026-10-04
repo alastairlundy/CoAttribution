@@ -3,6 +3,7 @@
     <PropertyGroup>
         <OutputType>Exe</OutputType>
         <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AssemblyName>co-attr</AssemblyName>
@@ -14,7 +15,6 @@
         <RepositoryType>git</RepositoryType>
         <PackageTags>attribution, assisted-by, coauthored-by, coattribution, co-attribution, co-author</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <DefineConstants Condition="'$(EnableTui)' == 'true'">$(DefineConstants);TUI</DefineConstants>
         <IsPackable>true</IsPackable>
         <PackAsTool>true</PackAsTool>
         <ToolCommandName>co-attr</ToolCommandName>
@@ -33,18 +33,26 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CliInvoke.Extensions" />
+      <PackageReference Include="CommunityToolkit.Mvvm" />
+      <PackageReference Include="CliInvoke" />
       <PackageReference Include="DotMake.CommandLine" />
       <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+      <PackageReference Include="Microsoft.Extensions.Logging" />
       <PackageReference Include="Terminal.Gui" />
+      <PackageReference Include="Terminal.Gui.Editor" />
       <PackageReference Include="Tomlyn" />
     </ItemGroup>
 
     <ItemGroup>
       <EmbeddedResource Include="DEFAULT_AUTHORS.toml" LogicalName="DEFAULT_AUTHORS.toml" />
       <None Update="DEFAULT_AUTHORS.toml">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <EmbeddedResource Include="Resources\config.json" LogicalName="Resources.config.json" />
+      <None Update="Resources\config.json">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
       <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
@@ -67,6 +75,10 @@
 
     <ItemGroup>
       <ProjectReference Include="..\CoAttribution.Lib\CoAttribution.Lib.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <InternalsVisibleTo Include="CoAttribution.Cli.Tests" />
     </ItemGroup>
 
 

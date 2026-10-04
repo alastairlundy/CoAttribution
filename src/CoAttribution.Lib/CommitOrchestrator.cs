@@ -97,7 +97,7 @@ public class CommitOrchestrator : ICommitOrchestrator
         return _commitMessageBuilder.Build();
     }
 
-    private static ResolvedCoAuthor[] ApplyHostOverride(ResolvedCoAuthor[] coAuthors, string hostKey)
+    public static ResolvedCoAuthor[] ApplyHostOverride(ResolvedCoAuthor[] coAuthors, string hostKey)
     {
         ResolvedCoAuthor[] result = new ResolvedCoAuthor[coAuthors.Length];
         for (int i = 0; i < coAuthors.Length; i++)
@@ -119,6 +119,25 @@ public class CommitOrchestrator : ICommitOrchestrator
             result[i] = current with { Author = overridden };
         }
         return result;
+    }
+
+    /// <summary>
+    /// Applies the host identity override to a single author, returning the
+    /// display-ready <paramref name="name"/> and <paramref name="email"/>.
+    /// </summary>
+    public static void ApplyHostOverride(GitCoAuthor author, string hostKey,
+        out string name, out string email)
+    {
+        if (author.Host.TryGetValue(hostKey, out HostOverride? block) && block is not null)
+        {
+            name = block.Name;
+            email = block.Email;
+        }
+        else
+        {
+            name = author.Name;
+            email = author.Email;
+        }
     }
 
     public async Task<GitResult> ExecuteCommitAsync(CommitMessage commitMessage, CancellationToken cancellationToken)

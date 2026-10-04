@@ -8,7 +8,6 @@
  */
 
 
-using System.Text;
 using CliInvoke.Core;
 
 namespace CoAttribution.Lib;
@@ -24,7 +23,8 @@ public class CliGitClient : IGitClient
     
     public async Task<GitResult> CommitAsync(CommitMessage message, CancellationToken cancellationToken)
     {
-        using ProcessConfiguration processConfiguration = new(OperatingSystem.IsWindows() ? "git.exe" : "git",
+        ProcessConfiguration processConfiguration = new(
+            OperatingSystem.IsWindows() ? "git.exe" : "git",
             CreateCommitArgs(message));
         
         BufferedProcessResult result = await _processInvoker.ExecuteBufferedAsync(
@@ -33,21 +33,24 @@ public class CliGitClient : IGitClient
         return new GitResult(result.ExitCode, result.StandardOutput, result.StandardError);
     }
     
-    private static string CreateCommitArgs(CommitMessage commitMessage)
+    private static List<string> CreateCommitArgs(CommitMessage commitMessage)
     {
-        StringBuilder stringBuilder = new();
-
+        // One argv entry per token via CliInvoke's ArgumentList constructor: git
+        // receives each element unmodified, so quotes or other special characters
+        // in the message cannot break or hijack the command line.
         (string message, string trailer) gitFormat = commitMessage.ToGitFormat();
-        
-        stringBuilder.Append("commit -m ");
-        stringBuilder.Append('"');
-        stringBuilder.Append(gitFormat.message);
-        stringBuilder.Append('"');
-        stringBuilder.Append(" --trailer");
-        stringBuilder.Append('"');
-        stringBuilder.Append(gitFormat.trailer);
-        stringBuilder.Append('"');
 
-        return stringBuilder.ToString();
+        List<string> args = ["commit", "-m", gitFormat.message];
+
+        // Emit one --trailer entry per trailer line. Git rejects a --trailer that
+        // bundles multiple values into a single argument (exit code 129).
+        foreach (string line in gitFormat.trailer
+                     .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries))
+        {
+            args.Add("--trailer");
+            args.Add(line);
+        }
+
+        return args;
     }
 }

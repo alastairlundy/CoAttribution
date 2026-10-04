@@ -28,7 +28,6 @@ public class InitCommandTests
                 .Returns((string?)null);
 
             InitCommand command = CommandTestHarness.BuildInitCommand(configuration, pathResolver);
-            command.ConfigFilePath = configPath;
             command.CreateGlobalFile = true;
 
             using ConsoleCapture console = new();
@@ -38,6 +37,10 @@ public class InitCommandTests
 
             await Assert.That(exitCode).IsEqualTo(0);
             await Assert.That(File.Exists(configPath)).IsTrue();
+
+            // Verify the config contains the global_registry path.
+            string configContents = await File.ReadAllTextAsync(configPath);
+            await Assert.That(configContents).Contains("global_registry");
         }
         finally
         {
@@ -64,7 +67,6 @@ public class InitCommandTests
                 .Returns((string?)null);
 
             InitCommand command = CommandTestHarness.BuildInitCommand(configuration, pathResolver);
-            command.ConfigFilePath = string.Empty;
             command.CreateGlobalFile = true;
 
             using ConsoleCapture console = new();
@@ -74,6 +76,10 @@ public class InitCommandTests
 
             await Assert.That(exitCode).IsEqualTo(0);
             await Assert.That(File.Exists(configPath)).IsTrue();
+
+            // Verify the config contains the global_registry path.
+            string configContents = await File.ReadAllTextAsync(configPath);
+            await Assert.That(configContents).Contains("global_registry");
         }
         finally
         {
@@ -82,27 +88,40 @@ public class InitCommandTests
     }
 
     [Test]
-    public async Task RunAsync_SkipsConfigFileCreation_WhenFileExists()
+    public async Task RunAsync_OverwritesConfigFile_WhenFileExists()
     {
-        using TempConfigFile existing = new("# pre-existing config");
-        IConfiguration configuration =
-            CommandTestHarness.SingleValueConfiguration("config-file", existing.FilePath);
-        IRegistryPathResolver pathResolver = Substitute.For<IRegistryPathResolver>();
-        pathResolver.GetGlobalRegistryPathAsync(Arg.Any<CancellationToken>())
-            .Returns((string?)null);
+        string tempDir = Path.Combine(
+            Path.GetTempPath(),
+            "coattribution-tests",
+            Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        try
+        {
+            string configPath = Path.Combine(tempDir, "config.toml");
+            await File.WriteAllTextAsync(configPath, "# pre-existing config");
 
-        InitCommand command = CommandTestHarness.BuildInitCommand(configuration, pathResolver);
-        command.ConfigFilePath = existing.FilePath;
-        command.CreateGlobalFile = true;
+            IConfiguration configuration =
+                CommandTestHarness.SingleValueConfiguration("config-file", configPath);
+            IRegistryPathResolver pathResolver = Substitute.For<IRegistryPathResolver>();
+            pathResolver.GetGlobalRegistryPathAsync(Arg.Any<CancellationToken>())
+                .Returns((string?)null);
 
-        using ConsoleCapture console = new();
-        CliContext ctx = CliContextFactory.Create();
+            InitCommand command = CommandTestHarness.BuildInitCommand(configuration, pathResolver);
+            command.CreateGlobalFile = true;
 
-        int exitCode = await command.RunAsync(ctx);
+            using ConsoleCapture console = new();
+            CliContext ctx = CliContextFactory.Create();
 
-        await Assert.That(exitCode).IsEqualTo(0);
-        string contents = await File.ReadAllTextAsync(existing.FilePath);
-        await Assert.That(contents).IsEqualTo("# pre-existing config");
+            int exitCode = await command.RunAsync(ctx);
+
+            await Assert.That(exitCode).IsEqualTo(0);
+            string contents = await File.ReadAllTextAsync(configPath);
+            await Assert.That(contents).Contains("global_registry");
+        }
+        finally
+        {
+            try { Directory.Delete(tempDir, recursive: true); } catch { }
+        }
     }
 
     [Test]
@@ -132,7 +151,6 @@ public class InitCommandTests
             {
                 InitCommand command =
                     CommandTestHarness.BuildInitCommand(configuration, pathResolver);
-                command.ConfigFilePath = configPath;
                 command.CreateGlobalFile = false;
 
                 using ConsoleCapture console = new();

@@ -8,6 +8,9 @@
  */
 
 using System.Reflection;
+using CoAttribution.Cli.DataAccess;
+using CoAttribution.Lib.Models;
+using Tomlyn;
 
 namespace CoAttribution.Cli.Commands;
 
@@ -28,30 +31,25 @@ public class InitCommand
     // ReSharper disable once RedundantDefaultMemberInitializer
     public bool Interactive { get; set; } = false;*/
     
-    [CliOption(Name = "config-path", Required = false, Arity = CliArgumentArity.ExactlyOne)]
-    public string ConfigFilePath { get; set; } = string.Empty;
-    
     [CliOption(Name = "global", Alias = "g", Required = false, Arity = CliArgumentArity.ZeroOrOne)]
     public bool CreateGlobalFile { get; set; } = true;
     
     public async Task<int> RunAsync(CliContext cliContext)
     {
-        if (string.IsNullOrEmpty(ConfigFilePath))
-        {
-            ConfigFilePath = _configuration["config-file"] ?? "";
-        }
+        string configFilePath = _configuration["config-file"] ?? "";
 
         try
         {
-            if (!string.IsNullOrEmpty(ConfigFilePath) && !File.Exists(ConfigFilePath))
-            {
-                await CreateConfigFileAsync(cliContext.CancellationToken);
-            }
-            
-            await Console.Out.WriteLineAsync(string.Format(Resources.Commands_Init_ConfigFileCreated, ConfigFilePath));
-            
+            // Create the authors file first so we know its path for the config.
             string authorsFilePath = await CreateAuthorsTomlFileAsync(cliContext.CancellationToken);
             await Console.Out.WriteLineAsync(string.Format(Resources.Commands_Init_AuthorsFileCreated, authorsFilePath));
+
+            if (!string.IsNullOrEmpty(configFilePath))
+            {
+                await CreateConfigFileAsync(configFilePath, authorsFilePath, cliContext.CancellationToken);
+            }
+            
+            await Console.Out.WriteLineAsync(string.Format(Resources.Commands_Init_ConfigFileCreated, configFilePath));
             
             return 0;
         }
@@ -65,17 +63,25 @@ public class InitCommand
         }
     }
 
-    private async Task CreateConfigFileAsync(CancellationToken cancellationToken)
+    private async Task CreateConfigFileAsync(string configFilePath, string authorsFilePath, CancellationToken cancellationToken)
     {
-        string defaultConfigTomlContents = "";
+        AppConfig appConfig = new()
+        {
+            PathsSettings = new Dictionary<string, string>
+            {
+                ["global_registry"] = authorsFilePath
+            }
+        };
+
+        string defaultConfigTomlContents = TomlSerializer.Serialize(appConfig, ConfigSettingsTomlContext.Default);
                 
-        string? directoryPath = Path.GetDirectoryName(ConfigFilePath);
+        string? directoryPath = Path.GetDirectoryName(configFilePath);
         if (!string.IsNullOrEmpty(directoryPath))
         {
             Directory.CreateDirectory(directoryPath);
         }
             
-        await File.WriteAllTextAsync(ConfigFilePath, defaultConfigTomlContents, cancellationToken);
+        await File.WriteAllTextAsync(configFilePath, defaultConfigTomlContents, cancellationToken);
     }
 
     private async Task<string> CreateAuthorsTomlFileAsync(CancellationToken cancellationToken)

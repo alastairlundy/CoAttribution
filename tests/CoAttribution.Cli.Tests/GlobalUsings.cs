@@ -18,5 +18,8 @@ global using CoAttribution.Lib.Extensions;
 global using CoAttribution.Lib.Models;
 global using CoAttribution.Lib.Exceptions;
 global using CoAttribution.Lib.HostResolution;
+global using CoAttribution.Lib.HostResolution.Abstractions;
 global using CoAttribution.Lib.Models.DTOs;
+global using CoAttribution.Cli.Tui;
+global using CoAttribution.Cli.Tui.Composition;
 global using Microsoft.Extensions.Configuration;

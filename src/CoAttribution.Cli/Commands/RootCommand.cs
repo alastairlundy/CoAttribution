@@ -1,43 +1,87 @@
 ﻿/*
     CoAttribution
     Copyright (c) Alastair Lundy 2026
- 
+
     This Source Code Form is subject to the terms of the Mozilla Public
     License, v. 2.0. If a copy of the MPL was not distributed with this
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-#if TUI
+using CoAttribution.Cli.Tui.Composition;
+using CoAttribution.Cli.Tui.Dialogs;
+using CoAttribution.Lib.Abstractions;
+using CoAttribution.Lib.Models.DTOs;
+using Microsoft.Extensions.Logging;
 using Terminal.Gui.App;
-using Terminal.Gui.Views;
-using CoAttribution.Cli.Components.Windows;
-#endif
 
 namespace CoAttribution.Cli.Commands;
 
 [CliCommand(ShortFormAutoGenerate = CliNameAutoGenerate.None)]
 public class RootCommand
 {
-    public Task<int> RunAsync(CliContext context)
+    private readonly IAuthorRegistry _authorRegistry;
+    private readonly TuiCompositionRoot _compositionRoot;
+    private readonly SetupDialog _setupDialog;
+    private readonly ILogger<RootCommand> _logger;
+
+    [CliOption(Name = "config-path", Required = false, Arity = CliArgumentArity.ExactlyOne, Recursive = true)]
+    public string ConfigPath { get; set; } = string.Empty;
+
+    public RootCommand(IAuthorRegistry authorRegistry, TuiCompositionRoot compositionRoot, SetupDialog setupDialog, ILogger<RootCommand> logger)
     {
-#if TUI
-        try
+        _authorRegistry = authorRegistry;
+        _compositionRoot = compositionRoot;
+        _setupDialog = setupDialog;
+        _logger = logger;
+    }
+
+    public async Task<int> RunAsync(CliContext context)
+    {
+        // Non-TTY: print help and exit 0
+        if (Console.IsOutputRedirected || Console.IsInputRedirected)
         {
+            context.ShowHelp();
+            return 0;
+        }
+
+        // Empty registry: show SetupDialog first
+        GitCoAuthorConfig config = await _authorRegistry.GetAuthorConfigAsync(CancellationToken.None);
+        if (config.Agents.Count == 0 && config.Humans.Count == 0)
+        {
+            bool authorAdded = false;
+
+            try
+            {
+                ThemeConfigurationHelper.ApplyTheme();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not apply CoAttribution theme — falling back to defaults");
+            }
+
             using IApplication app = Application.Create().Init();
 
-            app.Run<MainWindow>();
+            void OnAuthorAdded() => authorAdded = true;
+            void OnCancelled() => app.RequestStop();
 
-            return Task.FromResult(0);
-        }
-        catch (Exception exception)
-        {
-            Console.WriteLine(exception);
+            _setupDialog.AuthorAdded += OnAuthorAdded;
+            _setupDialog.Cancelled += OnCancelled;
 
-            return Task.FromException<int>(exception);
+            try
+            {
+                app.Run(_setupDialog);
+            }
+            finally
+            {
+                _setupDialog.AuthorAdded -= OnAuthorAdded;
+                _setupDialog.Cancelled -= OnCancelled;
+            }
+
+            if (!authorAdded)
+                return 0;
         }
-#else
-        context.ShowHelp();
-        return Task.FromResult(1);
-#endif
+
+        // Launch TUI
+        return await _compositionRoot.LaunchAsync();
     }
 }
