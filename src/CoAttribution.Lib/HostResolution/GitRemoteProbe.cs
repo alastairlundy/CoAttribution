@@ -23,9 +23,9 @@ public partial class GitRemoteProbe : Abstractions.IGitRemoteProbe
 
     public async Task<string?> GetPrimaryRemoteUrlAsync(CancellationToken cancellationToken = default)
     {
-        using ProcessConfiguration processConfiguration = new(
+        ProcessConfiguration processConfiguration = new(
             OperatingSystem.IsWindows() ? "git.exe" : "git",
-            "remote -v");
+            ["remote", "-v"]);
 
         BufferedProcessResult result = await _processInvoker.ExecuteBufferedAsync(
             processConfiguration, cancellationToken: cancellationToken);

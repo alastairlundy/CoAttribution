@@ -33,7 +33,7 @@ CoAttribution is a command-line tool that tags your Git commits with `Co-authore
 
     <ItemGroup>
       <PackageReference Include="CommunityToolkit.Mvvm" />
-      <PackageReference Include="CliInvoke.Extensions" />
+      <PackageReference Include="CliInvoke" />
       <PackageReference Include="DotMake.CommandLine" />
       <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />

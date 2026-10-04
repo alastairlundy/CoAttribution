@@ -16,7 +16,6 @@
       </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="CliInvoke" />
       <PackageReference Include="CliInvoke.Core" />
       <PackageReference Include="Tomlyn" />
     </ItemGroup>

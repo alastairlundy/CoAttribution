@@ -7,7 +7,6 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using CliInvoke.Builders;
 using CliInvoke.Core;
 
 namespace CoAttribution.Lib.HostResolution;
@@ -31,19 +30,15 @@ public partial class GitConfigClient : Abstractions.IGitConfigClient
         ArgumentNullException.ThrowIfNull(key);
         ValidateKeyNamespace(key);
 
-        using ProcessConfiguration processConfiguration = new ProcessConfigurationBuilder(GitExecutable)
-            .SetArguments(new[] { "config", "--get", key })
-            .RedirectStandardOutput(true)
-            .RedirectStandardError(true)
-            .Build();
+        ProcessConfiguration processConfiguration = new(
+            GitExecutable,
+            ["config", "--get", key]);
 
-        ProcessExitConfiguration exitConfig = new(
-            ProcessTimeoutPolicy.Default,
-            ProcessResultValidation.None,
-            ProcessCancellationExceptionBehavior.SuppressException);
-
+        // Default exit behaviour: graceful exit, no validation rules, exceptions
+        // suppressed on cancellation — the "key not found" case is returned as a
+        // non-zero exit code for manual handling below.
         BufferedProcessResult result = await _processInvoker.ExecuteBufferedAsync(
-            processConfiguration, exitConfig);
+            processConfiguration);
 
         if (result.ExitCode != 0)
         {
@@ -60,11 +55,9 @@ public partial class GitConfigClient : Abstractions.IGitConfigClient
         ArgumentNullException.ThrowIfNull(value);
         ValidateKeyNamespace(key);
 
-        using ProcessConfiguration processConfiguration = new ProcessConfigurationBuilder(GitExecutable)
-            .SetArguments(["config", key, value])
-            .RedirectStandardOutput(true)
-            .RedirectStandardError(true)
-            .Build();
+        ProcessConfiguration processConfiguration = new(
+            GitExecutable,
+            ["config", key, value]);
 
         await _processInvoker.ExecuteBufferedAsync(processConfiguration);
     }

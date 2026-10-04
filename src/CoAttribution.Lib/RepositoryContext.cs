@@ -51,9 +51,9 @@ public partial class RepositoryContext : IRepositoryContext
     {
         try
         {
-            using ProcessConfiguration processConfiguration = new(
+            ProcessConfiguration processConfiguration = new(
                 OperatingSystem.IsWindows() ? "git.exe" : "git",
-                "rev-parse --abbrev-ref HEAD");
+                ["rev-parse", "--abbrev-ref", "HEAD"]);
 
             BufferedProcessResult result = _processInvoker.ExecuteBufferedAsync(
                 processConfiguration).GetAwaiter().GetResult();
