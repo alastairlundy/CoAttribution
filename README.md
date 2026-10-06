@@ -6,7 +6,7 @@ CoAttribution is a command-line tool that tags your Git commits with `Co-authore
 - **Author registry**: Map short aliases to names and emails in a TOML file.
 - **TUI**: Pick authors interactively from a terminal UI.
 - **Commit wrapping**: Adds the trailers, then runs `git commit` for you.
-- **Dry-run**: Print the resulting message without committing.
+- **Dry-run**: `co-attr message` prints the resulting message without committing.
 - **NativeAOT**: Compiled ahead-of-time for near-instant startup.
 
 ## Why use it
@@ -82,8 +82,10 @@ co-attr commit -m "Refactor module" --coauthor copilot --assist kilo
 
 ### Dry-run (preview without committing)
 
+`commit` always runs `git commit`. To preview without committing, use the `message` command — it accepts the same attribution flags (`--with`, `--coauthor`, `--assist`) but only prints the resulting message:
+
 ```bash
-co-attr commit -m "Draft change" --coauthor copilot --verbose
+co-attr message -m "Draft change" --with copilot --coauthor copilot
 ```
 
 ## Project Scope

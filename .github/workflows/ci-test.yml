@@ -36,8 +36,5 @@ jobs:
       - name: Build (CLI default)
         run: dotnet build src/CoAttribution.slnx --no-restore --configuration Release
 
-      - name: Build (TUI variant)
-        run: dotnet build src/CoAttribution.slnx --no-restore --configuration Release -p:EnableTui=true
-
       - name: Run tests
         run: dotnet test src/CoAttribution.slnx --no-restore --configuration Release

@@ -84,6 +84,15 @@ namespace CoAttribution.Cli.Localizations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Co-authors &apos;{0}&apos; were successfully removed from &apos;{1}&apos; config file..
+        /// </summary>
+        internal static string Commands_Authors_Remove_Successful {
+            get {
+                return ResourceManager.GetString("Commands.Authors.Remove.Successful", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to perform commit with co-author/assist message: &apos;{0}&apos;.
         /// </summary>
         internal static string Commands_Commit_Failed_Generic {

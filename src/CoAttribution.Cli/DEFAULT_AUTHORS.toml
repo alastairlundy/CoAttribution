@@ -27,6 +27,10 @@ email = "noreply@anthropic.com"
 name = "claude"
 email = "noreply@anthropic.com"
 
+[agents.cursor]
+name = "Cursor"
+email = "cursoragent@cursor.com"
+
 [agents.cursor.host.github]
 name = "cursoragent"
 email = "cursoragent@cursor.com"

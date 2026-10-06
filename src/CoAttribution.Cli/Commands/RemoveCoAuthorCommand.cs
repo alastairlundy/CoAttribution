@@ -34,6 +34,9 @@ public class RemoveCoAuthorCommand
         {
             await _authorRegistry.RemoveAsync(Ids, cliContext.CancellationToken);
 
+            await Console.Out.WriteLineAsync(string.Format(Resources.Commands_Authors_Remove_Successful,
+                string.Join(", ", Ids), authorsFile?.FullName ?? "N/A"));
+
             return 0;
         }
         catch (Exception exception)

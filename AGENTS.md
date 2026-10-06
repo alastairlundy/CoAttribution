@@ -45,7 +45,7 @@ The CLI uses **DotMake.CommandLine** (class-based model) as its command-line fra
 - **NativeAOT**: The CLI must maintain NativeAOT compatibility. 
   - `IsTrimmable` and `IsAoTCompatible` are enabled in `.csproj` files.
   - `EnableAoTAnalyzer` is active in the library.
-- **TUI**: Gated behind `#if TUI` conditional compilation (not yet production-ready; will remain an optional feature once fully implemented). Triggered when the CLI is run with no subcommands or no arguments.
+- **TUI**: Always compiled in — there is no `#if TUI` gate. Launched when the CLI is run with no subcommands on a TTY (a non-TTY session prints help instead).
 - **Config**: AI agent co-author defaults are stored in `DEFAULT_AUTHORS.toml`.
 
 ## Developer Commands

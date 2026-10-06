@@ -75,6 +75,9 @@
     <data name="Commands.Authors.Remove.Failed" xml:space="preserve">
         <value>Could not remove co-authors: '{0}' from '{1}'</value>
     </data>
+    <data name="Commands.Authors.Remove.Successful" xml:space="preserve">
+        <value>Co-authors '{0}' were successfully removed from '{1}' config file.</value>
+    </data>
     <data name="Commands.Config.KeyNotValid" xml:space="preserve">
         <value>Configuration Key '{0}' is not valid.</value>
     </data>
