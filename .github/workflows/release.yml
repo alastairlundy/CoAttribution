@@ -48,7 +48,7 @@ jobs:
             TAG="$INPUT_TAG"
           else
             VERSION=$(dotnet msbuild src/CoAttribution.Cli/CoAttribution.Cli.csproj -getProperty:Version -q)
-            if [ -z "$VERSION" ] || [ "$VERSION" = "1.0.0" ]; then
+            if [ -z "$VERSION" ]; then
               echo "::error::No tag provided and no version set in csproj. Please provide a tag or set Version in the csproj."
               exit 1
             fi
