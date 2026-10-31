@@ -7,10 +7,14 @@
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
         <OutputType>Exe</OutputType>
+        <!-- TUnit.Mocks' generated namespace leaks an 'Arg' helper that collides
+             with NSubstitute's; keep implicit usings off and opt in per-file. -->
+        <TUnitMockImplicitUsings>disable</TUnitMockImplicitUsings>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="TUnit" />
+        <PackageReference Include="TUnit.Mocks" />
         <PackageReference Include="NSubstitute" />
     </ItemGroup>
 

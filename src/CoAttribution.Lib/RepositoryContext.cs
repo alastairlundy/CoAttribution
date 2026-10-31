@@ -22,6 +22,11 @@ public partial class RepositoryContext : IRepositoryContext
     private readonly IGitRemoteProbe _gitRemoteProbe;
     private readonly IProcessInvoker _processInvoker;
 
+    // Memoised probes (one per repository context): the TUI surfaces reuse
+    // them from several views, so each git subprocess runs at most once.
+    private Task<string>? _repositoryNameTask;
+    private Task<string>? _branchTask;
+
     public RepositoryContext(IGitRemoteProbe gitRemoteProbe, IProcessInvoker processInvoker)
     {
         _gitRemoteProbe = gitRemoteProbe;
@@ -29,7 +34,10 @@ public partial class RepositoryContext : IRepositoryContext
     }
 
     /// <inheritdoc />
-    public async Task<string> GetRepositoryNameAsync(CancellationToken cancellationToken = default)
+    public Task<string> GetRepositoryNameAsync(CancellationToken cancellationToken = default)
+        => _repositoryNameTask ??= GetRepositoryNameCoreAsync(cancellationToken);
+
+    private async Task<string> GetRepositoryNameCoreAsync(CancellationToken cancellationToken)
     {
         string? remoteUrl = await _gitRemoteProbe.GetPrimaryRemoteUrlAsync(cancellationToken);
 
@@ -47,7 +55,10 @@ public partial class RepositoryContext : IRepositoryContext
     }
 
     /// <inheritdoc />
-    public string GetCurrentBranch()
+    public Task<string> GetCurrentBranchAsync(CancellationToken cancellationToken = default)
+        => _branchTask ??= GetCurrentBranchCoreAsync(cancellationToken);
+
+    private async Task<string> GetCurrentBranchCoreAsync(CancellationToken cancellationToken)
     {
         try
         {
@@ -55,8 +66,8 @@ public partial class RepositoryContext : IRepositoryContext
                 OperatingSystem.IsWindows() ? "git.exe" : "git",
                 ["rev-parse", "--abbrev-ref", "HEAD"]);
 
-            BufferedProcessResult result = _processInvoker.ExecuteBufferedAsync(
-                processConfiguration).GetAwaiter().GetResult();
+            BufferedProcessResult result = await _processInvoker.ExecuteBufferedAsync(
+                processConfiguration, cancellationToken: cancellationToken);
 
             if (result.ExitCode == 0 && !string.IsNullOrWhiteSpace(result.StandardOutput))
             {

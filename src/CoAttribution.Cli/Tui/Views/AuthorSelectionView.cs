@@ -37,6 +37,7 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
     private readonly Button _progressButton;
     private readonly Button _backButton;
     private readonly Label _errorLabel;
+    private readonly Label _repoLabel;
 
     /// <summary>
     /// Raised when the user confirms their author selection.
@@ -72,9 +73,11 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
         CanFocus = true;
 
         // --- Repository context header ---
-        Label repoLabel = new()
+        // Populated asynchronously in InitializeAsync so view construction
+        // never blocks on a git subprocess (sync-over-async).
+        _repoLabel = new Label
         {
-            Text = GetRepoContextLabel(),
+            Text = string.Empty,
             X = 0,
             Y = 0,
         };
@@ -169,7 +172,7 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
             Confirmed?.Invoke(coAuthorIds, assistIds, defaultIds);
         };
 
-        Add(repoLabel, filterLabel, _filterField, _advancedToggle, _errorLabel, _panel,
+        Add(_repoLabel, filterLabel, _filterField, _advancedToggle, _errorLabel, _panel,
             _addAuthorButton, _backButton, _progressButton);
 
         // Selection/attribution key handling lives on the ListView so the list stays interactive
@@ -376,11 +379,23 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
 
     /// <summary>
     /// Builds the repo context label text: "owner/repo @ branch".
+    /// Awaits both probes — never blocks the UI thread. Both probes are
+    /// memoised by <see cref="RepositoryContext"/>, so repeated calls are free.
     /// </summary>
-    private string GetRepoContextLabel()
+    private async Task<string> GetRepoContextLabelAsync()
     {
-        string repoName = _repositoryContext.GetRepositoryNameAsync().GetAwaiter().GetResult();
-        string branch = _repositoryContext.GetCurrentBranch();
+        string repoName = await _repositoryContext.GetRepositoryNameAsync();
+        string branch = await _repositoryContext.GetCurrentBranchAsync();
         return $"{repoName} @ {branch}";
+    }
+
+    /// <summary>
+    /// Populates the repository context header asynchronously.
+    /// Called from <see cref="MainWindow.InitializeAsync"/> so all context
+    /// probes resolve before the TUI runs.
+    /// </summary>
+    public async Task InitializeAsync()
+    {
+        _repoLabel.Text = await GetRepoContextLabelAsync();
     }
 }

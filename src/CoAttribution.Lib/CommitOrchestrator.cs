@@ -63,6 +63,11 @@ public class CommitOrchestrator : ICommitOrchestrator
         {
             List<MissingHostBlockDiagnostic> missingBlocks = [];
 
+            // Resolved once up front: the registry path is identical for every
+            // agent, and re-resolving inside the loop would repeat the full
+            // registry-file lookup (including any directory scan) per author.
+            string? registryPath = (await _authorRegistry.GetRegistryFileAsync(cancellationToken))?.FullName ?? "N/A";
+
             foreach (ResolvedCoAuthor resolved in actualCoAuthors)
             {
                 GitCoAuthor author = resolved.Author;
@@ -73,8 +78,6 @@ public class CommitOrchestrator : ICommitOrchestrator
                 if (author.Host.ContainsKey(hostResult.HostKey))
                     continue;
 
-                FileInfo? registryFile = await _authorRegistry.GetRegistryFileAsync(cancellationToken);
-                string registryPath = registryFile?.FullName ?? "N/A";
                 string snippet = $"[agents.{author.CoAuthorId}.host.{hostResult.HostKey}]\nname = \"{author.Name}\"\nemail = \"{author.Email}\"";
 
                 missingBlocks.Add(new MissingHostBlockDiagnostic(

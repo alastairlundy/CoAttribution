@@ -100,7 +100,7 @@ public class ConfigCommand
         try
         {
             ArgumentException.ThrowIfNullOrEmpty(key);
-        
+
             if (config is null)
             {
                 throw new InvalidOperationException("");
@@ -108,19 +108,25 @@ public class ConfigCommand
 
             if (key.StartsWith("path.", StringComparison.CurrentCultureIgnoreCase))
             {
-                return Task.FromResult(config.PathsSettings[key.Replace("path.", string.Empty)]);
+                // Slice the prefix in place: avoids the intermediate string a
+                // key.Replace(prefix, "") would allocate per lookup.
+                var pathLookup = config.PathsSettings.GetAlternateLookup<ReadOnlySpan<char>>();
+                return Task.FromResult(pathLookup[key.AsSpan("path.".Length)]);
             }
             if (key.StartsWith("trailers.", StringComparison.CurrentCultureIgnoreCase))
             {
-                return Task.FromResult(config.TrailersSettings[key.Replace("trailers.", string.Empty)]);
+                var trailersLookup = config.TrailersSettings.GetAlternateLookup<ReadOnlySpan<char>>();
+                return Task.FromResult(trailersLookup[key.AsSpan("trailers.".Length)]);
             }
             if (key.StartsWith("tui.", StringComparison.CurrentCultureIgnoreCase))
             {
-                return Task.FromResult(config.TuiSettings[key.Replace("tui.", string.Empty)]);
+                var tuiLookup = config.TuiSettings.GetAlternateLookup<ReadOnlySpan<char>>();
+                return Task.FromResult(tuiLookup[key.AsSpan("tui.".Length)]);
             }
             if (key.StartsWith("authors_registry.", StringComparison.CurrentCultureIgnoreCase))
             {
-                return Task.FromResult(config.AuthorsRegistry[key.Replace("authors_registry.", string.Empty)]);
+                var authorsLookup = config.AuthorsRegistry.GetAlternateLookup<ReadOnlySpan<char>>();
+                return Task.FromResult(authorsLookup[key.AsSpan("authors_registry.".Length)]);
             }
 
             throw new KeyNotFoundException();
@@ -144,19 +150,19 @@ public class ConfigCommand
 
         if (key.StartsWith("path.", StringComparison.CurrentCultureIgnoreCase))
         {
-            config.PathsSettings[key.Replace("path.", string.Empty)] = value;
+            config.PathsSettings.GetAlternateLookup<ReadOnlySpan<char>>()[key.AsSpan("path.".Length)] = value;
         }
         if (key.StartsWith("trailers.", StringComparison.CurrentCultureIgnoreCase))
         {
-            config.TrailersSettings[key.Replace("trailers.", string.Empty)] = value;
+            config.TrailersSettings.GetAlternateLookup<ReadOnlySpan<char>>()[key.AsSpan("trailers.".Length)] = value;
         }
         if (key.StartsWith("tui.", StringComparison.CurrentCultureIgnoreCase))
         {
-            config.TuiSettings[key.Replace("tui.", string.Empty)] = value;
+            config.TuiSettings.GetAlternateLookup<ReadOnlySpan<char>>()[key.AsSpan("tui.".Length)] = value;
         }
         if (key.StartsWith("authors_registry.", StringComparison.CurrentCultureIgnoreCase))
         {
-            config.AuthorsRegistry[key.Replace("authors_registry.", string.Empty)] = value;
+            config.AuthorsRegistry.GetAlternateLookup<ReadOnlySpan<char>>()[key.AsSpan("authors_registry.".Length)] = value;
         }
         
         string text = TomlSerializer.Serialize(config, ConfigSettingsTomlContext.Default);
