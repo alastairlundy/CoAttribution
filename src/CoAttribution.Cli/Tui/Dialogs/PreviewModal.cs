@@ -37,6 +37,7 @@ public sealed class PreviewModal : Window, IStatusBarProvider
     private readonly Button _confirmButton;
     private readonly Button _cancelButton;
     private readonly Label _errorLabel;
+    private readonly Label _repoLabel;
 
     /// <summary>
     /// Raised with the <see cref="GitResult"/> when the user confirms and the commit executes.
@@ -66,9 +67,11 @@ public sealed class PreviewModal : Window, IStatusBarProvider
         Title = "Preview Commit";
 
         // --- Repository context header ---
-        Label repoLabel = new()
+        // Populated asynchronously in InitializeAsync so view construction
+        // never blocks on a git subprocess (sync-over-async).
+        _repoLabel = new Label
         {
-            Text = GetRepoContextLabel(),
+            Text = string.Empty,
             X = 0,
             Y = 0,
         };
@@ -112,7 +115,17 @@ public sealed class PreviewModal : Window, IStatusBarProvider
             Cancelled?.Invoke();
         };
 
-        Add(repoLabel, _previewEditor, _errorLabel, _confirmButton, _cancelButton);
+        Add(_repoLabel, _previewEditor, _errorLabel, _confirmButton, _cancelButton);
+    }
+
+    /// <summary>
+    /// Populates the repository context header asynchronously.
+    /// Called from <see cref="MainWindow.InitializeAsync"/> so all context
+    /// probes resolve before the TUI runs.
+    /// </summary>
+    public async Task InitializeAsync()
+    {
+        _repoLabel.Text = await GetRepoContextLabelAsync();
     }
 
     /// <summary>
@@ -179,11 +192,13 @@ public sealed class PreviewModal : Window, IStatusBarProvider
 
     /// <summary>
     /// Builds the repo context label text: "owner/repo @ branch".
+    /// Awaits both probes — never blocks the UI thread. Both probes are
+    /// memoised by <see cref="RepositoryContext"/>, so repeated calls are free.
     /// </summary>
-    private string GetRepoContextLabel()
+    private async Task<string> GetRepoContextLabelAsync()
     {
-        string repoName = _repositoryContext.GetRepositoryNameAsync().GetAwaiter().GetResult();
-        string branch = _repositoryContext.GetCurrentBranch();
+        string repoName = await _repositoryContext.GetRepositoryNameAsync();
+        string branch = await _repositoryContext.GetCurrentBranchAsync();
         return $"{repoName} @ {branch}";
     }
 

@@ -55,13 +55,10 @@ Cli.Ext.ConfigureServices(services =>
     services.AddSingleton<HostBlockWriter>();
     
     services.AddSingleton(configuration);
-    
-    services.AddSingleton<AppConfig>(sp =>
-    {
-        IConfigResolver configResolver = sp.GetRequiredService<IConfigResolver>();
-        IConfiguration cfg = sp.GetRequiredService<IConfiguration>();
-        return configResolver.ResolveAppConfig(cfg, CancellationToken.None).GetAwaiter().GetResult();
-    });
+
+    // Note: AppConfig is never injected via DI — ConfigCommand resolves it
+    // through IConfigResolver on demand, so no blocking config read happens
+    // during container setup.
 
     // TUI services — resolution deferred to RootCommand handler
     services.AddSingleton(_ =>

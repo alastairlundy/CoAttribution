@@ -37,14 +37,17 @@ public class ListCoAuthorsCommand
         {
             coAuthorsToList = config.GetCoAuthors();
         }
+        else if (AuthorType.Equals("agent", StringComparison.OrdinalIgnoreCase))
+        {
+            coAuthorsToList = config.Agents.Select(a => a.Value).ToArray();
+        }
+        else if (AuthorType.Equals("human", StringComparison.OrdinalIgnoreCase))
+        {
+            coAuthorsToList = config.Humans.Select(h => h.Value).ToArray();
+        }
         else
         {
-            coAuthorsToList = AuthorType.ToLower() switch
-            {
-                "agent" => config.Agents.Select(a => a.Value).ToArray(),
-                "human" => config.Humans.Select(h  => h.Value).ToArray(),
-                _ => config.GetCoAuthors()
-            };
+            coAuthorsToList = config.GetCoAuthors();
         }
 
         try

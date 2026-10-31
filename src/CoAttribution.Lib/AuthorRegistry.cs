@@ -21,6 +21,21 @@ public class AuthorRegistry : IAuthorRegistry
         _pathResolver = pathResolver;
     }
 
+    // Shared default config for the "no registry file" case. Read-only usage:
+    // mutating flows (AddAsync/RemoveAsync) must swap in a fresh instance
+    // before writing, guarded by a reference check.
+    private static GitCoAuthorConfig? s_defaultConfig;
+
+    // Per-instance cache of the local authors.toml lookup. The lookup walks
+    // the current directory tree (depth 5) and is called on every registry
+    // read/write, so it must not re-run per call. Keyed on the CWD: a working
+    // directory change forces a re-resolution, and the cached miss is never
+    // stale for authors created through this registry, because every write
+    // path updates the cache (RefreshLocalCacheAfterAsync).
+    private string? _cachedLocalRegistryPath;
+    private bool _localLookupResolved;
+    private string _cachedLookupCwd = string.Empty;
+
     public async Task<GitCoAuthor?> GetByIdAsync(string id, CancellationToken cancellationToken)
     {
         GitCoAuthorConfig config = await GetAuthorConfigAsync(cancellationToken);
@@ -70,7 +85,22 @@ public class AuthorRegistry : IAuthorRegistry
 
     public async Task AddAsync(GitCoAuthor[] coAuthors, CancellationToken cancellationToken)
     {
+        // Resolve the registry file before touching any config: if there is
+        // nowhere to write, AddAsync must fail without leaving residue in the
+        // shared default config instance.
+        FileInfo? registryFile = await GetRegistryFileAsync(cancellationToken);
+
+        if (registryFile is null)
+            throw new InvalidOperationException("Cannot add the Author to a registry because the registry does not exist.");
+
         GitCoAuthorConfig config = await GetAuthorConfigAsync(cancellationToken);
+
+        if (ReferenceEquals(config, s_defaultConfig))
+        {
+            // The file could not be deserialised into a config; start from an
+            // empty registry rather than mutating the shared default.
+            config = new GitCoAuthorConfig();
+        }
 
         foreach (GitCoAuthor coAuthor in coAuthors)
         {
@@ -91,12 +121,9 @@ public class AuthorRegistry : IAuthorRegistry
 
         string authorsTomlString = TomlSerializer.Serialize(config, CoAuthorTomlContext.Default);
 
-        FileInfo? registryFile = await GetRegistryFileAsync(cancellationToken);
-
-        if (registryFile is null)
-            throw new InvalidOperationException("Cannot add the Author to a registry because the registry does not exist.");
-
         await File.WriteAllTextAsync(registryFile.FullName, authorsTomlString, cancellationToken);
+
+        RefreshLocalCacheAfter(registryFile);
     }
 
     /// <inheritdoc />
@@ -112,6 +139,8 @@ public class AuthorRegistry : IAuthorRegistry
             throw new InvalidOperationException("Cannot save config because the registry file does not exist.");
 
         await File.WriteAllTextAsync(registryFile.FullName, toml, cancellationToken);
+
+        RefreshLocalCacheAfter(registryFile);
     }
 
     /// <inheritdoc />
@@ -126,7 +155,20 @@ public class AuthorRegistry : IAuthorRegistry
     {
         ArgumentNullException.ThrowIfNull(coAuthorIds);
 
+        // Same ordering rationale as AddAsync: validate the write target first,
+        // so a missing registry file cannot leave residue in the shared default
+        // config instance.
+        FileInfo? registryFile = await GetRegistryFileAsync(cancellationToken);
+
+        if (registryFile is null)
+            throw new InvalidOperationException("Cannot remove the Author from the registry because the registry does not exist.");
+
         GitCoAuthorConfig config = await GetAuthorConfigAsync(cancellationToken);
+
+        if (ReferenceEquals(config, s_defaultConfig))
+        {
+            config = new GitCoAuthorConfig();
+        }
 
         foreach (GitCoAuthor gitCoAuthor in config.EnumerateCoAuthors()
                      .Where(author => coAuthorIds.Contains(author.CoAuthorId)))
@@ -148,18 +190,24 @@ public class AuthorRegistry : IAuthorRegistry
 
         string authorsTomlString = TomlSerializer.Serialize(config, CoAuthorTomlContext.Default);
 
-        FileInfo? registryFile = await GetRegistryFileAsync(cancellationToken);
-
-        if (registryFile is null)
-            throw new InvalidOperationException("Cannot remove the Author from the registry because the registry does not exist.");
-
         await File.WriteAllTextAsync(registryFile.FullName, authorsTomlString, cancellationToken);
+
+        RefreshLocalCacheAfter(registryFile);
     }
 
     public async Task<FileInfo?> GetRegistryFileAsync(CancellationToken cancellationToken)
     {
-        // Prioritise local authors.toml if available.
-        DirectoryInfo directoryInfo = new(Directory.GetCurrentDirectory());
+        string currentCwd = Directory.GetCurrentDirectory();
+
+        if (_localLookupResolved
+            && string.Equals(_cachedLookupCwd, currentCwd, StringComparison.Ordinal))
+        {
+            return await ResolveFromCacheOrGlobalAsync(cancellationToken);
+        }
+
+        // Local scan: one full directory enumeration per working directory,
+        // then cached until the CWD changes or this registry writes a file.
+        DirectoryInfo directoryInfo = new(currentCwd);
 
         FileInfo? localAuthorsFile = directoryInfo.EnumerateFiles("*.toml", new EnumerationOptions
             {
@@ -170,11 +218,45 @@ public class AuthorRegistry : IAuthorRegistry
             })
             .FirstOrDefault(f => f.Name.Equals("authors.toml", StringComparison.CurrentCultureIgnoreCase));
 
+        _cachedLookupCwd = currentCwd;
+        _localLookupResolved = true;
+        _cachedLocalRegistryPath = localAuthorsFile?.FullName;
+
         if (localAuthorsFile is not null)
         {
             return localAuthorsFile;
         }
 
+        return await ResolveGlobalRegistryFileAsync(cancellationToken);
+    }
+
+    /// <summary>
+    /// Uses the cached local path when it still exists on disk; otherwise
+    /// falls back to the global registry resolution. A cached miss (no local
+    /// file) is kept for the current working directory.
+    /// </summary>
+    private async Task<FileInfo?> ResolveFromCacheOrGlobalAsync(CancellationToken cancellationToken)
+    {
+        if (_cachedLocalRegistryPath is not null)
+        {
+            FileInfo cached = new(_cachedLocalRegistryPath);
+
+            if (cached.Exists)
+            {
+                return cached;
+            }
+
+            // The file was deleted after being cached — reset so a later
+            // call re-scans, then keep resolving as if uncached.
+            _localLookupResolved = false;
+            _cachedLocalRegistryPath = null;
+        }
+
+        return await ResolveGlobalRegistryFileAsync(cancellationToken);
+    }
+
+    private async Task<FileInfo?> ResolveGlobalRegistryFileAsync(CancellationToken cancellationToken)
+    {
         // Fallback to global authors.toml from AppConfig
         string? globalRegistryPath = await _pathResolver.GetGlobalRegistryPathAsync(cancellationToken);
 
@@ -189,14 +271,34 @@ public class AuthorRegistry : IAuthorRegistry
         return null;
     }
 
+    /// <summary>
+    /// After a successful write through this registry, keep the local lookup
+    /// cache authoritative: if the written file lives under the current
+    /// working directory, cache it so the next local scan is unnecessary.
+    /// </summary>
+    private void RefreshLocalCacheAfter(FileInfo writtenFile)
+    {
+        string currentCwd = Directory.GetCurrentDirectory();
+        string? directory = Path.GetDirectoryName(writtenFile.FullName);
+
+        if (directory is not null
+            && directory.StartsWith(currentCwd, StringComparison.OrdinalIgnoreCase)
+            && writtenFile.Name.Equals("authors.toml", StringComparison.OrdinalIgnoreCase))
+        {
+            _cachedLookupCwd = currentCwd;
+            _localLookupResolved = true;
+            _cachedLocalRegistryPath = writtenFile.FullName;
+        }
+    }
+
     private static Task<GitCoAuthorConfig> ProvideDefaultAuthorsAsync()
     {
-        GitCoAuthorConfig defaultConfig = new()
+        s_defaultConfig ??= new GitCoAuthorConfig
         {
             Agents = new Dictionary<string, GitCoAuthor>(),
             Humans = new Dictionary<string, GitCoAuthor>()
         };
 
-        return Task.FromResult(defaultConfig);
+        return Task.FromResult(s_defaultConfig);
     }
 }
