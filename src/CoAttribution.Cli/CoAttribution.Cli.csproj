@@ -36,7 +36,6 @@
       <PackageReference Include="CommunityToolkit.Mvvm" />
       <PackageReference Include="CliInvoke" />
       <PackageReference Include="DotMake.CommandLine" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
       <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
