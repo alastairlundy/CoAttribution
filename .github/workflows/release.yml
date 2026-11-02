@@ -9,7 +9,21 @@ permissions:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows
+            os: windows-latest
+            rids: win-x64,win-arm64
+          - name: linux
+            os: ubuntu-latest
+            rids: linux-x64,linux-arm64
+          - name: macos
+            os: macos-latest
+            rids: osx-x64,osx-arm64
+
     steps:
       - uses: actions/checkout@v7
 
@@ -29,19 +43,21 @@ jobs:
       - name: Install ReleaseGen
         run: dotnet tool install --global ReleaseGen
 
-      - name: Build
-        run: releasegen build
+      # NativeAOT compiles only for the runner's own OS family, so each leg builds its
+      # manifest-declared subset with the per-invocation --rids flag.
+      - name: Build (rid subset for this leg)
+        run: releasegen build --rids "${{ matrix.rids }}"
 
+      # The test stage is rid-independent: run it once, on the linux leg, so the gate
+      # result backs all three legs without three OS test runs.
       - name: Test
+        if: matrix.name == 'linux'
         run: releasegen test
-
-      - name: Package
-        run: releasegen package
 
       - name: Upload release tree
         uses: actions/upload-artifact@v4
         with:
-          name: release-tree
+          name: release-bin-${{ matrix.name }}
           path: release/
           if-no-files-found: error
 
@@ -72,11 +88,19 @@ jobs:
       - name: Install ReleaseGen
         run: dotnet tool install --global ReleaseGen
 
-      - name: Download release tree
+      # Merge the three legs' build trees into one release/ tree: archive and binary
+      # paths are (target, rid)-unique, so legs cannot collide.
+      - name: Download merged release tree
         uses: actions/download-artifact@v4
         with:
-          name: release-tree
+          pattern: release-bin-*
+          merge-multiple: true
           path: release
+
+      # The package stage packs from source and is rid-independent: run it here so the
+      # nupkgs exist beside the merged binaries before publish.
+      - name: Package
+        run: releasegen package
 
       - name: NuGet login (OIDC -> temporary API key)
         uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
