@@ -1,4 +1,4 @@
-/*
+﻿/*
     CoAttribution.Lib
     Copyright (c) Alastair Lundy 2026
  
@@ -7,8 +7,6 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-using System.Globalization;
-using System.Text;
 using CoAttribution.Lib.DataAccess;
 using Tomlyn;
 
@@ -16,9 +14,6 @@ namespace CoAttribution.Lib;
 
 public class AuthorRegistry : IAuthorRegistry
 {
-    private const string AgentsSection = "agents";
-    private const string HumansSection = "humans";
-
     private readonly IRegistryPathResolver _pathResolver;
 
     public AuthorRegistry(IRegistryPathResolver pathResolver)
@@ -56,7 +51,26 @@ public class AuthorRegistry : IAuthorRegistry
         if (registryFile is null)
             return await ProvideDefaultAuthorsAsync();
 
-        return await ReadAuthorConfigAsync(registryFile.FullName, cancellationToken);
+        string authorTomlString = await File.ReadAllTextAsync(registryFile.FullName, cancellationToken);
+
+        GitCoAuthorConfig? config = TomlSerializer.Deserialize(authorTomlString, CoAuthorTomlContext.Default.GitCoAuthorConfig);
+
+        if (config is null)
+            return await ProvideDefaultAuthorsAsync();
+
+        foreach ((string id, GitCoAuthor author) in config.Agents)
+        {
+            author.CoAuthorId = id;
+            author.Type = ContributorType.Agent;
+        }
+
+        foreach ((string id, GitCoAuthor author) in config.Humans)
+        {
+            author.CoAuthorId = id;
+            author.Type = ContributorType.Human;
+        }
+
+        return config;
     }
 
     public async Task<IEnumerable<GitCoAuthor>> GetAllAsync(CancellationToken cancellationToken)
@@ -210,14 +224,7 @@ public class AuthorRegistry : IAuthorRegistry
 
         if (localAuthorsFile is not null)
         {
-            if (!File.Exists(explicitPath))
-            {
-                throw new FileNotFoundException(
-                    $"The registry file passed via --registry does not exist: '{explicitPath}'.",
-                    explicitPath);
-            }
-
-            return new FileInfo(explicitPath);
+            return localAuthorsFile;
         }
 
         return await ResolveGlobalRegistryFileAsync(cancellationToken);
