@@ -1,0 +1,21 @@
+{
+  "targets": [
+    {
+      "project": "src/CoAttribution.Cli/CoAttribution.Cli.csproj",
+      "kinds": ["executables", "tool-package"]
+    }
+  ],
+  "build": {
+    "preset": "aot",
+    "runtimeIdentifiers": ["win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64"]
+  },
+  "test": {
+    "projects": [
+      "tests/CoAttribution.Cli.Tests/CoAttribution.Cli.Tests.csproj",
+      "tests/CoAttribution.Lib.Tests/CoAttribution.Lib.Tests.csproj"
+    ]
+  },
+  "publish": {
+    "sources": []
+  }
+}
