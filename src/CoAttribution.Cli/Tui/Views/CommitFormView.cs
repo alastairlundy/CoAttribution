@@ -31,6 +31,7 @@ public sealed class CommitFormView : View, IStatusBarProvider
     private readonly CommitFormSectionsView _sections;
     private bool _suppressSubjectChange;
     private bool _suppressBodyChange;
+    private readonly Label _repoLabel;
 
     /// <summary>
     /// The subject text field, exposed for focus-chain checks from MainWindow.
@@ -50,9 +51,11 @@ public sealed class CommitFormView : View, IStatusBarProvider
         Padding.Thickness = new Thickness(1, 0, 1, 0);
 
         // --- Repository context header ---
-        Label repoLabel = new()
+        // Populated asynchronously in InitializeAsync so view construction
+        // never blocks on a git subprocess (sync-over-async).
+        _repoLabel = new Label
         {
-            Text = GetRepoContextLabel(),
+            Text = string.Empty,
             X = 0,
             Y = 0,
         };
@@ -131,22 +134,25 @@ public sealed class CommitFormView : View, IStatusBarProvider
             UpdateBodyCounterColor();
         };
 
-        Add(repoLabel, _sections);
+        Add(_repoLabel, _sections);
     }
 
-    public void Initialize()
+    public async Task InitializeAsync()
     {
         _viewModel.Subject = string.Empty;
         _viewModel.Body = string.Empty;
+        _repoLabel.Text = await GetRepoContextLabelAsync();
     }
 
     /// <summary>
     /// Builds the repo context label text: "owner/repo @ branch".
+    /// Awaits both probes — never blocks the UI thread. Both probes are
+    /// memoised by <see cref="RepositoryContext"/>, so repeated calls are free.
     /// </summary>
-    private string GetRepoContextLabel()
+    private async Task<string> GetRepoContextLabelAsync()
     {
-        string repoName = _repositoryContext.GetRepositoryNameAsync().GetAwaiter().GetResult();
-        string branch = _repositoryContext.GetCurrentBranch();
+        string repoName = await _repositoryContext.GetRepositoryNameAsync();
+        string branch = await _repositoryContext.GetCurrentBranchAsync();
         return $"{repoName} @ {branch}";
     }
 

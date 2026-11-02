@@ -198,12 +198,20 @@ public sealed class SetupDialog : Window, IStatusBarProvider
     }
 
     /// <summary>
-    /// Generates a CoAuthorId from the name by lowercasing and replacing spaces with hyphens.
+    /// Generates a CoAuthorId from the name by lowercasing and replacing spaces
+    /// with hyphens. Single pass — no intermediate substring allocations.
     /// </summary>
     private static string GenerateCoAuthorId(string name)
     {
-        return name.ToLowerInvariant()
-            .Replace(' ', '-')
-            .Replace('_', '-');
+        // One allocation, one pass: lowercase each char and map ' ' and '_'
+        // to '-', instead of ToLowerInvariant + two chained Replace calls.
+        return string.Create(name.Length, name, static (span, source) =>
+        {
+            for (int i = 0; i < source.Length; i++)
+            {
+                char c = char.ToLowerInvariant(source[i]);
+                span[i] = c is ' ' or '_' ? '-' : c;
+            }
+        });
     }
 }

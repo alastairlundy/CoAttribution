@@ -22,6 +22,8 @@ public interface IRepositoryContext
 
     /// <summary>
     /// Returns the current branch name, or <c>"detached"</c> if HEAD is detached.
+    /// The result is memoised for the lifetime of the context (the branch is
+    /// fixed for the duration of a commit session).
     /// </summary>
-    string GetCurrentBranch();
+    Task<string> GetCurrentBranchAsync(CancellationToken cancellationToken = default);
 }

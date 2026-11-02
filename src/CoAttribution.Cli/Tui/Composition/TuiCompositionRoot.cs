@@ -50,7 +50,7 @@ public sealed class TuiCompositionRoot
         using IApplication app = Application.Create().Init();
 
         MainWindow mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
-        mainWindow.Initialize();
+        await mainWindow.InitializeAsync();
 
         app.Run(mainWindow);
 

@@ -76,7 +76,8 @@ public sealed class MainWindow : Window, IStatusBarProvider
         _glyphSet = glyphSet;
         _feedbackToast = new FeedbackToast();
 
-        Title = GetMainWindowTitle();
+        // Title populated asynchronously in InitializeAsync.
+        Title = DefaultTitle;
         Padding.Thickness = new Thickness(1, 0, 1, 0);
 
         _statusBar = StatusBarComposer.Build(this);
@@ -88,12 +89,19 @@ public sealed class MainWindow : Window, IStatusBarProvider
     }
 
     /// <summary>
-    /// Initializes the commit form for a fresh commit and shows the window.
+    /// Initializes the commit flow for a fresh commit: populates the repository
+    /// context headers of this window and every child surface, then shows the
+    /// commit form. Awaiting happens on the git probes once (memoised per
+    /// <see cref="RepositoryContext"/>) — no UI thread blocking anywhere.
     /// Call this before passing to <c>app.Run()</c>.
     /// </summary>
-    public void Initialize()
+    public async Task InitializeAsync()
     {
-        _commitFormView.Initialize();
+        await _commitFormView.InitializeAsync();
+        await _authorSelectionView.InitializeAsync();
+        await _previewModal.InitializeAsync();
+        Title = $"{DefaultTitle} — {await _repositoryContext.GetRepositoryNameAsync()}";
+
         ShowScreen(_commitFormView);
         _commitFormView.FocusSubject();
     }
@@ -105,15 +113,6 @@ public sealed class MainWindow : Window, IStatusBarProvider
         new(Key.Enter.WithCtrl, "CTRL+ENTER next", _glyphSet.KeyCtrlEnter),
         new(Key.Tab, "TAB next field", _glyphSet.KeyTab),
     ];
-
-    /// <summary>
-    /// Builds the main window title with repo context: "CoAttribution — owner/repo".
-    /// </summary>
-    private string GetMainWindowTitle()
-    {
-        string repoName = _repositoryContext.GetRepositoryNameAsync().GetAwaiter().GetResult();
-        return $"{DefaultTitle} — {repoName}";
-    }
 
     private void SetupScreenSequence()
     {

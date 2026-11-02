@@ -40,6 +40,51 @@ public class AuthorRegistryTests : IDisposable
     }
 
     [Test, NotInParallel]
+    public async Task AddAsync_NoRegistryFile_Throws_AndConfigRemainsEmpty()
+    {
+        // Regression guard: AddAsync must not leave an author behind in any
+        // config instance that later GetAuthorConfigAsync calls could return.
+        CoAttribution.Lib.AuthorRegistry registry = new(PathResolverReturningNull());
+        GitCoAuthor newAuthor = new()
+        {
+            CoAuthorId = "newagent",
+            Name = "New Agent",
+            Email = "new@example.com",
+            Type = ContributorType.Agent,
+        };
+
+        InvalidOperationException? thrown = null;
+        try
+        {
+            await registry.AddAsync(newAuthor, CancellationToken.None);
+        }
+        catch (InvalidOperationException ex)
+        {
+            thrown = ex;
+        }
+
+        await Assert.That(thrown).IsNotNull();
+
+        GitCoAuthorConfig config = await registry.GetAuthorConfigAsync(CancellationToken.None);
+        await Assert.That(config.Agents).IsEmpty();
+    }
+
+    [Test, NotInParallel]
+    public async Task GetRegistryFileAsync_ConsecutiveCalls_ReturnSameLocalFile()
+    {
+        _temp.WriteAuthorsToml("");
+
+        CoAttribution.Lib.AuthorRegistry registry = new(PathResolverReturningNull());
+
+        FileInfo? first = await registry.GetRegistryFileAsync(CancellationToken.None);
+        FileInfo? second = await registry.GetRegistryFileAsync(CancellationToken.None);
+
+        await Assert.That(first).IsNotNull();
+        await Assert.That(second).IsNotNull();
+        await Assert.That(first!.FullName).IsEqualTo(second!.FullName);
+    }
+
+    [Test, NotInParallel]
     public async Task GetAuthorConfig_NoFileNoGlobal_ReturnsEmptyConfig()
     {
         CoAttribution.Lib.AuthorRegistry registry = new(PathResolverReturningNull());
