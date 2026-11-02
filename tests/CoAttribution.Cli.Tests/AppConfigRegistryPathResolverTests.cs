@@ -89,4 +89,31 @@ public class AppConfigRegistryPathResolverTests
 
         await Assert.That(path).IsNull();
     }
+
+    [Test]
+    public async Task GetExplicitRegistryPathAsync_WithRegistryPathKey_ReturnsValue()
+    {
+        IConfiguration configuration =
+            CommandTestHarness.SingleValueConfiguration("registry-path", "/custom/registry/authors.toml");
+
+        AppConfigRegistryPathResolver resolver = new(configuration);
+
+        string? path = await resolver.GetExplicitRegistryPathAsync(CancellationToken.None);
+
+        await Assert.That(path).IsEqualTo("/custom/registry/authors.toml");
+    }
+
+    [Test]
+    public async Task GetExplicitRegistryPathAsync_WithoutRegistryPathKey_ReturnsNull()
+    {
+        using TempConfigFile tmp = new("[paths]\nglobal_registry = \"/tmp/registry\"");
+        IConfiguration configuration =
+            CommandTestHarness.SingleValueConfiguration("config-file", tmp.FilePath);
+
+        AppConfigRegistryPathResolver resolver = new(configuration);
+
+        string? path = await resolver.GetExplicitRegistryPathAsync(CancellationToken.None);
+
+        await Assert.That(path).IsNull();
+    }
 }

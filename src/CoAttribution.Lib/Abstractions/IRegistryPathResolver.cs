@@ -12,4 +12,10 @@ namespace CoAttribution.Lib.Abstractions;
 public interface IRegistryPathResolver
 {
     Task<string?> GetGlobalRegistryPathAsync(CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Returns an explicitly requested registry path (e.g. from a <c>--registry</c>
+    /// CLI option), or <c>null</c> when no explicit override was supplied.
+    /// </summary>
+    Task<string?> GetExplicitRegistryPathAsync(CancellationToken cancellationToken);
 }

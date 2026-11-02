@@ -27,6 +27,9 @@ public class RootCommand
     [CliOption(Name = "config-path", Required = false, Arity = CliArgumentArity.ExactlyOne, Recursive = true)]
     public string ConfigPath { get; set; } = string.Empty;
 
+    [CliOption(Name = "registry", Required = false, Arity = CliArgumentArity.ExactlyOne, Recursive = true)]
+    public string RegistryPath { get; set; } = string.Empty;
+
     public RootCommand(IAuthorRegistry authorRegistry, TuiCompositionRoot compositionRoot, SetupDialog setupDialog, ILogger<RootCommand> logger)
     {
         _authorRegistry = authorRegistry;

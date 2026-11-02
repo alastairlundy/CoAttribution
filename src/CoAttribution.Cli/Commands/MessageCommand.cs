@@ -67,9 +67,17 @@ public class MessageCommand
 
             return 1;
         }
+        catch (UnknownCoAuthorException unknownEx)
+        {
+            // Unknown author IDs are a user error that must be loud: show
+            // every unknown ID plus the registered IDs, regardless of --verbose.
+            await Console.Error.WriteLineAsync(unknownEx.Message);
+
+            return 1;
+        }
         catch(Exception exception)
         {
-            await Console.Error.WriteLineAsync(Resources.Commands_Message_Failed);
+            await Console.Error.WriteLineAsync(string.Format(Resources.Commands_Message_Failed, SubjectMessage));
           
             if (Verbose)
             {

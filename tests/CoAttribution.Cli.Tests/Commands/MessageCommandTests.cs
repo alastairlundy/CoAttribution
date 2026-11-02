@@ -32,6 +32,50 @@ public class MessageCommandTests
     }
 
     [Test]
+    public async Task RunAsync_WhenUnknownCoAuthorException_ListsUnknownIdsAndReturnsOne()
+    {
+        ICommitOrchestrator orchestrator = Substitute.For<ICommitOrchestrator>();
+
+        orchestrator.BuildCommitMessageAsync(Arg.Any<CommitRequest>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new UnknownCoAuthorException(["coploit"], ["copilot", "kilo"]));
+
+        MessageCommand command = CommandTestHarness.BuildMessageCommand(orchestrator);
+        command.SubjectMessage = "feat: x";
+        command.DefaultIds = [];
+
+        using ConsoleCapture console = new();
+        CliContext ctx = CliContextFactory.Create();
+
+        int exitCode = await command.RunAsync(ctx);
+
+        await Assert.That(exitCode).IsEqualTo(1);
+        await Assert.That(console.StandardError).Contains("coploit");
+        await Assert.That(console.StandardError).Contains("copilot");
+    }
+
+    [Test]
+    public async Task RunAsync_WhenGenericException_FormatsFailureMessageWithSubject()
+    {
+        ICommitOrchestrator orchestrator = Substitute.For<ICommitOrchestrator>();
+        orchestrator.BuildCommitMessageAsync(Arg.Any<CommitRequest>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new InvalidOperationException("boom"));
+
+        MessageCommand command = CommandTestHarness.BuildMessageCommand(orchestrator);
+        command.SubjectMessage = "feat: add telemetry";
+        command.DefaultIds = [];
+        command.Verbose = false;
+
+        using ConsoleCapture console = new();
+        CliContext ctx = CliContextFactory.Create();
+
+        int exitCode = await command.RunAsync(ctx);
+
+        await Assert.That(exitCode).IsEqualTo(1);
+        await Assert.That(console.StandardError).Contains("feat: add telemetry");
+        await Assert.That(console.StandardError).DoesNotContain("{0}");
+    }
+
+    [Test]
     public async Task RunAsync_WhenMissingHostBlockException_FormatsDiagnosticsAndReturnsOne()
     {
         ICommitOrchestrator orchestrator = Substitute.For<ICommitOrchestrator>();

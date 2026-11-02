@@ -51,12 +51,16 @@ public class CommitOrchestrator : ICommitOrchestrator
         GitCoAuthor[] coAuthors = authorConfig.GetCoAuthors();
 
         HostResolutionResult hostResult = await _hostResolver.ResolveHostAsync(null);
-        string[] mergedDefaultIds = hostResult.Variant == HostResolutionVariant.Resolved && hostResult.HostKey is not null
-            ? [..commitRequest.DefaultIds, hostResult.HostKey]
-            : commitRequest.DefaultIds;
+
+        // The resolved host key is deliberately NOT merged into the default IDs:
+        // attribution must come from explicit user intent (--with/--coauthor/
+        // --assist). Auto-crediting an author whose ID happens to match the host
+        // key (e.g. "github") would stamp unrequested trailers on every commit
+        // in a matching repository. Host keys still drive identity overrides
+        // and host-block validation for explicitly attributed agents below.
 
         ResolvedCoAuthor[] actualCoAuthors = AttributionPolicy.Resolve(new CoAuthorResolutionRequest(
-            coAuthors, mergedDefaultIds,
+            coAuthors, commitRequest.DefaultIds,
             commitRequest.CoAuthorIds, commitRequest.AssistIds));
 
         if (hostResult.Variant == HostResolutionVariant.Resolved && hostResult.HostKey is not null)

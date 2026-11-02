@@ -119,8 +119,10 @@ public class AttributionPolicyTests
     }
 
     [Test]
-    public async Task Resolve_UnknownId_IsFilteredOut()
+    public async Task Resolve_UnknownId_ThrowsUnknownCoAuthorException()
     {
+        // Unknown IDs must never silently vanish: an attribution request for an
+        // ID that is not registered has to fail loudly.
         GitCoAuthor known = MakeAuthor("known");
         CoAuthorResolutionRequest request = new(
             AvailableAuthors: [known],
@@ -128,9 +130,70 @@ public class AttributionPolicyTests
             CoAuthorIds: ["ghost"],
             AssistIds: ["also-ghost"]);
 
-        ResolvedCoAuthor[] result = CoAttribution.Lib.AttributionPolicy.Resolve(request);
+        UnknownCoAuthorException? thrown = null;
+        try
+        {
+            CoAttribution.Lib.AttributionPolicy.Resolve(request);
+        }
+        catch (UnknownCoAuthorException ex)
+        {
+            thrown = ex;
+        }
 
-        await Assert.That(result).IsEmpty();
+        await Assert.That(thrown).IsNotNull();
+        await Assert.That(thrown!.UnknownIds).Count().IsEqualTo(2);
+        await Assert.That(thrown.UnknownIds).Contains("ghost");
+        await Assert.That(thrown.UnknownIds).Contains("also-ghost");
+        await Assert.That(thrown.Message).Contains("known");
+    }
+
+    [Test]
+    public async Task Resolve_UnknownIdCloseToRegisteredId_SuggestsDidYouMean()
+    {
+        GitCoAuthor copilot = MakeAuthor("copilot");
+        CoAuthorResolutionRequest request = new(
+            AvailableAuthors: [copilot],
+            DefaultIds: [],
+            CoAuthorIds: ["coploit"],
+            AssistIds: []);
+
+        UnknownCoAuthorException? thrown = null;
+        try
+        {
+            CoAttribution.Lib.AttributionPolicy.Resolve(request);
+        }
+        catch (UnknownCoAuthorException ex)
+        {
+            thrown = ex;
+        }
+
+        await Assert.That(thrown).IsNotNull();
+        await Assert.That(thrown!.Message).Contains("Did you mean 'copilot'");
+    }
+
+    [Test]
+    public async Task Resolve_UnknownIdWithNoSimilarId_ListsRegisteredIdsWithoutSuggestion()
+    {
+        GitCoAuthor copilot = MakeAuthor("copilot");
+        CoAuthorResolutionRequest request = new(
+            AvailableAuthors: [copilot],
+            DefaultIds: [],
+            CoAuthorIds: ["zzzzzzz"],
+            AssistIds: []);
+
+        UnknownCoAuthorException? thrown = null;
+        try
+        {
+            CoAttribution.Lib.AttributionPolicy.Resolve(request);
+        }
+        catch (UnknownCoAuthorException ex)
+        {
+            thrown = ex;
+        }
+
+        await Assert.That(thrown).IsNotNull();
+        await Assert.That(thrown!.Message).Contains("copilot");
+        await Assert.That(thrown.Message).DoesNotContain("Did you mean");
     }
 
     [Test]

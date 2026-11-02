@@ -48,7 +48,15 @@ public class CommitCommand
                 cliContext.CancellationToken);
             
             GitResult result = await _commitOrchestrator.ExecuteCommitAsync(commitMessage, cliContext.CancellationToken);
-            
+
+            // Surface git's own stdout and stderr verbatim: on success the user
+            // sees git's commit summary; on failure they see git's actual error
+            // (hooks, staging, identity problems) instead of a bare exit code.
+            if (!string.IsNullOrWhiteSpace(result.StandardOutput))
+                await Console.Out.WriteLineAsync(result.StandardOutput);
+            if (!string.IsNullOrWhiteSpace(result.StandardError))
+                await Console.Error.WriteLineAsync(result.StandardError);
+
             Console.WriteLine();
             Console.WriteLine();
 
@@ -66,9 +74,17 @@ public class CommitCommand
 
             return 1;
         }
+        catch (UnknownCoAuthorException unknownEx)
+        {
+            // Unknown author IDs are a user error that must be loud: show
+            // every unknown ID plus the registered IDs, regardless of --verbose.
+            await Console.Error.WriteLineAsync(unknownEx.Message);
+
+            return 1;
+        }
         catch(Exception exception)
         {
-            await Console.Error.WriteLineAsync(Resources.Commands_Commit_Failed_Generic);
+            await Console.Error.WriteLineAsync(string.Format(Resources.Commands_Commit_Failed_Generic, SubjectMessage));
           
             if (Verbose)
             {

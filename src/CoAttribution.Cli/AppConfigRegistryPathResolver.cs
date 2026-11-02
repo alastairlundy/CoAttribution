@@ -50,4 +50,16 @@ public class AppConfigRegistryPathResolver : IRegistryPathResolver
 
         return await Task.FromResult(_cachedPath);
     }
+
+    /// <inheritdoc />
+    public async Task<string?> GetExplicitRegistryPathAsync(CancellationToken cancellationToken)
+    {
+        string? explicitPath = _configuration["registry-path"];
+
+        if (string.IsNullOrWhiteSpace(explicitPath))
+            return await Task.FromResult<string?>(null);
+
+        // The explicit override always wins over the configured global registry.
+        return await Task.FromResult(explicitPath);
+    }
 }

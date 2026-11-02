@@ -52,6 +52,94 @@ public class CommitCommandTests
     }
 
     [Test]
+    public async Task RunAsync_WhenGitStdoutPresent_PrintsGitOutput()
+    {
+        ICommitOrchestrator orchestrator = Substitute.For<ICommitOrchestrator>();
+        orchestrator.BuildCommitMessageAsync(Arg.Any<CommitRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new CommitMessage("feat: x", [], []));
+        orchestrator.ExecuteCommitAsync(Arg.Any<CommitMessage>(), Arg.Any<CancellationToken>())
+            .Returns(new GitResult(0, "[main 2f37e4c] feat: x", ""));
+
+        CommitCommand command = CommandTestHarness.BuildCommitCommand(orchestrator);
+        command.SubjectMessage = "feat: x";
+        command.DefaultIds = ["copilot"];
+
+        using ConsoleCapture console = new();
+        CliContext ctx = CliContextFactory.Create();
+
+        int exitCode = await command.RunAsync(ctx);
+
+        await Assert.That(exitCode).IsEqualTo(0);
+        await Assert.That(console.StandardOutput).Contains("[main 2f37e4c] feat: x");
+    }
+
+    [Test]
+    public async Task RunAsync_WhenGitStderrPresent_PipesGitErrorToStderr()
+    {
+        ICommitOrchestrator orchestrator = Substitute.For<ICommitOrchestrator>();
+        orchestrator.BuildCommitMessageAsync(Arg.Any<CommitRequest>(), Arg.Any<CancellationToken>())
+            .Returns(new CommitMessage("feat: x", [], []));
+        orchestrator.ExecuteCommitAsync(Arg.Any<CommitMessage>(), Arg.Any<CancellationToken>())
+            .Returns(new GitResult(7, "", "pre-commit hook failed"));
+
+        CommitCommand command = CommandTestHarness.BuildCommitCommand(orchestrator);
+        command.SubjectMessage = "feat: x";
+        command.DefaultIds = ["copilot"];
+
+        using ConsoleCapture console = new();
+        CliContext ctx = CliContextFactory.Create();
+
+        int exitCode = await command.RunAsync(ctx);
+
+        await Assert.That(exitCode).IsEqualTo(7);
+        await Assert.That(console.StandardError).Contains("pre-commit hook failed");
+    }
+
+    [Test]
+    public async Task RunAsync_WhenUnknownCoAuthorException_ListsUnknownIdsAndReturnsOne()
+    {
+        ICommitOrchestrator orchestrator = Substitute.For<ICommitOrchestrator>();
+
+        orchestrator.BuildCommitMessageAsync(Arg.Any<CommitRequest>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new UnknownCoAuthorException(["coploit"], ["copilot", "kilo"]));
+
+        CommitCommand command = CommandTestHarness.BuildCommitCommand(orchestrator);
+        command.SubjectMessage = "feat: x";
+        command.DefaultIds = [];
+
+        using ConsoleCapture console = new();
+        CliContext ctx = CliContextFactory.Create();
+
+        int exitCode = await command.RunAsync(ctx);
+
+        await Assert.That(exitCode).IsEqualTo(1);
+        await Assert.That(console.StandardError).Contains("coploit");
+        await Assert.That(console.StandardError).Contains("copilot");
+    }
+
+    [Test]
+    public async Task RunAsync_WhenGenericException_FormatsFailureMessageWithSubject()
+    {
+        ICommitOrchestrator orchestrator = Substitute.For<ICommitOrchestrator>();
+        orchestrator.BuildCommitMessageAsync(Arg.Any<CommitRequest>(), Arg.Any<CancellationToken>())
+            .ThrowsAsync(new InvalidOperationException("boom"));
+
+        CommitCommand command = CommandTestHarness.BuildCommitCommand(orchestrator);
+        command.SubjectMessage = "feat: add telemetry";
+        command.DefaultIds = [];
+        command.Verbose = false;
+
+        using ConsoleCapture console = new();
+        CliContext ctx = CliContextFactory.Create();
+
+        int exitCode = await command.RunAsync(ctx);
+
+        await Assert.That(exitCode).IsEqualTo(1);
+        await Assert.That(console.StandardError).Contains("feat: add telemetry");
+        await Assert.That(console.StandardError).DoesNotContain("{0}");
+    }
+
+    [Test]
     public async Task RunAsync_WhenMissingHostBlockException_FormatsDiagnosticsAndReturnsOne()
     {
         ICommitOrchestrator orchestrator = Substitute.For<ICommitOrchestrator>();

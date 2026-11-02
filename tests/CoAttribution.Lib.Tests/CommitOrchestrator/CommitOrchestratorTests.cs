@@ -303,6 +303,57 @@ public class CommitOrchestratorTests
     }
 
     [Test]
+    public async Task BuildCommitMessage_UnknownId_PropagatesUnknownCoAuthorException()
+    {
+        GitCoAuthor copilot = MakeAuthor("copilot", ContributorType.Agent, hasHostBlock: true);
+        GitCoAuthorConfig config = ConfigWith(copilot);
+
+        (CommitMessageBuilder builder, IAuthorRegistry registry, IGitClient git, IHostResolver hostResolver) =
+            MakeRealBuilderDeps(
+                config,
+                new HostResolutionResult { Variant = HostResolutionVariant.NoHostDetected, Source = HostSource.Fallback });
+
+        CoAttribution.Lib.CommitOrchestrator orchestrator = new(builder, registry, git, hostResolver);
+
+        CommitRequest request = new("subject", "body", DefaultIds: [], CoAuthorIds: ["coploit"], AssistIds: []);
+
+        UnknownCoAuthorException? thrown = null;
+        try
+        {
+            await orchestrator.BuildCommitMessageAsync(request, CancellationToken.None);
+        }
+        catch (UnknownCoAuthorException ex)
+        {
+            thrown = ex;
+        }
+
+        await Assert.That(thrown).IsNotNull();
+        await Assert.That(thrown!.UnknownIds).Contains("coploit");
+    }
+
+    [Test]
+    public async Task BuildCommitMessage_HostResolved_DoesNotAutoAttributeHostKeyedAuthor()
+    {
+        // The resolved host key must never be merged into the default IDs
+        // implicitly: attribution requires explicit user intent.
+        GitCoAuthor githubAgent = MakeAuthor("github", ContributorType.Agent, hasHostBlock: true);
+        GitCoAuthorConfig config = ConfigWith(githubAgent);
+
+        (CommitMessageBuilder builder, IAuthorRegistry registry, IGitClient git, IHostResolver hostResolver) =
+            MakeRealBuilderDeps(
+                config,
+                new HostResolutionResult { Variant = HostResolutionVariant.Resolved, HostKey = "github", Source = HostSource.RemoteProbe },
+                registryPath: "/tmp/authors.toml");
+
+        CoAttribution.Lib.CommitOrchestrator orchestrator = new(builder, registry, git, hostResolver);
+
+        CommitRequest request = new("subject", "body", DefaultIds: [], CoAuthorIds: [], AssistIds: []);
+        CommitMessage message = await orchestrator.BuildCommitMessageAsync(request, CancellationToken.None);
+
+        await Assert.That(message.CoAuthors).Count().IsEqualTo(0);
+    }
+
+    [Test]
     public async Task BuildCommitMessage_HostResolved_RegistryNotMutated()
     {
         GitCoAuthor copilot = MakeAuthor("copilot", ContributorType.Agent, hasHostBlock: true);

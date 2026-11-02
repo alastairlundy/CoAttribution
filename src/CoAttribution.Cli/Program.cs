@@ -30,7 +30,8 @@ IConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
     .AddEnvironmentVariables()
     .AddInMemoryCollection(new Dictionary<string, string?>
     {
-        ["config-file"] = configFilePath
+        ["config-file"] = configFilePath,
+        ["registry-path"] = ExtractRegistryPath(args)
     });
 
 IConfiguration configuration = configurationBuilder.Build();
@@ -102,6 +103,18 @@ static string? ExtractConfigPath(string[] args)
     for (int i = 0; i < args.Length - 1; i++)
     {
         if (string.Equals(args[i], "--config-path", StringComparison.OrdinalIgnoreCase))
+        {
+            return args[i + 1];
+        }
+    }
+    return null;
+}
+
+static string? ExtractRegistryPath(string[] args)
+{
+    for (int i = 0; i < args.Length - 1; i++)
+    {
+        if (string.Equals(args[i], "--registry", StringComparison.OrdinalIgnoreCase))
         {
             return args[i + 1];
         }
