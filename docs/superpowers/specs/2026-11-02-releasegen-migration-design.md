@@ -86,3 +86,53 @@ workflow (or the maintainer) and the pipeline becomes manifest-driven.
   the preset-emitted switch (leave it untouched).
 - First-run verification: a `--dry-run` of the build stage locally before trusting CI,
   to bury Terminal.Gui-meets-NativeAOT surprises early.
+
+## Amendment 1 (2026-11-02): rid-subset override + three-OS build matrix
+
+**Trigger:** the first real build proved NativeAOT is same-OS-only (`Cross-OS native
+compilation is not supported` for `linux-x64` on a Windows host), so no single runner can
+build all six RIDs with the `aot` preset, and ReleaseGen 0.2.0 offers no per-invocation
+rid subset. The maintainer chose to fix it upstream: ExtensionGen gains a rid-subset
+override, and the workflow splits the build across three runner OSes.
+
+**Upstream (AlastairLundy/ReleaseGen, next feature release, 0.3.0):**
+
+- CLI surface: `releasegen build --rids <comma-separated list>` — a per-invocation subset
+  of the manifest's `runtimeIdentifiers`. `build` only (the matrix need); `run`, `test`,
+  `package`, `publish` unchanged. Like `--preset`, the flag never writes the manifest; the
+  manifest remains the declared source of truth.
+- Validation (refused in `BuildCommand`, mirroring the unknown-preset refusal, exit 1,
+  before any planning): empty list, blank entry, deduplicated entries checked
+  case-insensitively against the manifest's configured rids; a value outside the manifest's
+  set fails naming it and the known set. The manifest's spelling is used downstream so
+  output paths stay deterministic.
+- Implementation seam: new subset field on `BuildStageRequest`; `BuildStageRunner` iterates
+  the subset when set instead of `manifest.Build.RuntimeIdentifiers` (summary line reports
+  the subset count; "runtime identifier(s)" wording unchanged).
+- Tests (TUnit, following `CliHarness`/`TestWorkspace` conventions): subset run
+  publishes/archives only the named rids; refusal of unknown/blank/empty values with the
+  error naming the manifest set; `--verbose`/`--dry-run`/`--quiet` compose.
+- Docs: `docs/commands.md` build section + a matrix note in `docs/trusted-publishing.md`
+  and `docs/stage-handoff.md`; `CHANGELOG.md` entry; csproj `<Version>` bumped to 0.3.0.
+  AI assistance disclosed in the commit/PR per ReleaseGen's CONTRIBUTING.
+
+**CoAttribution side (this repo):**
+- Manifest unchanged: six RIDs, `aot` preset — the subset lives at the invocation.
+- `release.yml` build job becomes a matrix: `win-x64,win-arm64` on `windows-latest`,
+  `linux-x64,linux-arm64` on `ubuntu-latest`, `osx-x64,osx-arm64` on `macos-latest`; each
+  leg uploads its `release/` tree as `release-bin-<os>`; the publish job downloads all
+  three with `merge-multiple: true` into one `release/` tree (archive names are
+  (project, rid)-unique, so legs cannot collide), runs the package stage there, then
+  `releasegen publish` and `gh release upload`.
+- ReleaseGen is installed unpinned until the 0.3.0 release is on nuget.org, then pinned;
+  until the pin, a Leg job fails loudly if the installed tool lacks `--rids` (unknown
+  option exits nonzero), which is the honest gate rather than a silent downward-compatible
+  drift.
+
+**Approaches considered for the subset seam:** a manifest-level per-rid assignment key
+(rejected: the manifest is the release's declared source of truth and the subset is an
+invocation escape, like `--preset`); repeatable/space-separated `--rids` arguments
+(rejected: comma-separated single value parses identically across CI shells and avoids
+quoting differences); three OS-scoped manifests (rejected: ReleaseGen v1 mandates one
+manifest per repository).
+
