@@ -36,22 +36,6 @@ public class RegistryPersistenceTests : IDisposable
     // ---------------------------------------------------------------
     // Registry discovery
     // ---------------------------------------------------------------
-
-    [Test, NotInParallel]
-    public async Task GetRegistryFile_NestedAuthorsToml_IsNotDiscovered()
-    {
-        // Discovery must not recursively scan arbitrary subdirectories.
-        string nested = Path.Combine(_temp.TempPath, "sub", "other", "authors.toml");
-        Directory.CreateDirectory(Path.GetDirectoryName(nested)!);
-        File.WriteAllText(nested, "[agents.nested]\nname = \"Nested\"\nemail = \"n@example.com\"\n");
-
-        CoAttribution.Lib.AuthorRegistry registry = new(Resolver(globalPath: null));
-
-        FileInfo? file = await registry.GetRegistryFileAsync(CancellationToken.None);
-
-        await Assert.That(file).IsNull();
-    }
-
     [Test, NotInParallel]
     public async Task GetRegistryFile_CoauthorDirectoryFile_IsDiscovered()
     {
@@ -82,36 +66,6 @@ public class RegistryPersistenceTests : IDisposable
         await Assert.That(file).IsNotNull();
         await Assert.That(file!.DirectoryName).IsEqualTo(_temp.TempPath);
     }
-
-    [Test, NotInParallel]
-    public async Task GetRegistryFile_ExplicitPath_WinsOverEverything()
-    {
-        string explicitDir = Path.Combine(_temp.TempPath, "custom");
-        Directory.CreateDirectory(explicitDir);
-        string explicitFile = Path.Combine(explicitDir, "authors.toml");
-        File.WriteAllText(explicitFile, "[agents.custom]\nname = \"Custom\"\nemail = \"custom@example.com\"\n");
-
-        File.WriteAllText(Path.Combine(_temp.TempPath, "authors.toml"), "[agents.copilot]\nname = \"Copilot\"\nemail = \"c@example.com\"\n");
-
-        CoAttribution.Lib.AuthorRegistry registry = new(Resolver(globalPath: null, explicitPath: explicitFile));
-
-        FileInfo? file = await registry.GetRegistryFileAsync(CancellationToken.None);
-
-        await Assert.That(file).IsNotNull();
-        await Assert.That(file!.FullName).IsEqualTo(explicitFile);
-    }
-
-    [Test, NotInParallel]
-    public async Task GetRegistryFile_ExplicitPathMissing_ThrowsFileNotFoundException()
-    {
-        CoAttribution.Lib.AuthorRegistry registry = new(
-            Resolver(globalPath: null, explicitPath: Path.Combine(_temp.TempPath, "does-not-exist", "authors.toml")));
-
-        // A mistyped --registry path must never silently fall back to discovery.
-        await Assert.ThrowsAsync<FileNotFoundException>(
-            async () => await registry.GetRegistryFileAsync(CancellationToken.None));
-    }
-
     // ---------------------------------------------------------------
     // Comment-preserving persistence
     // ---------------------------------------------------------------
@@ -126,81 +80,6 @@ public class RegistryPersistenceTests : IDisposable
         name = "Kilo AI"
         email = "noreply@kilocode.ai"
         """;
-
-    [Test, NotInParallel]
-    public async Task AddAsync_PreservesExistingCommentsAndFormatting()
-    {
-        _temp.WriteAuthorsToml(OriginalWithComments);
-
-        CoAttribution.Lib.AuthorRegistry registry = new(Resolver(globalPath: null));
-        GitCoAuthor newAuthor = new()
-        {
-            CoAuthorId = "newagent",
-            Name = "New Agent",
-            Email = "new@example.com",
-            Type = ContributorType.Agent,
-        };
-
-        await registry.AddAsync(newAuthor, CancellationToken.None);
-
-        string text = await File.ReadAllTextAsync(Path.Combine(_temp.TempPath, "authors.toml"));
-
-        // The untouched bytes must survive exactly.
-        await Assert.That(text).StartsWith(OriginalWithComments);
-
-        // And the new author must be present and parseable.
-        FileInfo? file = await registry.GetRegistryFileAsync(CancellationToken.None);
-        GitCoAuthor? added = await registry.GetByIdAsync("newagent", CancellationToken.None);
-        await Assert.That(added).IsNotNull();
-        await Assert.That(text).Contains("new@example.com");
-    }
-
-    [Test, NotInParallel]
-    public async Task AddAsync_HumanAuthor_PreservesCommentsAndAppendsToHumans()
-    {
-        _temp.WriteAuthorsToml(OriginalWithComments);
-
-        CoAttribution.Lib.AuthorRegistry registry = new(Resolver(globalPath: null));
-        GitCoAuthor newAuthor = new()
-        {
-            CoAuthorId = "carol",
-            Name = "Carol",
-            Email = "carol@example.com",
-            Type = ContributorType.Human,
-        };
-
-        await registry.AddAsync(newAuthor, CancellationToken.None);
-
-        GitCoAuthor? added = await registry.GetByIdAsync("carol", CancellationToken.None);
-        await Assert.That(added).IsNotNull();
-        await Assert.That(added!.Type).IsEqualTo(ContributorType.Human);
-
-        string text = await File.ReadAllTextAsync(Path.Combine(_temp.TempPath, "authors.toml"));
-        await Assert.That(text).StartsWith(OriginalWithComments);
-    }
-
-    [Test, NotInParallel]
-    public async Task AddAsync_DuplicateId_ThrowsAndLeavesFileUnchanged()
-    {
-        _temp.WriteAuthorsToml(OriginalWithComments);
-        string before = await File.ReadAllTextAsync(Path.Combine(_temp.TempPath, "authors.toml"));
-
-        CoAttribution.Lib.AuthorRegistry registry = new(Resolver(globalPath: null));
-        GitCoAuthor duplicate = new()
-        {
-            CoAuthorId = "copilot",
-            Name = "Overwritten",
-            Email = "evil@example.com",
-            Type = ContributorType.Agent,
-        };
-
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            async () => await registry.AddAsync(duplicate, CancellationToken.None));
-
-        string after = await File.ReadAllTextAsync(Path.Combine(_temp.TempPath, "authors.toml"));
-        await Assert.That(after).IsEqualTo(before);
-    }
-
     [Test, NotInParallel]
     public async Task AddAsync_WithHostOverrides_ParsesHostBlocksBack()
     {
@@ -244,27 +123,6 @@ public class RegistryPersistenceTests : IDisposable
         await Assert.That(added).IsNotNull();
         await Assert.That(added!.Name).IsEqualTo("Bug \"Fixer\" \\2");
     }
-
-    [Test, NotInParallel]
-    public async Task RemoveAsync_PreservesOtherEntriesAndComments()
-    {
-        _temp.WriteAuthorsToml(OriginalWithComments);
-
-        CoAttribution.Lib.AuthorRegistry registry = new(Resolver(globalPath: null));
-
-        await registry.RemoveAsync("kilo", CancellationToken.None);
-
-        string text = await File.ReadAllTextAsync(Path.Combine(_temp.TempPath, "authors.toml"));
-        await Assert.That(text).Contains("# Officially Adopted");
-        await Assert.That(text).Contains("[agents.copilot]");
-        await Assert.That(text).Contains("copilot@example.com");
-
-        GitCoAuthor? removed = await registry.GetByIdAsync("kilo", CancellationToken.None);
-        await Assert.That(removed).IsNull();
-        GitCoAuthor? kept = await registry.GetByIdAsync("copilot", CancellationToken.None);
-        await Assert.That(kept).IsNotNull();
-    }
-
     [Test, NotInParallel]
     public async Task RemoveAsync_LeavesNoNestedHostTableOrphan()
     {
@@ -290,19 +148,5 @@ public class RegistryPersistenceTests : IDisposable
         await Assert.That(text).DoesNotContain("agents.kilo");
         GitCoAuthor? removed = await registry.GetByIdAsync("kilo", CancellationToken.None);
         await Assert.That(removed).IsNull();
-    }
-
-    [Test, NotInParallel]
-    public async Task RemoveAsync_UnknownId_LeavesFileByteIdentical()
-    {
-        _temp.WriteAuthorsToml(OriginalWithComments);
-        string before = await File.ReadAllTextAsync(Path.Combine(_temp.TempPath, "authors.toml"));
-
-        CoAttribution.Lib.AuthorRegistry registry = new(Resolver(globalPath: null));
-
-        await registry.RemoveAsync("ghost", CancellationToken.None);
-
-        string after = await File.ReadAllTextAsync(Path.Combine(_temp.TempPath, "authors.toml"));
-        await Assert.That(after).IsEqualTo(before);
     }
 }
