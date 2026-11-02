@@ -275,3 +275,40 @@ Run:
 releasegen publish --dry-run
 ```
 Expected: lists the nupkgs it would push (`release/packages/tool/CoAttribution.Cli/*.nupkg`); exits successfully with no network call. A failure naming missing packages means the Task 3 `.gitignore`/manifest artifact layout is wrong. If the dry-run insists on reading the key channel before showing the plan, set `NUGET_API_KEY` to a dummy value for this step only — nothing is pushed.
+
+## Amendment 1 (2026-11-02): two added tasks + workflow matrix rework
+
+Task 1's manifest and Task 3's cleanup are unchanged. Task 2's workflow is reworked by
+Task 6 below (committed once, on top of the Task 2 commit). Task 4's local verification
+proved: Terminal.Gui compiles clean under NativeAOT (win-x64, win-arm64 zipped), and
+cross-OS AOT is impossible on one runner — motivating the upstream Task 5.
+
+### Task 5: ReleaseGen rid-subset override (`--rids`, upstream branch on AlastairLundy/ReleaseGen)
+
+**Files (ReleaseGen repo):**
+- Modify: `src/ReleaseGenCli/Commands/BuildCommand.cs` (parse `--rids`, refuse an invalid subset like an unknown preset, pass the subset on)
+- Modify: `src/ReleaseGenLib/Models/BuildStageRequest.cs` (add the optional rid-subset field)
+- Modify: `src/ReleaseGenLib/BuildStageRunner.cs` (iterate the subset when set)
+- Test: `src/ReleaseGen.Tests/` (new `RidSubsetTests.cs`, following `CliHarness`/`TestWorkspace`)
+- Modify: `docs/commands.md`, `docs/stage-handoff.md`, `docs/trusted-publishing.md`, `CHANGELOG.md`, `src/ReleaseGenCli/ReleaseGenCli.csproj` (`<Version>` bump to 0.3.0)
+
+**Interfaces:**
+- Produces: `releasegen build --rids win-x64,win-arm64` — comma-separated, refused with exit 1 when any value is blank or outside the manifest's `runtimeIdentifiers` (error names the value and the known set); consumed by Task 6's matrix.
+
+- [ ] **Step 1: Failing tests first** — subset publishes only the named rids; blank/unknown/empty refusals name the manifest set (exact wording pinned in the test):
+  unknown value -> `error: unknown runtime identifier '<value>' ... runtimeIdentifiers: <manifest set>` (exit 1)
+- [ ] **Step 2: Watch them fail**, implement the option + request field + runner branch, watch them pass
+- [ ] **Step 3: Docs + CHANGELOG + version bump + green suite** (`dotnet build src/ReleaseGen.slnx -c Release` then `dotnet test --project src/ReleaseGen.Tests/ReleaseGen.Tests.csproj --no-build`)
+- [ ] **Step 4: Branch commit(s) with `AI-assisted:` disclosure per CONTRIBUTING.md**
+
+### Task 6: Matrix rework of `release.yml` (this repo)
+
+**Files:**
+- Modify: `.github/workflows/release.yml`
+
+**Interfaces:**
+- Consumes: Task 5's `releasegen build --rids` (requires the tool version that ships it); Task 1's manifest (unchanged).
+
+- [ ] **Step 1: Rework the `release` job into a three-leg matrix** (`win-x64,win-arm64` on `windows-latest`, `linux-x64,linux-arm64` on `ubuntu-latest`, `osx-x64,osx-arm64` on `macos-latest`), each leg running `releasegen build --rids ${{ matrix.rids }}` then `releasegen test` once (the test stage is rid-independent; run it only on the ubuntu leg to keep three-OS test runs to one) and uploading `release/` as `release-bin-<os>`.
+- [ ] **Step 2: Rework the `publish` job** to download `release-bin-*` into `release/` with `merge-multiple: true`, then run `releasegen package` (packs from source, rid-independent), `releasegen publish` (test gate re-consults unchanged), and `gh release upload` as already written.
+- [ ] **Step 3: Same verification as Task 2** (js-yaml parse + the five-token grep, adapted to the matrix) and commit.
