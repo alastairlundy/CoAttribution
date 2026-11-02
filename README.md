@@ -1,5 +1,9 @@
 # CoAttribution
 
+[![NuGet Downloads](https://img.shields.io/nuget/dt/CoAttribution?style=flat-square)](https://www.nuget.org/packages/CoAttribution/)
+[![Latest Version](https://img.shields.io/nuget/v/CoAttribution?style=flat-square)](https://www.nuget.org/packages/CoAttribution/)
+[![License](https://img.shields.io/github/license/alastairlundy/CoAttribution?style=flat-square)](LICENSE.txt)
+
 CoAttribution is a command-line tool that tags your Git commits with `Co-authored-by` and `Assisted-by` trailers, pulling author identities from a local TOML registry.
 
 ## Key Features
