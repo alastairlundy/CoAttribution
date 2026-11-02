@@ -1,28 +1,17 @@
 name: Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Version tag (e.g. v0.1.0). If empty, uses the version from the project file.'
-        required: false
-        type: string
-      prerelease:
-        description: 'Mark this release as a pre-release'
-        required: false
-        type: boolean
-        default: false
+  release:
+    types: [published]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
 
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v6
@@ -37,39 +26,70 @@ jobs:
           restore-keys: |
             nuget-${{ runner.os }}-
 
-      - name: Determine version tag
-        id: version
-        shell: bash
+      - name: Install ReleaseGen
+        run: dotnet tool install --global ReleaseGen
+
+      - name: Build
+        run: releasegen build
+
+      - name: Test
+        run: releasegen test
+
+      - name: Package
+        run: releasegen package
+
+      - name: Upload release tree
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-tree
+          path: release/
+          if-no-files-found: error
+
+  publish:
+    runs-on: ubuntu-latest
+    needs: release
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.release.target_commitish }}
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v6
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/Directory.Packages.props', '**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Install ReleaseGen
+        run: dotnet tool install --global ReleaseGen
+
+      - name: Download release tree
+        uses: actions/download-artifact@v4
+        with:
+          name: release-tree
+          path: release
+
+      - name: NuGet login (OIDC -> temporary API key)
+        uses: NuGet/login@8d196754b4036150537f80ac539e15c2f1028841 # v1.2.0
+        id: login
+        with:
+          user: ${{ secrets.NUGET_USER }}
+
+      - name: Publish packages to NuGet.org
         env:
-          INPUT_TAG: ${{ inputs.tag }}
-          INPUT_PRERELEASE: ${{ inputs.prerelease }}
-        run: |
-          if [ -n "$INPUT_TAG" ]; then
-            TAG="$INPUT_TAG"
-          else
-            VERSION=$(dotnet msbuild src/CoAttribution.Cli/CoAttribution.Cli.csproj -getProperty:Version -q)
-            if [ -z "$VERSION" ] || [ "$VERSION" = "1.0.0" ]; then
-              echo "::error::No tag provided and no version set in csproj. Please provide a tag or set Version in the csproj."
-              exit 1
-            fi
-            TAG="v${VERSION}"
-          fi
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+        run: releasegen publish
 
-          if [ "$INPUT_PRERELEASE" = "true" ] && [[ "$TAG" != *-* ]]; then
-            TAG="${TAG}-pre"
-          fi
-
-          echo "tag=${TAG}" >> $GITHUB_OUTPUT
-
-      - name: Create git tag
+      - name: Attach per-RID archives to the release
         env:
-          TAG: ${{ steps.version.outputs.tag }}
-        run: git tag -f "$TAG"
-
-      - name: Install dotnet-releaser
-        run: dotnet tool install --global dotnet-releaser
-
-      - name: Build and publish
-        shell: bash
-        run: |
-          dotnet-releaser publish --github-token "${{ secrets.GITHUB_TOKEN }}" --force-upload src/dotnet-releaser.toml
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.event.release.tag_name }}" release/*.zip release/*.tar.gz --clobber
