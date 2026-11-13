@@ -217,19 +217,40 @@ public class CommandSurfaceTests
     }
 
     [Test]
-    public async Task MessageCommand_RequiresWithAndMatchesPreMigration()
+    public async Task MessageCommand_RequiresWithAndMessageUnlessAmend()
     {
         using ServiceProvider services = BuildSurfaceServices();
         System.CommandLine.RootCommand root = BuildRoot(services);
         System.CommandLine.Command message = root.Subcommands.Single(c => c.Name == "message");
 
         System.CommandLine.Option with = message.Options.Single(o => o.Name == "--with");
-        await Assert.That(with.Required).IsTrue();
         await Assert.That(with.Arity.Equals(System.CommandLine.ArgumentArity.OneOrMore)).IsTrue();
 
         System.CommandLine.Option messageOption = message.Options.Single(o => o.Name == "--message");
         await Assert.That(messageOption.Aliases).Contains("-m");
-        await Assert.That(messageOption.Required).IsTrue();
+
+        // --amend rebuilds from the last commit's message, so the two
+        // required-for-a-fresh-message options are enforced conditionally
+        // (see the message command's validator) rather than via the
+        // framework's unconditional Required flag.
+        System.CommandLine.Option amend = message.Options.Single(o => o.Name == "--amend");
+        await Assert.That(amend.Required).IsFalse();
+
+        // A fresh message keeps the historical required surface, in the
+        // framework's own wording, for every invocation without --amend.
+        string[] missingRequired = [.. root.Parse(["message"]).Errors.Select(e => e.Message)];
+        await Assert.That(missingRequired).Contains("Option '--message' is required.");
+        await Assert.That(missingRequired).Contains("Option '--with' is required.");
+
+        string[] missingWith = [.. root.Parse(["message", "-m", "s"]).Errors.Select(e => e.Message)];
+        await Assert.That(missingWith).Contains("Option '--with' is required.");
+
+        string[] missingMessage = [.. root.Parse(["message", "--with", "a"]).Errors.Select(e => e.Message)];
+        await Assert.That(missingMessage).Contains("Option '--message' is required.");
+
+        // Complete invocations still parse clean, with or without --amend.
+        await Assert.That(root.Parse(["message", "-m", "s", "--with", "a"]).Errors.Count).IsEqualTo(0);
+        await Assert.That(root.Parse(["message", "--amend"]).Errors.Count).IsEqualTo(0);
     }
 
     [Test]
@@ -520,6 +541,9 @@ public class CommandSurfaceTests
         await Assert.That(output).Contains("-m, --message <message>");
         await Assert.That(output).Contains("--with <with>");
         await Assert.That(output).Contains("-v, --verbose");
+        // The amend preview flag and its no-commit help text.
+        await Assert.That(output).Contains("--amend");
+        await Assert.That(output).Contains("without committing");
     }
 
     [Test]

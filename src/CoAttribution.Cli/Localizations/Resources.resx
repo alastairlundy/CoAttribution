@@ -42,6 +42,9 @@
     <data name="Commands.Message.Failed" xml:space="preserve">
         <value>Failed to produce commit message with co-author/assist message: '{0}'</value>
     </data>
+    <data name="Commands.Message.OptionRequired" xml:space="preserve">
+        <value>Option '{0}' is required.</value>
+    </data>
     <data name="Labels.AuthorTypes.Values.Agent" xml:space="preserve">
         <value>AI Agent</value>
     </data>

@@ -201,6 +201,15 @@ namespace CoAttribution.Cli.Localizations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Option &apos;{0}&apos; is required..
+        /// </summary>
+        internal static string Commands_Message_OptionRequired {
+            get {
+                return ResourceManager.GetString("Commands.Message.OptionRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Config file path &apos;{0}&apos; is not a valid TOML configuration file.
         /// </summary>
         internal static string Exceptions_Arguments_InvalidConfigFileConfiguration {
