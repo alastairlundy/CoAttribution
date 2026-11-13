@@ -115,7 +115,9 @@ public class CommitOrchestrator : ICommitOrchestrator
 
         _commitMessageBuilder.AddCoAuthors(actualCoAuthors);
 
-        return _commitMessageBuilder.Build();
+        // User-forwarded git flags ride on the message so both the new-commit
+        // and amend paths deliver them to CliGitClient unchanged.
+        return _commitMessageBuilder.Build() with { RelayedArgs = commitRequest.RelayedArgs };
     }
 
     public static ResolvedCoAuthor[] ApplyHostOverride(ResolvedCoAuthor[] coAuthors, string hostKey)

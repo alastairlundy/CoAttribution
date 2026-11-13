@@ -25,4 +25,13 @@ namespace CoAttribution.Lib.Models.DTOs;
 /// body, and the commit amends HEAD instead of creating a new commit.
 /// </param>
 public record CommitRequest(string MessageSubject, string MessageBody,
-    string[] DefaultIds, string[] CoAuthorIds, string[] AssistIds, bool Amend = false);
+    string[] DefaultIds, string[] CoAuthorIds, string[] AssistIds, bool Amend = false)
+{
+    /// <summary>
+    /// User-forwarded git commit flags (the named <c>--no-verify</c>/<c>--signoff</c>
+    /// mappings followed by the allowlisted tokens relayed after <c>--</c>),
+    /// carried to <see cref="CommitMessage.RelayedArgs"/> so they reach
+    /// <c>git commit</c> verbatim after the tool's own arguments.
+    /// </summary>
+    public string[] RelayedArgs { get; init; } = [];
+}

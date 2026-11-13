@@ -70,6 +70,14 @@ public class CliGitClient : IGitClient
             args.Add(line);
         }
 
+        // User-forwarded flags (named option mappings plus the allowlisted
+        // `--` relay) are appended verbatim after the tool's own arguments,
+        // so git receives each one exactly as the user typed it.
+        foreach (string relayedArg in commitMessage.RelayedArgs)
+        {
+            args.Add(relayedArg);
+        }
+
         return args;
     }
 }

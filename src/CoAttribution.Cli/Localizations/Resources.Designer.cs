@@ -102,6 +102,33 @@ namespace CoAttribution.Cli.Localizations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Relayed token &apos;{0}&apos; was rejected: that flag was already given. To request an allowlist change, open an issue at https://github.com/alastairlundy/CoAttribution/issues..
+        /// </summary>
+        internal static string Commands_Commit_Relay_Duplicate {
+            get {
+                return ResourceManager.GetString("Commands.Commit.Relay.Duplicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Relayed token &apos;{0}&apos; was rejected: it is not on the allowlist of flags CoAttribution forwards to git commit. To request an addition, open an issue at https://github.com/alastairlundy/CoAttribution/issues..
+        /// </summary>
+        internal static string Commands_Commit_Relay_Rejected {
+            get {
+                return ResourceManager.GetString("Commands.Commit.Relay.Rejected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unrecognized command or argument &apos;{0}&apos;..
+        /// </summary>
+        internal static string Commands_Commit_UnrecognizedArgument {
+            get {
+                return ResourceManager.GetString("Commands.Commit.UnrecognizedArgument", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Encountered an error whilst getting a config value associated with key &apos;{0}&apos;: {1}.
         /// </summary>
         internal static string Commands_Config_EncounteredError_GetValue {

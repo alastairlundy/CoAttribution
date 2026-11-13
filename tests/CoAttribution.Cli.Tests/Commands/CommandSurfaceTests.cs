@@ -161,7 +161,11 @@ public class CommandSurfaceTests
         System.CommandLine.RootCommand root = BuildRoot(services);
         System.CommandLine.Command commit = root.Subcommands.Single(c => c.Name == "commit");
 
-        string[] expectedOptions = ["--message", "--body", "--with", "--coauthor", "--assist", "--verbose"];
+        string[] expectedOptions =
+        [
+            "--message", "--body", "--with", "--coauthor", "--assist", "--verbose",
+            "--amend", "--no-verify", "--signoff",
+        ];
         await Assert.That(commit.Options.Count(o => !o.Hidden)).IsEqualTo(expectedOptions.Length);
         foreach (string expected in expectedOptions)
         {
@@ -180,6 +184,14 @@ public class CommandSurfaceTests
         await Assert.That(verbose.Aliases).Contains("-v");
         await Assert.That(verbose.Required).IsFalse();
 
+        // The relay options are named git flags with no aliases of their own.
+        foreach (string relayOption in new[] { "--amend", "--no-verify", "--signoff" })
+        {
+            System.CommandLine.Option option = commit.Options.Single(o => o.Name == relayOption);
+            await Assert.That(option.Required).IsFalse();
+            await Assert.That(option.Aliases).IsEmpty();
+        }
+
         foreach (string multiValue in new[] { "--with", "--coauthor", "--assist" })
         {
             System.CommandLine.Option option = commit.Options.Single(o => o.Name == multiValue);
@@ -191,10 +203,17 @@ public class CommandSurfaceTests
         await Assert.That(bundlingErrors).IsEqualTo(0);
 
         // --with takes one value per token; a second bare token stays unmatched.
-        var multiValueParse = root.Parse(["commit", "-m", "s", "--with", "a", "b"]);
-        await Assert.That(multiValueParse.Errors.Count).IsNotEqualTo(0);
-        await Assert.That(string.Join(Environment.NewLine, multiValueParse.Errors.Select(e => e.Message)))
-            .Contains("Unrecognized command or argument 'b'.");
+        // The commit command defers unmatched-token handling to its action so
+        // the `--` relay can be captured from the parse result, so the stray
+        // token is reported when the command runs instead of at parse time —
+        // same error text, same exit code.
+        using (ConsoleCapture console = new())
+        {
+            int strayExit = await CliRunner.RunAsync(root, ["commit", "-m", "s", "--with", "a", "b"]);
+
+            await Assert.That(strayExit).IsEqualTo(1);
+            await Assert.That(console.StandardError).Contains("Unrecognized command or argument 'b'.");
+        }
     }
 
     [Test]

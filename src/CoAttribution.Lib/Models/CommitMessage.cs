@@ -13,6 +13,14 @@ namespace CoAttribution.Lib.Models;
 
 public record CommitMessage(string Subject, IReadOnlyList<string> BodyLines, IReadOnlyList<ResolvedCoAuthor> CoAuthors)
 {
+    /// <summary>
+    /// User-forwarded git commit flags appended verbatim after the tool's own
+    /// arguments: the named option mappings (<c>--no-verify</c>,
+    /// <c>--signoff</c>) followed by the allowlisted tokens relayed after
+    /// <c>--</c>. Empty when the caller forwarded nothing.
+    /// </summary>
+    public IReadOnlyList<string> RelayedArgs { get; init; } = [];
+
     public (string message, string trailer) ToGitFormat() 
         => (BuildMessageBody(), BuildTrailer());
 

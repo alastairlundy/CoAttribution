@@ -30,6 +30,15 @@
     <data name="Commands.Commit.Failed.Generic" xml:space="preserve">
         <value>Failed to perform commit with co-author/assist message: '{0}'</value>
     </data>
+    <data name="Commands.Commit.Relay.Rejected" xml:space="preserve">
+        <value>Relayed token '{0}' was rejected: it is not on the allowlist of flags CoAttribution forwards to git commit. To request an addition, open an issue at https://github.com/alastairlundy/CoAttribution/issues.</value>
+    </data>
+    <data name="Commands.Commit.Relay.Duplicate" xml:space="preserve">
+        <value>Relayed token '{0}' was rejected: that flag was already given. To request an allowlist change, open an issue at https://github.com/alastairlundy/CoAttribution/issues.</value>
+    </data>
+    <data name="Commands.Commit.UnrecognizedArgument" xml:space="preserve">
+        <value>Unrecognized command or argument '{0}'.</value>
+    </data>
     <data name="Commands.Message.Failed" xml:space="preserve">
         <value>Failed to produce commit message with co-author/assist message: '{0}'</value>
     </data>
