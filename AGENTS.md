@@ -25,7 +25,7 @@ CoAttribution is strictly an **Attribution Metadata Orchestrator**. Its sole pur
 The CLI uses **System.CommandLine 3.0.0** (pinned in `Directory.Packages.props`) with explicit command construction — no attribute model, no source generators.
 
 **Entry Point**
-- `Program.cs` runs the bootstrap scans (`ExtractConfigPath`, `ExtractRegistryPath`) on the raw arguments FIRST, builds `IConfiguration`, then builds a `ServiceProvider` manually from a `ServiceCollection`.
+- `Program.cs` runs the bootstrap scans (`ExtractConfigPath`, `ExtractRegistryPath`) on the raw arguments FIRST, builds `IConfiguration`, then builds a `ServiceProvider` manually from a `ServiceCollection` populated by `AppServiceCollection.AddCoAttributionServices` (`src/CoAttribution.Cli/AppServiceCollection.cs`). Registrations live there — not in `Program.cs` — so tests can build the real container and assert the commit/message/TUI dependency graphs resolve.
 - The command tree is built with `RootCommand.Create(serviceProvider)` and executed via `CliRunner.RunAsync(rootCommand, args)`.
 - The bootstrap scans keep their all-arguments behavior (no `--` awareness); they must stay ahead of container construction so config overrides apply to the whole run.
 

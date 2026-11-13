@@ -29,6 +29,7 @@ Targeted for release 0.2.0. The GitHub release for 0.2.0 is currently a draft.
 - Issue templates and agent documentation updated.
 
 ### Fixed
+- `AppConfig` is now registered in the DI container: `commit`, `message`, and the TUI no longer fail with `InvalidOperationException` when `HostResolver` is resolved. Service registrations moved out of `Program.cs` into `AppServiceCollection.AddCoAttributionServices` so tests can build the real container.
 - `--trailer` output: trailers are now emitted one per line instead of a single collapsed value, which git previously rejected with exit 129.
 - Attribution silent failures and registry preservation in `AuthorRegistry`.
 - `--config-path` is now accepted by DotMake.CommandLine.
