@@ -9,5 +9,20 @@
 
 namespace CoAttribution.Lib.Models.DTOs;
 
+/// <summary>
+/// One commit invocation: the message text the caller supplied and the
+/// attribution request made through <c>--with</c>/<c>--coauthor</c>/<c>--assist</c>.
+/// </summary>
+/// <param name="MessageSubject">The subject line supplied by the caller.</param>
+/// <param name="MessageBody">The body supplied by the caller.</param>
+/// <param name="DefaultIds">Author IDs given via <c>--with</c>.</param>
+/// <param name="CoAuthorIds">Author IDs given via <c>--coauthor</c>.</param>
+/// <param name="AssistIds">Author IDs given via <c>--assist</c>.</param>
+/// <param name="Amend">
+/// When <see langword="true"/>, the message is rebuilt from the last
+/// commit's message (applying the managed-trailer strip only when at least
+/// one attribution flag is present) instead of the supplied subject and
+/// body, and the commit amends HEAD instead of creating a new commit.
+/// </param>
 public record CommitRequest(string MessageSubject, string MessageBody,
-    string[] DefaultIds, string[] CoAuthorIds, string[] AssistIds);
+    string[] DefaultIds, string[] CoAuthorIds, string[] AssistIds, bool Amend = false);

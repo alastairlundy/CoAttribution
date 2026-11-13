@@ -36,6 +36,12 @@ public class CommitOrchestrator : ICommitOrchestrator
     /// Builds a <see cref="CommitMessage"/> from a <see cref="CommitRequest"/>.
     /// </summary>
     /// <remarks>
+    /// When <see cref="CommitRequest.Amend"/> is set, the content is read
+    /// back from the last commit's message instead of the supplied subject
+    /// and body: the managed attribution trailer lines are stripped from it
+    /// only when at least one attribution flag is present, so a zero-flag
+    /// amend preserves the previous managed tokens. The current invocation's
+    /// trailers are then layered on by the normal resolution flow below.
     /// After attribution resolution and per-host block validation, this method
     /// applies the resolved host's identity override (if any) to each resolved
     /// co-author. The substitution is non-destructive: a new
@@ -44,7 +50,15 @@ public class CommitOrchestrator : ICommitOrchestrator
     /// </remarks>
     public async Task<CommitMessage> BuildCommitMessageAsync(CommitRequest commitRequest, CancellationToken cancellationToken)
     {
-        _commitMessageBuilder.SetContent(commitRequest.MessageSubject, commitRequest.MessageBody);
+        string subject = commitRequest.MessageSubject;
+        string body = commitRequest.MessageBody;
+
+        if (commitRequest.Amend)
+        {
+            (subject, body) = await ReadAmendBaseAsync(commitRequest, cancellationToken);
+        }
+
+        _commitMessageBuilder.SetContent(subject, body);
 
         GitCoAuthorConfig authorConfig = await _authorRegistry.GetAuthorConfigAsync(cancellationToken);
 
@@ -149,4 +163,74 @@ public class CommitOrchestrator : ICommitOrchestrator
 
     public async Task<GitResult> ExecuteCommitAsync(CommitMessage commitMessage, CancellationToken cancellationToken)
         => await _gitClient.CommitAsync(commitMessage, cancellationToken);
+
+    /// <summary>
+    /// Amends the last commit: rebuilds the message from HEAD's message with
+    /// the current invocation's trailers (via
+    /// <see cref="BuildCommitMessageAsync"/> with amend state applied), then
+    /// executes <c>git commit --amend</c>.
+    /// </summary>
+    public async Task<GitResult> AmendCommitAsync(CommitRequest commitRequest, CancellationToken cancellationToken)
+    {
+        CommitMessage rebuilt = await BuildCommitMessageAsync(
+            commitRequest with { Amend = true }, cancellationToken);
+
+        return await _gitClient.AmendCommitAsync(rebuilt, cancellationToken);
+    }
+
+    /// <summary>
+    /// Reads HEAD's message as the amend base: the subject and body come from
+    /// the last commit, with the managed attribution trailer lines stripped
+    /// from the body only when at least one attribution flag is present, so a
+    /// zero-flag amend preserves the previous managed tokens.
+    /// </summary>
+    private async Task<(string Subject, string Body)> ReadAmendBaseAsync(
+        CommitRequest commitRequest, CancellationToken cancellationToken)
+    {
+        GitResult lastCommit = await _gitClient.GetLastCommitMessageAsync(cancellationToken);
+
+        if (lastCommit.ExitCode != 0)
+        {
+            // Nothing to amend (no commits yet, or not a repository): fail
+            // loudly with git's own diagnosis so the user sees why, instead
+            // of attempting the rewrite.
+            throw new AmendWithoutCommitException(lastCommit.StandardError);
+        }
+
+        (string subject, string body) = SplitMessage(lastCommit.StandardOutput);
+
+        if (HasAttributionFlags(commitRequest))
+        {
+            body = TrailerStripper.Strip(body);
+        }
+
+        return (subject, body);
+    }
+
+    /// <summary>
+    /// Reports whether the request carries at least one attribution flag
+    /// (<c>--with</c>, <c>--coauthor</c>, or <c>--assist</c>).
+    /// </summary>
+    private static bool HasAttributionFlags(CommitRequest commitRequest)
+        => commitRequest.DefaultIds.Length > 0
+           || commitRequest.CoAuthorIds.Length > 0
+           || commitRequest.AssistIds.Length > 0;
+
+    /// <summary>
+    /// Splits a raw <c>git show --format=%B</c> message into its subject line
+    /// and the remaining body, which carries every trailer and footer.
+    /// </summary>
+    private static (string Subject, string Body) SplitMessage(string message)
+    {
+        int newlineIndex = message.IndexOf('\n');
+
+        if (newlineIndex < 0)
+            return (message.TrimEnd('\r'), string.Empty);
+
+        string subject = message[..newlineIndex];
+        if (subject.EndsWith('\r'))
+            subject = subject[..^1];
+
+        return (subject, message[(newlineIndex + 1)..]);
+    }
 }
