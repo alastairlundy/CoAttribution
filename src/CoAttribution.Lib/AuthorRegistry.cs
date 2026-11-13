@@ -209,12 +209,17 @@ public class AuthorRegistry : IAuthorRegistry
         // then cached until the CWD changes or this registry writes a file.
         DirectoryInfo directoryInfo = new(currentCwd);
 
+        // AttributesToSkip defaults to Hidden | System, and on Unix any
+        // dot-prefixed name is marked Hidden — which would skip the
+        // .coauthor/ directory that `init` writes the local registry into.
+        // Discovery filters by file name below, so nothing is skipped here.
         FileInfo? localAuthorsFile = directoryInfo.EnumerateFiles("*.toml", new EnumerationOptions
             {
                 IgnoreInaccessible = true,
                 MatchCasing = MatchCasing.CaseInsensitive,
                 RecurseSubdirectories = true,
-                MaxRecursionDepth = 5
+                MaxRecursionDepth = 5,
+                AttributesToSkip = FileAttributes.None
             })
             .FirstOrDefault(f => f.Name.Equals("authors.toml", StringComparison.CurrentCultureIgnoreCase));
 
