@@ -14,11 +14,11 @@ namespace CoAttribution.Cli.Tests.Commands;
 ///
 /// <para>
 /// Help assertions target the lines that survived the migration byte-for-byte
-/// (usage lines, option/argument labels, aliases, section headings, recursive
-/// root options). Framework-owned presentation that changed with the parser
-/// swap — such as the <c>(REQUIRED)</c> marker, the always-present
-/// <c>Description:</c> heading, and argument placeholders in the root command
-/// list — is asserted only where it is stable.
+/// (banner, usage lines, option/argument labels, aliases, section headings,
+/// recursive root options). Framework-owned presentation that changed with the
+/// parser swap — such as the <c>(REQUIRED)</c> marker, argument placeholders
+/// in the root command list, and the help option's line position — is
+/// asserted only where it is stable.
 /// </para>
 /// </summary>
 [NotInParallel]
@@ -39,14 +39,29 @@ public class CommandSurfaceTests
         // production default still follows the console width.
         foreach (System.CommandLine.Option option in root.Options)
         {
-            if (option is HelpOption { Action: HelpAction helpAction })
+            if (option is HelpOption { Action: BannerHelpAction bannerHelp })
             {
-                helpAction.MaxWidth = int.MaxValue;
+                bannerHelp.Help.MaxWidth = int.MaxValue;
             }
         }
 
         return root;
     }
+
+    /// <summary>
+    /// The version the help banner prints: the informational version of the
+    /// CLI assembly (the shipped tool assembly, not the test entry point).
+    /// </summary>
+    private static string ToolVersion()
+    {
+        System.Reflection.AssemblyInformationalVersionAttribute? informationalVersion =
+            (System.Reflection.AssemblyInformationalVersionAttribute?)typeof(BannerHelpAction).Assembly
+                .GetCustomAttribute(typeof(System.Reflection.AssemblyInformationalVersionAttribute));
+
+        return informationalVersion!.InformationalVersion.Split('+')[0];
+    }
+
+    private static string ExpectedBanner => $"co-attr v{ToolVersion()}\nCopyright (c) Alastair Lundy 2026\n\n";
 
     private static ServiceProvider BuildSurfaceServices()
     {
@@ -331,6 +346,11 @@ public class CommandSurfaceTests
 
         await Assert.That(exitCode).IsEqualTo(1);
         await Assert.That(output).Contains("co-attr author [command] [options]");
+
+        // The handler-driven ShowHelp path carries the same banner and title
+        // as the --help option.
+        string normalized = output.Replace("\r\n", "\n");
+        await Assert.That(normalized.StartsWith(ExpectedBanner + "author\n\n", StringComparison.Ordinal)).IsTrue();
     }
 
     // ---------- parse-error output ----------
@@ -382,6 +402,32 @@ public class CommandSurfaceTests
         await Assert.That(output).Contains("--version");
         await Assert.That(output).Contains("Show version information");
         await Assert.That(output).Contains("Commands:");
+    }
+
+    [Test]
+    public async Task Help_RootPrintsVersionCopyrightBannerFirst()
+    {
+        (int exitCode, string output, _) = await RunAsync("--help");
+
+        await Assert.That(exitCode).IsEqualTo(0);
+
+        string normalized = output.Replace("\r\n", "\n");
+        await Assert.That(normalized.StartsWith(ExpectedBanner, StringComparison.Ordinal)).IsTrue();
+        // The framework's empty Description heading is suppressed so the
+        // banner flows straight into Usage, as it did pre-migration.
+        await Assert.That(normalized.Contains("Description:")).IsFalse();
+    }
+
+    [Test]
+    public async Task Help_SubcommandsPrintBannerAndCommandTitle()
+    {
+        (int exitCode, string output, _) = await RunAsync("commit", "--help");
+
+        await Assert.That(exitCode).IsEqualTo(0);
+
+        string normalized = output.Replace("\r\n", "\n");
+        await Assert.That(normalized.StartsWith(ExpectedBanner + "commit\n\n", StringComparison.Ordinal)).IsTrue();
+        await Assert.That(normalized.Contains("Description:")).IsFalse();
     }
 
     [Test]

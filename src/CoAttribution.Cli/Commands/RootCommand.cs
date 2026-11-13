@@ -8,6 +8,7 @@
  */
 
 using System.CommandLine;
+using System.CommandLine.Help;
 using CoAttribution.Cli.Tui.Composition;
 using CoAttribution.Cli.Tui.Dialogs;
 using CoAttribution.Lib.Abstractions;
@@ -66,6 +67,17 @@ public class RootCommand
         root.Subcommands.Add(ConfigCommand.Create(services));
         root.Subcommands.Add(InitCommand.Create(services));
         root.Subcommands.Add(MessageCommand.Create(services));
+
+        // Wrap the built-in help action so every help render carries the
+        // shipped version/copyright banner and command title ahead of the
+        // framework text (see BannerHelpAction).
+        foreach (Option option in root.Options)
+        {
+            if (option is HelpOption { Action: HelpAction helpAction })
+            {
+                option.Action = new BannerHelpAction(helpAction);
+            }
+        }
 
         root.SetAction(async (parseResult, cancellationToken) =>
         {

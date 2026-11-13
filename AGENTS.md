@@ -43,6 +43,7 @@ The CLI uses **System.CommandLine 3.0.0** (pinned in `Directory.Packages.props`)
 - Short aliases are declared explicitly per option (`-m`, `-b`, `-v`, `-g`); System.CommandLine does not auto-generate aliases, so alias conflicts are impossible by construction. `config` keeps its explicit `cfg` alias via `command.Aliases.Add("cfg")`.
 - POSIX bundling (`-vm` == `-v -m`) is enabled by default (`ParserConfiguration.EnablePosixBundling`).
 - `CliRunner` switches off System.CommandLine's help-on-parse-error output to keep the historical behavior of printing only error details (plus typo suggestions) when a command line fails to parse.
+- Help rendering goes through `BannerHelpAction` (`src/CoAttribution.Cli/Commands/BannerHelpAction.cs`), which wraps System.CommandLine's built-in `HelpAction` on the root help option: it restores the `co-attr v<version>` / copyright banner and the subcommand title line, and suppresses the framework's empty `Description:` heading. `CliContext.ShowHelp` builds the same wrapper so handler-driven help matches `--help`.
 
 ## Constraints & Conventions
 - **NativeAOT**: The CLI must maintain NativeAOT compatibility. 

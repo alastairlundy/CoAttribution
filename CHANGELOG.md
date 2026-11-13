@@ -27,6 +27,7 @@ Targeted for release 0.2.0. The GitHub release for 0.2.0 is currently a draft.
 - Dependabot schedules tuned with a version cooldown.
 - Removed the unused `Microsoft.Extensions.Configuration.CommandLine` package.
 - Issue templates and agent documentation updated.
+- Help output restored the pre-migration header: every help render starts with the `co-attr v<version>` / copyright banner and the invoked command's title line, and System.CommandLine's empty `Description:` heading is suppressed (`BannerHelpAction`).
 
 ### Fixed
 - `AppConfig` is now registered in the DI container: `commit`, `message`, and the TUI no longer fail with `InvalidOperationException` when `HostResolver` is resolved. Service registrations moved out of `Program.cs` into `AppServiceCollection.AddCoAttributionServices` so tests can build the real container.

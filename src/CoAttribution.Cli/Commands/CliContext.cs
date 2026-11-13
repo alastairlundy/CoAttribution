@@ -35,12 +35,14 @@ public sealed class CliContext
 
     /// <summary>
     /// Builds a context bound to a parse result so <see cref="ShowHelp"/>
-    /// prints the help of the command the action was registered on.
+    /// prints the help of the command the action was registered on — with the
+    /// same banner and title as the <c>--help</c> option produces.
     /// </summary>
     public static CliContext From(ParseResult parseResult, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(parseResult);
 
-        return new CliContext(cancellationToken, () => new HelpAction().Invoke(parseResult));
+        return new CliContext(cancellationToken,
+            () => new BannerHelpAction(new HelpAction()).Invoke(parseResult));
     }
 }
