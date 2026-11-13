@@ -13,5 +13,4 @@ global using CoAttribution.Lib.Models;
 global using CoAttribution.Lib.Exceptions;
 global using CoAttribution.Lib.HostResolution;
 global using CoAttribution.Lib.Models.DTOs;
-global using DotMake.CommandLine;
 global using Microsoft.Extensions.Configuration;

@@ -7,16 +7,17 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+using System.CommandLine;
 using CoAttribution.Cli.Tui.Composition;
 using CoAttribution.Cli.Tui.Dialogs;
 using CoAttribution.Lib.Abstractions;
 using CoAttribution.Lib.Models.DTOs;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Terminal.Gui.App;
 
 namespace CoAttribution.Cli.Commands;
 
-[CliCommand(ShortFormAutoGenerate = CliNameAutoGenerate.None)]
 public class RootCommand
 {
     private readonly IAuthorRegistry _authorRegistry;
@@ -24,10 +25,8 @@ public class RootCommand
     private readonly SetupDialog _setupDialog;
     private readonly ILogger<RootCommand> _logger;
 
-    [CliOption(Name = "config-path", Required = false, Arity = CliArgumentArity.ExactlyOne, Recursive = true)]
     public string ConfigPath { get; set; } = string.Empty;
 
-    [CliOption(Name = "registry", Required = false, Arity = CliArgumentArity.ExactlyOne, Recursive = true)]
     public string RegistryPath { get; set; } = string.Empty;
 
     public RootCommand(IAuthorRegistry authorRegistry, TuiCompositionRoot compositionRoot, SetupDialog setupDialog, ILogger<RootCommand> logger)
@@ -36,6 +35,48 @@ public class RootCommand
         _compositionRoot = compositionRoot;
         _setupDialog = setupDialog;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Builds the System.CommandLine command tree: the root command with its
+    /// recursively visible <c>--config-path</c>/<c>--registry</c> options and
+    /// every top-level subcommand. Handlers are created from
+    /// <paramref name="services"/> on invocation, mirroring the previous
+    /// attribute-based binding.
+    /// </summary>
+    public static System.CommandLine.RootCommand Create(IServiceProvider services)
+    {
+        Option<string> configPathOption = new("--config-path")
+        {
+            Arity = ArgumentArity.ExactlyOne,
+            Recursive = true
+        };
+
+        Option<string> registryOption = new("--registry")
+        {
+            Arity = ArgumentArity.ExactlyOne,
+            Recursive = true
+        };
+
+        System.CommandLine.RootCommand root = new();
+        root.Options.Add(configPathOption);
+        root.Options.Add(registryOption);
+        root.Subcommands.Add(AuthorRootCommand.Create(services));
+        root.Subcommands.Add(CommitCommand.Create(services));
+        root.Subcommands.Add(ConfigCommand.Create(services));
+        root.Subcommands.Add(InitCommand.Create(services));
+        root.Subcommands.Add(MessageCommand.Create(services));
+
+        root.SetAction(async (parseResult, cancellationToken) =>
+        {
+            RootCommand handler = ActivatorUtilities.CreateInstance<RootCommand>(services);
+            handler.ConfigPath = parseResult.GetValue(configPathOption) ?? string.Empty;
+            handler.RegistryPath = parseResult.GetValue(registryOption) ?? string.Empty;
+
+            return await handler.RunAsync(CliContext.From(parseResult, cancellationToken));
+        });
+
+        return root;
     }
 
     public async Task<int> RunAsync(CliContext context)

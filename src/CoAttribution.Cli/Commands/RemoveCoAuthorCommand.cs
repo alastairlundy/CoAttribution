@@ -7,9 +7,11 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+using System.CommandLine;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace CoAttribution.Cli.Commands;
 
-[CliCommand(Name = "remove", Parent = typeof(AuthorRootCommand))]
 public class RemoveCoAuthorCommand
 {
     private readonly IAuthorRegistry _authorRegistry;
@@ -19,12 +21,32 @@ public class RemoveCoAuthorCommand
         _authorRegistry = authorRegistry;
     }
     
-    [CliArgument(Name = "<Configuration_Ids>", Order = 0, Required = true, Arity = CliArgumentArity.OneOrMore)]
     public string[] Ids { get; set; } = [];
     
-    [CliOption(Name = "verbose", Alias =  "v", Required = false)]
     // ReSharper disable once RedundantDefaultMemberInitializer
     public bool Verbose { get; set; } = false;
+
+    /// <summary>Builds the <c>author remove</c> subcommand with its explicit arguments and options.</summary>
+    public static Command Create(IServiceProvider services)
+    {
+        Argument<string[]> idsArgument = new("<Configuration_Ids>") { Arity = ArgumentArity.OneOrMore };
+        Option<bool> verboseOption = new("--verbose", "-v");
+
+        Command command = new("remove");
+        command.Arguments.Add(idsArgument);
+        command.Options.Add(verboseOption);
+
+        command.SetAction(async (parseResult, cancellationToken) =>
+        {
+            RemoveCoAuthorCommand handler = ActivatorUtilities.CreateInstance<RemoveCoAuthorCommand>(services);
+            handler.Ids = parseResult.GetValue(idsArgument) ?? [];
+            handler.Verbose = parseResult.GetValue(verboseOption);
+
+            return await handler.RunAsync(CliContext.From(parseResult, cancellationToken));
+        });
+
+        return command;
+    }
 
     public async Task<int> RunAsync(CliContext cliContext)
     {

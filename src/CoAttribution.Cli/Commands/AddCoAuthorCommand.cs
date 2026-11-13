@@ -7,9 +7,11 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+using System.CommandLine;
+using Microsoft.Extensions.DependencyInjection;
+
 namespace CoAttribution.Cli.Commands;
 
-[CliCommand(Name = "add", Parent = typeof(AuthorRootCommand))]
 public class AddCoAuthorCommand
 {
     private readonly IAuthorRegistry _authorRegistry;
@@ -19,24 +21,58 @@ public class AddCoAuthorCommand
         _authorRegistry = authorRegistry;
     }
     
-    [CliArgument(Name = "<Configuration_Id>", Order = 0, Required = true, Arity =  CliArgumentArity.ExactlyOne)]
     public string Id { get; set; } = "";
 
-    [CliOption(AllowedValues = ["human", "agent"], Name = "type", Required = true)]
     public string AuthorType { get; set; } = "";
     
-    [CliOption(Name = "name", Required = true)]
     public string AuthorName { get; set; } = "";
     
-    [CliOption(Name = "email", Required = true)]
     public string AuthorEmail { get; set; } = "";
 
-    [CliOption(Name = "default-attribution-type", Required = false, AllowedValues = ["assist", "coauthor"])]
     public string DefaultAttributionType { get; set; } = "";
     
-    [CliOption(Name = "verbose", Alias =  "v", Required = false)]
     // ReSharper disable once RedundantDefaultMemberInitializer
     public bool Verbose { get; set; } = false;
+
+    /// <summary>Builds the <c>author add</c> subcommand with its explicit arguments and options.</summary>
+    public static Command Create(IServiceProvider services)
+    {
+        Argument<string> idArgument = new("<Configuration_Id>");
+
+        Option<string> typeOption = new("--type") { Required = true };
+        typeOption.AcceptOnlyFromAmong("human", "agent");
+
+        Option<string> nameOption = new("--name") { Required = true };
+        Option<string> emailOption = new("--email") { Required = true };
+
+        Option<string> defaultAttributionTypeOption = new("--default-attribution-type");
+        defaultAttributionTypeOption.AcceptOnlyFromAmong("assist", "coauthor");
+
+        Option<bool> verboseOption = new("--verbose", "-v");
+
+        Command command = new("add");
+        command.Arguments.Add(idArgument);
+        command.Options.Add(typeOption);
+        command.Options.Add(nameOption);
+        command.Options.Add(emailOption);
+        command.Options.Add(defaultAttributionTypeOption);
+        command.Options.Add(verboseOption);
+
+        command.SetAction(async (parseResult, cancellationToken) =>
+        {
+            AddCoAuthorCommand handler = ActivatorUtilities.CreateInstance<AddCoAuthorCommand>(services);
+            handler.Id = parseResult.GetValue(idArgument) ?? "";
+            handler.AuthorType = parseResult.GetValue(typeOption) ?? "";
+            handler.AuthorName = parseResult.GetValue(nameOption) ?? "";
+            handler.AuthorEmail = parseResult.GetValue(emailOption) ?? "";
+            handler.DefaultAttributionType = parseResult.GetValue(defaultAttributionTypeOption) ?? "";
+            handler.Verbose = parseResult.GetValue(verboseOption);
+
+            return await handler.RunAsync(CliContext.From(parseResult, cancellationToken));
+        });
+
+        return command;
+    }
     
     public async Task<int> RunAsync(CliContext cliContext)
     {

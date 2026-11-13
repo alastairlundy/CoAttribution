@@ -7,11 +7,12 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+using System.CommandLine;
+using Microsoft.Extensions.DependencyInjection;
 using Tomlyn;
 
 namespace CoAttribution.Cli.Commands;
 
-[CliCommand(Name = "config", Alias = "cfg", Parent = typeof(RootCommand))]
 public class ConfigCommand
 {
     private readonly IConfiguration _configuration;
@@ -22,18 +23,44 @@ public class ConfigCommand
         _configuration = configuration;
         _configResolver = configResolver;
     }
-    
-    [CliArgument(Order = 0,
-        AllowedValues = ["authors_registry.paths.global",
-            "trailers.default", "trailers.assistance", "trailers.coauthorship"],
-        Required = true,
-        Arity = CliArgumentArity.ExactlyOne)]
+  
     public string Key { get; set; } = "";
   
-    [CliArgument(Order = 2, Required = true, Arity = CliArgumentArity.ExactlyOne)]
     public string Value { get; set; } = "";
 
-    [CliCommand(Name = "get", Description = "Get config value.")]
+    /// <summary>
+    /// Builds the <c>config</c> subcommand with its positional key/value
+    /// arguments. There are no nested subcommands; invoking <c>config</c>
+    /// with a key and value renders help and exits with the historical
+    /// non-zero code (see <see cref="Run"/>).
+    /// </summary>
+    public static Command Create(IServiceProvider services)
+    {
+        Argument<string> keyArgument = new("key");
+        Argument<string> valueArgument = new("value");
+        keyArgument.AcceptOnlyFromAmong(
+            "authors_registry.paths.global",
+            "trailers.default",
+            "trailers.assistance",
+            "trailers.coauthorship");
+
+        Command command = new("config");
+        command.Aliases.Add("cfg");
+        command.Arguments.Add(keyArgument);
+        command.Arguments.Add(valueArgument);
+
+        command.SetAction(parseResult =>
+        {
+            ConfigCommand handler = ActivatorUtilities.CreateInstance<ConfigCommand>(services);
+            handler.Key = parseResult.GetValue(keyArgument) ?? "";
+            handler.Value = parseResult.GetValue(valueArgument) ?? "";
+
+            return handler.Run(CliContext.From(parseResult, CancellationToken.None));
+        });
+
+        return command;
+    }
+
     public async Task<int> GetValueAsync(CancellationToken cancellationToken = default)
     {
         AppConfig config = await _configResolver.ResolveAppConfig(_configuration, cancellationToken);
@@ -60,7 +87,6 @@ public class ConfigCommand
         }
     }
 
-    [CliCommand(Name = "set", Description = "Set config value.")]
     public async Task<int> SetValueAsync(CancellationToken cancellationToken = default)
     {
         AppConfig config = await _configResolver.ResolveAppConfig(_configuration, cancellationToken);

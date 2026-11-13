@@ -3,7 +3,6 @@
 global using TUnit.Core;
 global using TUnit.Assertions;
 global using NSubstitute;
-global using DotMake.CommandLine;
 
 global using CoAttribution.Cli;
 global using CoAttribution.Cli.Abstractions;

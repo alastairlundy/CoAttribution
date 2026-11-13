@@ -7,11 +7,12 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+using System.CommandLine;
 using CoAttribution.Cli.HostResolution;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CoAttribution.Cli.Commands;
 
-[CliCommand(Name = "commit", Parent = typeof(RootCommand))]
 public class CommitCommand
 {
     private readonly ICommitOrchestrator _commitOrchestrator;
@@ -21,24 +22,56 @@ public class CommitCommand
         _commitOrchestrator = commitOrchestrator;
     }
  
-    [CliOption(Name = "message", Alias = "m", Required = true, Arity = CliArgumentArity.ExactlyOne)]
     public string SubjectMessage { get; set; } = "";
     
-    [CliOption(Name = "body", Alias = "b", Required = false, Arity = CliArgumentArity.ExactlyOne)]
     public string BodyMessage { get; set; } = "";
     
-    [CliOption(Name = "with", Required = false, Arity = CliArgumentArity.OneOrMore)]
     public string[] DefaultIds { get; set; } = [];
     
-    [CliOption(Name = "coauthor", Required = false, Arity = CliArgumentArity.OneOrMore)]
     public string[] CoAuthorIds  { get; set; } = [];
     
-    [CliOption(Name = "assist", Required = false, Arity = CliArgumentArity.OneOrMore)]
     public string[] AssistIds { get; set; } = [];
     
-    [CliOption(Name = "verbose", Alias =  "v", Required = false)]
     public bool Verbose { get; set; } = false;
-    
+
+    /// <summary>Builds the <c>commit</c> subcommand with its explicit options.</summary>
+    public static Command Create(IServiceProvider services)
+    {
+        Option<string> messageOption = new("--message", "-m")
+        {
+            Arity = ArgumentArity.ExactlyOne,
+            Required = true
+        };
+        Option<string> bodyOption = new("--body", "-b") { Arity = ArgumentArity.ExactlyOne };
+        Option<string[]> withOption = new("--with") { Arity = ArgumentArity.OneOrMore };
+        Option<string[]> coAuthorOption = new("--coauthor") { Arity = ArgumentArity.OneOrMore };
+        Option<string[]> assistOption = new("--assist") { Arity = ArgumentArity.OneOrMore };
+        Option<bool> verboseOption = new("--verbose", "-v");
+
+        Command command = new("commit");
+        command.Options.Add(messageOption);
+        command.Options.Add(bodyOption);
+        command.Options.Add(withOption);
+        command.Options.Add(coAuthorOption);
+        command.Options.Add(assistOption);
+        command.Options.Add(verboseOption);
+
+        command.SetAction(async (parseResult, cancellationToken) =>
+        {
+            CommitCommand handler = ActivatorUtilities.CreateInstance<CommitCommand>(services);
+            handler.SubjectMessage = parseResult.GetValue(messageOption) ?? "";
+            handler.BodyMessage = parseResult.GetValue(bodyOption) ?? "";
+            handler.DefaultIds = parseResult.GetValue(withOption) ?? [];
+            handler.CoAuthorIds = parseResult.GetValue(coAuthorOption) ?? [];
+            handler.AssistIds = parseResult.GetValue(assistOption) ?? [];
+            handler.Verbose = parseResult.GetValue(verboseOption);
+
+            return await handler.RunAsync(CliContext.From(parseResult, cancellationToken));
+        });
+
+        return command;
+    }
+ 
     public async Task<int> RunAsync(CliContext cliContext)
     {
         try

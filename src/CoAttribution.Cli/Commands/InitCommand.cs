@@ -7,14 +7,15 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+using System.CommandLine;
 using System.Reflection;
 using CoAttribution.Cli.DataAccess;
 using CoAttribution.Lib.Models;
+using Microsoft.Extensions.DependencyInjection;
 using Tomlyn;
 
 namespace CoAttribution.Cli.Commands;
 
-[CliCommand(Name = "init", Parent = typeof(RootCommand))]
 public class InitCommand
 {
     private readonly IConfiguration _configuration;
@@ -25,15 +26,32 @@ public class InitCommand
         _configuration = configuration;
         _pathResolver = pathResolver;
     }
-    
-    /*[CliOption(Name = "interactive", Alias = "i", Arity = CliArgumentArity.ZeroOrOne,
-        Required = false)]
+
     // ReSharper disable once RedundantDefaultMemberInitializer
-    public bool Interactive { get; set; } = false;*/
-    
-    [CliOption(Name = "global", Alias = "g", Required = false, Arity = CliArgumentArity.ZeroOrOne)]
     public bool CreateGlobalFile { get; set; } = true;
-    
+
+    /// <summary>Builds the <c>init</c> subcommand with its explicit options.</summary>
+    public static Command Create(IServiceProvider services)
+    {
+        Option<bool> globalOption = new("--global", "-g")
+        {
+            DefaultValueFactory = _ => true
+        };
+
+        Command command = new("init");
+        command.Options.Add(globalOption);
+
+        command.SetAction(async (parseResult, cancellationToken) =>
+        {
+            InitCommand handler = ActivatorUtilities.CreateInstance<InitCommand>(services);
+            handler.CreateGlobalFile = parseResult.GetValue(globalOption);
+
+            return await handler.RunAsync(CliContext.From(parseResult, cancellationToken));
+        });
+
+        return command;
+    }
+
     public async Task<int> RunAsync(CliContext cliContext)
     {
         string configFilePath = _configuration["config-file"] ?? "";

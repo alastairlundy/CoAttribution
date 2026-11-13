@@ -7,11 +7,12 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
+using System.CommandLine;
 using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CoAttribution.Cli.Commands;
 
-[CliCommand(Name = "list", Parent = typeof(AuthorRootCommand))]
 public class ListCoAuthorsCommand
 {
     private readonly IAuthorRegistry _authorRegistry;
@@ -21,12 +22,38 @@ public class ListCoAuthorsCommand
         _authorRegistry = authorRegistry;
     }
     
-    [CliOption(AllowedValues = ["human", "agent"], Name = "type", Required = false)]
     public string AuthorType { get; set; } = "";
     
-    [CliOption(AllowedValues = ["json", "text"], Name = "format", Required = false)]
     public string Format { get; set; } = "text";
-    
+
+    /// <summary>Builds the <c>author list</c> subcommand with its explicit options.</summary>
+    public static Command Create(IServiceProvider services)
+    {
+        Option<string> typeOption = new("--type");
+        typeOption.AcceptOnlyFromAmong("human", "agent");
+
+        Option<string> formatOption = new("--format")
+        {
+            DefaultValueFactory = _ => "text"
+        };
+        formatOption.AcceptOnlyFromAmong("json", "text");
+
+        Command command = new("list");
+        command.Options.Add(typeOption);
+        command.Options.Add(formatOption);
+
+        command.SetAction(async (parseResult, cancellationToken) =>
+        {
+            ListCoAuthorsCommand handler = ActivatorUtilities.CreateInstance<ListCoAuthorsCommand>(services);
+            handler.AuthorType = parseResult.GetValue(typeOption) ?? "";
+            handler.Format = parseResult.GetValue(formatOption) ?? "text";
+
+            return await handler.RunAsync(CliContext.From(parseResult, cancellationToken));
+        });
+
+        return command;
+    }
+
     public async Task<int> RunAsync(CliContext cliContext)
     {
         GitCoAuthorConfig config = await _authorRegistry.GetAuthorConfigAsync(cliContext.CancellationToken);

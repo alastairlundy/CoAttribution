@@ -22,24 +22,27 @@ CoAttribution is strictly an **Attribution Metadata Orchestrator**. Its sole pur
 
 ### CLI Framework
 
-The CLI uses **DotMake.CommandLine** (class-based model) as its command-line framework.
+The CLI uses **System.CommandLine 3.0.0** (pinned in `Directory.Packages.props`) with explicit command construction — no attribute model, no source generators.
 
 **Entry Point**
-- `Program.cs` calls `Cli.RunAsync<RootCommand>(args, settings)` with DI wired via `Cli.Ext.ConfigureServices()` before the run call.
+- `Program.cs` runs the bootstrap scans (`ExtractConfigPath`, `ExtractRegistryPath`) on the raw arguments FIRST, builds `IConfiguration`, then builds a `ServiceProvider` manually from a `ServiceCollection`.
+- The command tree is built with `RootCommand.Create(serviceProvider)` and executed via `CliRunner.RunAsync(rootCommand, args)`.
+- The bootstrap scans keep their all-arguments behavior (no `--` awareness); they must stay ahead of container construction so config overrides apply to the whole run.
 
 **Command Hierarchy**
-- Subcommands use **standalone classes** with `Parent = typeof(RootCommand)` in the `[CliCommand]` attribute — NOT nested classes.
-- All command classes live under `src/CoAttribution.Cli/Commands/`.
-- `RootCommand` is defined with bare `[CliCommand]` (no explicit `Name`).
+- Command classes live under `src/CoAttribution.Cli/Commands/` as standalone (non-nested) classes.
+- Each command class exposes `public static Command Create(IServiceProvider services)` (the root returns `System.CommandLine.RootCommand`) which constructs its own `Command`/`Option`/`Argument` instances and registers the handler action with `SetAction`.
+- Parents compose children inside `Create`: `RootCommand.Create` adds `author`, `commit`, `config`, `init`, `message`; `AuthorRootCommand.Create` adds `add`, `list`, `remove`.
+- Handlers are instantiated inside the action with `ActivatorUtilities.CreateInstance<T>(services)`, bind their properties from the `ParseResult`, and return their exit code through `CliContext`.
 
-**⚠ System.CommandLine Pitfall**
-- `DotMake.CommandLine` pulls `System.CommandLine` as a transitive dependency, which exposes its own `RootCommand` class.
-- `Program.cs` must **not** have `using System.CommandLine;` — it causes `RootCommand` to resolve to the wrong type and fail at runtime.
+**⚠ RootCommand naming**
+- The handler class `CoAttribution.Cli.Commands.RootCommand` shares its name with `System.CommandLine.RootCommand`. Keep exactly one unqualified name in scope per file: files inside `namespace CoAttribution.Cli.Commands` resolve the local class first, so they must reference `System.CommandLine.RootCommand` by its full name; `Program.cs` must NOT add `using System.CommandLine;`.
 
-**Short Alias Management**
-- Auto-generated short form aliases (first letter of command name) can conflict — e.g. `commit` and `config` both alias to `c`.
-- Disable globally via `[CliCommand(ShortFormAutoGenerate = CliNameAutoGenerate.None)]` on the root command; inherited by subcommands.
-- Explicit per-command aliases use `Alias = "cfg"` in `[CliCommand]`.
+**Options and aliases**
+- Root options `--config-path` and `--registry` are declared with `Recursive = true` so every subcommand accepts and lists them.
+- Short aliases are declared explicitly per option (`-m`, `-b`, `-v`, `-g`); System.CommandLine does not auto-generate aliases, so alias conflicts are impossible by construction. `config` keeps its explicit `cfg` alias via `command.Aliases.Add("cfg")`.
+- POSIX bundling (`-vm` == `-v -m`) is enabled by default (`ParserConfiguration.EnablePosixBundling`).
+- `CliRunner` switches off System.CommandLine's help-on-parse-error output to keep the historical behavior of printing only error details (plus typo suggestions) when a command line fails to parse.
 
 ## Constraints & Conventions
 - **NativeAOT**: The CLI must maintain NativeAOT compatibility. 
@@ -68,4 +71,4 @@ Single-context layout (`GLOSSARY.md` and `docs/adr/` at root). See `docs/agents/
 
 ### Repo-specific skills
 
-- **dotmake-command-line** (`.agents/skills/dotmake-command-line/SKILL.md`): Use when any work being done touches CLI commands — adding or modifying command classes, the entry point in `Program.cs`, `[CliCommand]`/`[CliOption]`/`[CliArgument]` attributes, or troubleshooting `DotMake.CommandLine` runtime errors.
+None — CLI-framework conventions live in the `CLI Framework` section above.
