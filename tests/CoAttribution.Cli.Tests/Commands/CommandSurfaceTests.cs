@@ -136,7 +136,7 @@ public class CommandSurfaceTests
         [
             ["commit", "-m", "s", "--with", "a", "--config-path", "c", "--registry", "r"],
             ["message", "-m", "s", "--with", "a", "--config-path", "c", "--registry", "r"],
-            ["config", "trailers.default", "x", "--config-path", "c", "--registry", "r"],
+            ["config", "authors_registry.paths.global", "x", "--config-path", "c", "--registry", "r"],
             ["init", "--config-path", "c", "--registry", "r"],
             ["author", "--config-path", "c", "--registry", "r"],
             ["author", "add", "id", "--type", "human", "--name", "n", "--email", "e@x",
@@ -374,7 +374,7 @@ public class CommandSurfaceTests
         await Assert.That(versionOutput).Contains("+");
 
         // config <key> <value> renders help and returns the historical -1.
-        (int configExit, string configOutput, _) = await RunAsync("config", "trailers.default", "x");
+        (int configExit, string configOutput, _) = await RunAsync("config", "authors_registry.paths.global", "x");
         await Assert.That(configExit).IsEqualTo(-1);
         await Assert.That(configOutput).Contains("co-attr config <key> <value> [options]");
     }
@@ -597,7 +597,7 @@ public class CommandSurfaceTests
         await Assert.That(output).Contains("Usage:");
         await Assert.That(output).Contains("co-attr config <key> <value> [options]");
         await Assert.That(output).Contains(
-            "<authors_registry.paths.global|trailers.assistance|trailers.coauthorship|trailers.default>");
+            "<authors_registry.paths.global>");
         await Assert.That(output).Contains("<value>");
 
         // No get/set subcommands were exposed pre-migration, so the config

@@ -99,6 +99,9 @@
     <data name="Commands.Config.EncounteredError.SetValue" xml:space="preserve">
         <value>Encountered an error whilst setting a config value associated with key '{0}': {1}</value>
     </data>
+    <data name="Commands.Config.TrailersSectionIgnored" xml:space="preserve">
+        <value>Warning: the [trailers] section in config file '{0}' is no longer supported; its values are ignored.</value>
+    </data>
     <data name="Exceptions.FileNotFound.ConfigFile" xml:space="preserve">
         <value>Could not find the config file at path '{0}' to be used.</value>
     </data>

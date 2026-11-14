@@ -156,6 +156,15 @@ namespace CoAttribution.Cli.Localizations {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Warning: the [trailers] section in config file &apos;{0}&apos; is no longer supported; its values are ignored..
+        /// </summary>
+        internal static string Commands_Config_TrailersSectionIgnored {
+            get {
+                return ResourceManager.GetString("Commands.Config.TrailersSectionIgnored", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Exception Details: .
         /// </summary>
         internal static string Commands_Exceptions_Details {

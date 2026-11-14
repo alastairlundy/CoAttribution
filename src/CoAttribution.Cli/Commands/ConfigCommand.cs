@@ -39,10 +39,7 @@ public class ConfigCommand
         Argument<string> keyArgument = new("key");
         Argument<string> valueArgument = new("value");
         keyArgument.AcceptOnlyFromAmong(
-            "authors_registry.paths.global",
-            "trailers.default",
-            "trailers.assistance",
-            "trailers.coauthorship");
+            "authors_registry.paths.global");
 
         Command command = new("config");
         command.Aliases.Add("cfg");
@@ -139,11 +136,6 @@ public class ConfigCommand
                 var pathLookup = config.PathsSettings.GetAlternateLookup<ReadOnlySpan<char>>();
                 return Task.FromResult(pathLookup[key.AsSpan("path.".Length)]);
             }
-            if (key.StartsWith("trailers.", StringComparison.CurrentCultureIgnoreCase))
-            {
-                var trailersLookup = config.TrailersSettings.GetAlternateLookup<ReadOnlySpan<char>>();
-                return Task.FromResult(trailersLookup[key.AsSpan("trailers.".Length)]);
-            }
             if (key.StartsWith("tui.", StringComparison.CurrentCultureIgnoreCase))
             {
                 var tuiLookup = config.TuiSettings.GetAlternateLookup<ReadOnlySpan<char>>();
@@ -178,19 +170,21 @@ public class ConfigCommand
         {
             config.PathsSettings.GetAlternateLookup<ReadOnlySpan<char>>()[key.AsSpan("path.".Length)] = value;
         }
-        if (key.StartsWith("trailers.", StringComparison.CurrentCultureIgnoreCase))
-        {
-            config.TrailersSettings.GetAlternateLookup<ReadOnlySpan<char>>()[key.AsSpan("trailers.".Length)] = value;
-        }
-        if (key.StartsWith("tui.", StringComparison.CurrentCultureIgnoreCase))
+        else if (key.StartsWith("tui.", StringComparison.CurrentCultureIgnoreCase))
         {
             config.TuiSettings.GetAlternateLookup<ReadOnlySpan<char>>()[key.AsSpan("tui.".Length)] = value;
         }
-        if (key.StartsWith("authors_registry.", StringComparison.CurrentCultureIgnoreCase))
+        else if (key.StartsWith("authors_registry.", StringComparison.CurrentCultureIgnoreCase))
         {
             config.AuthorsRegistry.GetAlternateLookup<ReadOnlySpan<char>>()[key.AsSpan("authors_registry.".Length)] = value;
         }
-        
+        else
+        {
+            // Removed keys (trailers.*) and unknown keys report the standard
+            // invalid-key error and never reach the file write below.
+            throw new KeyNotFoundException();
+        }
+
         string text = TomlSerializer.Serialize(config, ConfigSettingsTomlContext.Default);
         
         await File.WriteAllTextAsync(configPath, text, cancellationToken);

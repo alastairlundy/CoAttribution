@@ -7,8 +7,6 @@
     file, You can obtain one at https://mozilla.org/MPL/2.0/.  
  */
 
-using Tomlyn;
-
 namespace CoAttribution.Cli;
 
 public class ConfigResolver : IConfigResolver
@@ -29,7 +27,7 @@ public class ConfigResolver : IConfigResolver
 
         string tomlConfigText = await File.ReadAllTextAsync(configFile, cancellationToken);
 
-        AppConfig? appConfig = TomlSerializer.Deserialize<AppConfig>(tomlConfigText, ConfigSettingsTomlContext.Default);
+        AppConfig? appConfig = ConfigSettingsTomlContext.DeserializeConfig(tomlConfigText, configFile);
 
         if (appConfig is null)
         {

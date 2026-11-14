@@ -20,7 +20,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Reflection;
-using Tomlyn;
 
 namespace CoAttribution.Cli;
 
@@ -120,7 +119,7 @@ public static class AppServiceCollection
 
         string configText = File.ReadAllText(configFile);
 
-        return TomlSerializer.Deserialize<AppConfig>(configText, ConfigSettingsTomlContext.Default)
+        return ConfigSettingsTomlContext.DeserializeConfig(configText, configFile)
                ?? throw new ArgumentException(
                    string.Format(Resources.Exceptions_Arguments_InvalidConfigFileConfiguration, configFile));
     }
