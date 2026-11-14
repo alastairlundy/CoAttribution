@@ -16,6 +16,9 @@ Targeted for release 0.2.0. The GitHub release for 0.2.0 is currently a draft.
 - `UnknownCoAuthorException`: unknown co-author ids now fail loudly instead of being silently dropped.
 - ReleaseGen manifest and release workflow (trusted publishing, per-OS build matrix, RID subsets, tag checkout in the publish job) replacing dotnet-releaser.
 - README badges.
+- `commit --amend`: amends the last commit instead of creating a new one. The message is rebuilt from HEAD; with at least one attribution flag (`--with`, `--coauthor`, `--assist`) the existing `Co-authored-by:`/`Assisted-by:` trailer lines are stripped before the current invocation's trailers are applied, and with no attribution flag the previous attribution is preserved. When there is no commit to amend (no commits yet, or not a repository), the command exits nonzero with git's own diagnosis.
+- Named `--no-verify` and `--signoff` options on `commit`, plus the allowlisted `--` flag relay: tokens after `--` that are on the allowlist (`-a`, `--no-verify`, `--signoff`, `--allow-empty`, `--author`, `--no-gpg-sign`) reach `git commit` verbatim; every other token is rejected before git runs, with an error naming the token.
+- `message --amend`: prints the rebuilt amended message (the same rebuild the commit amend path would commit) without committing.
 
 ### Changed
 - The TUI is now always compiled in; the `#if TUI` / `EnableTui` feature flag was removed.
@@ -28,6 +31,7 @@ Targeted for release 0.2.0. The GitHub release for 0.2.0 is currently a draft.
 - Removed the unused `Microsoft.Extensions.Configuration.CommandLine` package.
 - Issue templates and agent documentation updated.
 - Help output restored the pre-migration header: every help render starts with the `co-attr v<version>` / copyright banner and the invoked command's title line, and System.CommandLine's empty `Description:` heading is suppressed (`BannerHelpAction`).
+- `message` now enforces `--message` and `--with` conditionally: both stay required for a fresh message build, and neither is required for `--amend`. Error wording and exit code match the previous parser-level requirement.
 
 ### Fixed
 - `AppConfig` is now registered in the DI container: `commit`, `message`, and the TUI no longer fail with `InvalidOperationException` when `HostResolver` is resolved. Service registrations moved out of `Program.cs` into `AppServiceCollection.AddCoAttributionServices` so tests can build the real container.
@@ -42,6 +46,7 @@ Targeted for release 0.2.0. The GitHub release for 0.2.0 is currently a draft.
 ### Removed
 - dotnet-releaser configuration, replaced by ReleaseGen.
 - v1 TUI scaffolding files.
+- The `trailers.*` config keys. A stale `[trailers]` section in `config.toml` now prints a one-time migration warning naming the config file, and its values are ignored; the file is never modified.
 
 ## [0.1.1.1] - 2026-09-07
 
