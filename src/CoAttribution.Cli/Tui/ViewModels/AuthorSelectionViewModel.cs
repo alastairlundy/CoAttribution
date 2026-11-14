@@ -107,7 +107,7 @@ public sealed partial class AuthorSelectionViewModel : ObservableObject
 
     /// <summary>
     /// The same filtered rows projected onto the testable <see cref="AuthorListRow"/>
-    /// DTO (T013, T018). Preserves filter, multi-select, and advanced attribution
+    /// DTO. Preserves filter, multi-select, and advanced attribution
     /// cycling semantics while decoupling the future list view from <see cref="AuthorRow"/>.
     /// </summary>
     public IReadOnlyList<AuthorListRow> AuthorListRows { get; private set; } = [];
@@ -303,7 +303,7 @@ public sealed partial class AuthorSelectionViewModel : ObservableObject
     /// <summary>
     /// Re-applies the current <see cref="FilterText"/>, rebuilding <see cref="Rows"/> and
     /// <see cref="AuthorListRows"/> in place. Used after a selection/attribution toggle so the
-    /// bound <see cref="Terminal.Gui.Views.ListView"/> reflects the latest state (T013).
+    /// bound <see cref="Terminal.Gui.Views.ListView"/> reflects the latest state.
     /// </summary>
     public void RefreshRows() => ApplyFilter();
 

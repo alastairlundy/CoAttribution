@@ -16,9 +16,9 @@ namespace CoAttribution.Cli.Tui.Views;
 
 /// <summary>
 /// Composite sub-view that groups the commit-form subject and body controls into
-/// labeled <see cref="FrameView"/> sections for a modern visual hierarchy (T019, T011, D008).
+/// labeled <see cref="FrameView"/> sections for a modern visual hierarchy.
 /// It exposes the inner controls so the parent <see cref="CommitFormView"/> can keep wiring
-/// counters, hard caps, and Tab navigation unchanged (D001).
+/// counters, hard caps, and Tab navigation unchanged.
 /// </summary>
 public sealed class CommitFormSectionsView : View
 {

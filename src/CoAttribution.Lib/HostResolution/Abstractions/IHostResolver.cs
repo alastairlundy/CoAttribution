@@ -18,8 +18,8 @@ namespace CoAttribution.Lib.HostResolution.Abstractions;
 public interface IHostResolver
 {
     /// <param name="hostInput">
-    /// Optional caller-supplied normalised host key that wins the precedence chain
-    /// at the top of D003. May be null when the caller has no candidate to offer.
+    /// Optional caller-supplied normalised host key that wins the precedence chain.
+    /// May be null when the caller has no candidate to offer.
     /// </param>
     Task<HostResolutionResult> ResolveHostAsync(string? hostInput);
 }

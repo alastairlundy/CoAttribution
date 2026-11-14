@@ -14,8 +14,8 @@ namespace CoAttribution.Cli.Tui.ViewModels;
 /// <summary>
 /// A clean, testable row model for the author selection list, mapped from the
 /// existing <see cref="AuthorRow"/>. Decouples the future <c>ListView</c> presentation
-/// (T013, T018) from the mutable <see cref="AuthorRow"/> view model while preserving
-/// selection, attribution, and host-row semantics (D006).
+/// from the mutable <see cref="AuthorRow"/> view model while preserving
+/// selection, attribution, and host-row semantics.
 /// </summary>
 public sealed class AuthorListRow
 {
@@ -36,13 +36,13 @@ public sealed class AuthorListRow
 
     /// <summary>
     /// The glyph rendered before the label to indicate selection (defaults to the
-    /// Unicode check). Set from <c>GlyphSet.Check</c> by the presenting view (T013, D006).
+    /// Unicode check). Set from <c>GlyphSet.Check</c> by the presenting view.
     /// </summary>
     public string SelectionGlyph { get; set; } = "✔";
 
     /// <summary>
     /// Renders the row for the <see cref="Terminal.Gui.Views.ListView"/> bound to
-    /// <see cref="AuthorListRow"/>, prefixing the selection glyph when selected (T013, D006).
+    /// <see cref="AuthorListRow"/>, prefixing the selection glyph when selected.
     /// </summary>
     public override string ToString() => IsSelected
         ? $"{SelectionGlyph} {DisplayLabel}"

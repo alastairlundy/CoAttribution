@@ -7,7 +7,7 @@ namespace CoAttribution.Cli.Tests.Tui;
 
 /// <summary>
 /// Behavior tests for <see cref="CommitFormSectionsView"/>: construction wraps the
-/// subject and body controls in labeled <see cref="FrameView"/>s (T019, T011).
+/// subject and body controls in labeled <see cref="FrameView"/>s.
 /// </summary>
 [NotInParallel]
 public class CommitFormSectionsViewTests
@@ -42,7 +42,7 @@ public class CommitFormSectionsViewTests
         CommitFormSectionsView sections = new();
 
         // Inner controls are parented to their section frames, and the frames
-        // to the sections view, confirming the wrapping hierarchy (T019, T011).
+        // to the sections view, confirming the wrapping hierarchy.
         await Assert.That(sections.SubjectField.SuperView == sections.SubjectFrame).IsTrue();
         await Assert.That(sections.BodyField.SuperView == sections.BodyFrame).IsTrue();
         await Assert.That(sections.SubjectFrame.SuperView == sections).IsTrue();

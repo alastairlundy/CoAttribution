@@ -10,7 +10,6 @@ namespace CoAttribution.Cli.Tests.Tui;
 /// <summary>
 /// Behavior tests for <see cref="AuthorSelectionPanelView"/>: both panes construct
 /// and the <see cref="Terminal.Gui.Views.ListView"/> binds to <see cref="AuthorListRow"/>
-/// (T020, T013).
 /// </summary>
 [NotInParallel]
 public class AuthorSelectionPanelViewTests

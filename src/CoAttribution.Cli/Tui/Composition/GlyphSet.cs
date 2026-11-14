@@ -14,7 +14,7 @@ namespace CoAttribution.Cli.Tui.Composition;
 /// <summary>
 /// AoT-safe, reflection-free set of Unicode glyphs used by the TUI for modern
 /// indicators (selection check, arrow, warning, and key hints). Values are sourced
-/// from the <c>Glyphs</c> section of the TUI config (D004, T006, T016). Construction
+/// from the <c>Glyphs</c> section of the TUI config. Construction
 /// uses <see cref="IConfiguration"/> key indexing only — no <c>System.Reflection</c> —
 /// so it stays NativeAOT/trimming-safe (ADR 0001).
 /// </summary>

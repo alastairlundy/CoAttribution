@@ -4,7 +4,7 @@ namespace CoAttribution.Cli.Tests.Tui;
 
 /// <summary>
 /// Headless behavior tests for <see cref="FeedbackToast"/>: non-blocking
-/// Show/Dismiss lifecycle (T017).
+/// Show/Dismiss lifecycle.
 /// </summary>
 [NotInParallel]
 public class FeedbackToastTests

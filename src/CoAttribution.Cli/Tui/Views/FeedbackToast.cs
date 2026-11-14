@@ -32,7 +32,7 @@ public enum FeedbackKind
 /// <summary>
 /// A transient, non-blocking overlay used to communicate commit outcome.
 /// Replaces the old practice of mutating <c>Window.Title</c> so the title stays a
-/// stable identity string (D003, T009, T017). Auto-dismisses via a single
+/// stable identity string. Auto-dismisses via a single
 /// <see cref="MainLoop"/> timeout (AoT-safe timer lifecycle, ADR 0001).
 /// </summary>
 public sealed class FeedbackToast : View

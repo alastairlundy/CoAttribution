@@ -17,8 +17,8 @@ namespace CoAttribution.Cli.Tui.Views;
 
 /// <summary>
 /// Split-panel host for author selection: a left filterable <see cref="ListView"/> bound to
-/// <see cref="AuthorListRow"/> (T014, T020, T013) and a right <see cref="FrameView"/> summarising
-/// the current selection/attribution (T011, T014). Selection is rendered via <see cref="GlyphSet.Check"/>.
+/// <see cref="AuthorListRow"/> and a right <see cref="FrameView"/> summarising
+/// the current selection/attribution. Selection is rendered via <see cref="GlyphSet.Check"/>.
 /// </summary>
 public sealed class AuthorSelectionPanelView : View
 {

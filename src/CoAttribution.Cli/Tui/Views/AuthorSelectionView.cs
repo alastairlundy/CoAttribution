@@ -176,7 +176,7 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
             _addAuthorButton, _backButton, _progressButton);
 
         // Selection/attribution key handling lives on the ListView so the list stays interactive
-        // while Enter/Esc still bubble to the parent flow (D001, D006).
+        // while Enter/Esc still bubble to the parent flow.
         _panel.AuthorListView.KeyDown += OnListKeyDown;
 
         // Parent-level Enter confirm covers focus outside the list (e.g. the filter field).
@@ -231,7 +231,7 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
 
     /// <summary>
     /// Rebuilds the bound <see cref="ListView"/> from the view model's filtered rows, preserving
-    /// scroll position and refreshing the right-pane summary (T013, D006).
+    /// scroll position and refreshing the right-pane summary.
     /// </summary>
     private void RefreshList()
     {
@@ -254,7 +254,7 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
 
     /// <summary>
     /// Renders the right-pane summary of the current selection and, in advanced view, their
-    /// attribution types (T014, D006).
+    /// attribution types.
     /// </summary>
     private void UpdateSummary()
     {
@@ -275,7 +275,7 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
     /// <summary>
     /// Toggles the selection of the author at <paramref name="index"/> in the bound list, mapping the
     /// list row back to its <see cref="AuthorRow"/> so <see cref="AuthorSelectionViewModel.GetSelectedIds"/>
-    /// stays authoritative (T013, D006).
+    /// stays authoritative.
     /// </summary>
     private void ToggleSelectionAt(int index)
     {
@@ -294,7 +294,7 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
 
     /// <summary>
     /// Cycles the attribution type of the author at <paramref name="index"/> (advanced view only),
-    /// preserving the CommitForm→AuthorSelection→Preview flow behaviour (T013, D001).
+    /// preserving the CommitForm→AuthorSelection→Preview flow behaviour.
     /// </summary>
     private void CycleAttributionAt(int index)
     {
@@ -327,7 +327,7 @@ public sealed class AuthorSelectionView : View, IStatusBarProvider
 
     /// <summary>
     /// Handles key input on the author <see cref="ListView"/>: Space toggles selection, A cycles
-    /// attribution (advanced view), Enter confirms. Esc is left to bubble to the parent flow (D001).
+    /// attribution (advanced view), Enter confirms. Esc is left to bubble to the parent flow.
     /// </summary>
     private void OnListKeyDown(object? sender, Key e)
     {

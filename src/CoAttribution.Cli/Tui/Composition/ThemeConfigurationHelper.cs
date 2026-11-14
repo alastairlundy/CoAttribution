@@ -27,7 +27,7 @@ internal static class ThemeConfigurationHelper
     /// Loads Terminal.Gui configuration from all standard sources (library
     /// defaults, app defaults, user files, environment variables) and
     /// activates the CoAttribution theme — or the 16-color fallback theme when
-    /// the terminal does not support TrueColor (T010, D002). Reflection-free
+    /// the terminal does not support TrueColor. Reflection-free
     /// and AoT-safe (ADR 0001).
     /// </summary>
     internal static void ApplyTheme()
@@ -41,10 +41,10 @@ internal static class ThemeConfigurationHelper
 
     /// <summary>
     /// Detects whether the active terminal can render 24-bit TrueColor without
-    /// coupling to a specific console driver (keeps the helper AoT-safe, T010).
+    /// coupling to a specific console driver (keeps the helper AoT-safe).
     /// Redirected output cannot show color reliably, so it falls back. Modern
     /// terminals that don't advertise a TERM (e.g. Windows consoles) are assumed
-    /// capable to avoid regressing on capable terminals (D002).
+    /// capable to avoid regressing on capable terminals.
     /// </summary>
     internal static bool IsTrueColorSupported()
     {

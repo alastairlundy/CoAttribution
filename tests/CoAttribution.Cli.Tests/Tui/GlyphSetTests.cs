@@ -4,7 +4,7 @@ namespace CoAttribution.Cli.Tests.Tui;
 
 /// <summary>
 /// Behavior tests for <see cref="GlyphSet"/>: parses the 7 glyph keys from an
-/// <see cref="IConfiguration"/> section without any runtime reflection (T006, T016).
+/// <see cref="IConfiguration"/> section without any runtime reflection.
 /// </summary>
 [NotInParallel]
 public class GlyphSetTests
@@ -56,7 +56,7 @@ public class GlyphSetTests
     public async Task FromConfiguration_ConstructedWithoutReflection()
     {
         // The mapping reads the section via the IConfiguration indexer only —
-        // no System.Reflection / Assembly manifest load — satisfying T006/T016.
+        // no System.Reflection / Assembly manifest load.
         GlyphSet glyphs = GlyphSet.FromConfiguration(GlyphsSection());
 
         await Assert.That(glyphs).IsNotNull();

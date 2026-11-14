@@ -25,7 +25,7 @@ namespace CoAttribution.Cli.Tui.Dialogs;
 /// Modal dialog that shows the composed subject, body, and rendered trailer list
 /// for confirmation before invoking <see cref="ICommitOrchestrator"/>.
 /// Identity text uses <see cref="CoAttribution.Lib.CommitOrchestrator.ApplyHostOverride"/>
-/// so the preview matches what will be committed (D019).
+/// so the preview matches what will be committed.
 /// </summary>
 public sealed class PreviewModal : Window, IStatusBarProvider
 {

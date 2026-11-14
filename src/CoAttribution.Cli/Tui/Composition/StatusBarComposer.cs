@@ -33,7 +33,7 @@ public static class StatusBarComposer
         foreach (StatusBarKeyBinding binding in bindings)
         {
             // Render the glyph in a dedicated cell followed by its label for
-            // discoverability (D005, T012, T008). The Key is kept Empty so the
+            // discoverability. The Key is kept Empty so the
             // KeyView (right side) is not displayed, avoiding duplication of the
             // key name. BindKeyToApplication = false keeps shortcuts display-only
             // so Enter/Esc behavior in the focused view is unchanged.

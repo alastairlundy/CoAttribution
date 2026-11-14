@@ -10,7 +10,7 @@
 namespace CoAttribution.Lib.HostResolution;
 
 /// <summary>
-/// Identifies which step of the 4-step host precedence chain (D003) supplied the resolved host.
+/// Identifies which step of the 4-step host precedence chain supplied the resolved host.
 /// </summary>
 public enum HostSource
 {

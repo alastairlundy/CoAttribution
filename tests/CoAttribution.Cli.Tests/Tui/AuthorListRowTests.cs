@@ -6,7 +6,7 @@ namespace CoAttribution.Cli.Tests.Tui;
 /// <summary>
 /// Behavior tests for the <see cref="AuthorRow"/> -> <see cref="AuthorListRow"/> mapping
 /// exposed by <see cref="AuthorSelectionViewModel.ToAuthorListRow"/>: preserves
-/// identity, selection, attribution, and host-row semantics (T018).
+/// identity, selection, attribution, and host-row semantics.
 /// </summary>
 [NotInParallel]
 public class AuthorListRowTests
