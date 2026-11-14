@@ -10,6 +10,7 @@ CoAttribution is a command-line tool that tags your Git commits with `Co-authore
 - **Author registry**: Map short aliases to names and emails in a TOML file.
 - **TUI**: Pick authors interactively from a terminal UI.
 - **Commit wrapping**: Adds the trailers, then runs `git commit` for you.
+- **Amend**: Fix attribution on the last commit with `--amend`, without duplicating trailers.
 - **Dry-run**: `co-attr message` prints the resulting message without committing.
 - **NativeAOT**: Compiled ahead-of-time for near-instant startup.
 
@@ -84,6 +85,22 @@ co-attr commit -m "Fix bug" --assist kilo
 co-attr commit -m "Refactor module" --coauthor copilot --assist kilo
 ```
 
+### Amend the last commit
+
+`--amend` reworks attribution on the most recent commit instead of creating a new one:
+
+```bash
+co-attr commit -m "Implement new feature" --amend --coauthor copilot
+```
+
+With at least one attribution flag (`--coauthor`, `--assist`, or `--with`), CoAttribution reads the last commit's message, strips every existing `Co-authored-by:` and `Assisted-by:` trailer line from it, and applies the current invocation's trailers. All other trailers and footers, such as `Signed-off-by:`, stay untouched. Repeat amends therefore replace the managed trailers rather than duplicating them.
+
+With no attribution flag, `--amend` preserves the last commit's existing `Co-authored-by:` and `Assisted-by:` lines. The strip runs only when at least one attribution flag is present, so a zero-flag amend never removes existing attribution. For deliberate attribution removal, use raw `git commit --amend`.
+
+The `-m` option remains required on `commit`, but amend rebuilds the message from the last commit, so its value goes unused. If there is no commit to amend (no commits yet, or not a repository), the command exits nonzero with git's own diagnosis.
+
+Allowlisted relay flags (see below) and the named `--no-verify`/`--signoff` options reach `git commit --amend` exactly as they reach a normal commit.
+
 ### Relay git flags after `--`
 
 CoAttribution relays flags to `git commit` and performs no staging itself. Staging stays user-owned, and that includes `-a`. Pass `-a` after `--` and git stages every tracked change before the commit.
@@ -121,6 +138,24 @@ To ask for a new allowlist entry, open an issue at https://github.com/alastairlu
 ```bash
 co-attr message -m "Draft change" --with copilot --coauthor copilot
 ```
+
+With `--amend`, it previews the amend instead. `co-attr message --amend` prints the last commit's message rebuilt with the same strip-or-preserve rules as `commit --amend`, without ever invoking `git commit`. In amend mode neither `-m` nor `--with` is required:
+
+```bash
+co-attr message --amend --coauthor copilot
+```
+
+### Stale `[trailers]` config warning
+
+Versions before 1.0 accepted `trailers.default`, `trailers.assistance`, and `trailers.coauthorship` in the config file, but never read them. `co-attr config` no longer accepts the keys. Trailer token text (`Co-authored-by`, `Assisted-by`) comes only from the tool's built-in localized resources.
+
+If your config file still carries a `[trailers]` section, every command that reads the config prints one line to stderr, once per run:
+
+```
+Warning: the [trailers] section in config file '<path to config.toml>' is no longer supported; its values are ignored.
+```
+
+The values never affect trailer output, and CoAttribution never rewrites your config file. Delete the `[trailers]` section to silence the warning.
 
 ## Project Scope
 
