@@ -94,6 +94,12 @@ internal static class GitFlagRelay
     /// and pointing at how to request allowlist additions — or
     /// <see langword="null"/> when the whole relay may be forwarded.
     /// </summary>
+    /// <remarks>
+    /// Value consumption mirrors git's own parse: the next token after a
+    /// separately-supplied <c>--author</c> is its value, whatever it starts
+    /// with, so it passes through with its flag without being validated as a
+    /// flag of its own.
+    /// </remarks>
     /// <param name="relayedTokens">Tokens captured after <c>--</c>.</param>
     /// <param name="alreadyGivenFlags">
     /// Named git flags already given on the command line (the
@@ -111,15 +117,16 @@ internal static class GitFlagRelay
         {
             bool looksLikeFlag = token.Length > 1 && token[0] == '-';
 
-            if (valueExpected && !looksLikeFlag)
+            if (valueExpected)
             {
-                // A bare token riding with the previous flag (the value of
-                // --author) passes through with its flag, unvalidated.
+                // The token riding with the previous flag (the value of
+                // --author) passes through with its flag, unvalidated. Git
+                // consumes the next argv as a separately-supplied value even
+                // when it looks like a flag, so the relay mirrors that
+                // instead of validating the value token as a flag of its own.
                 valueExpected = false;
                 continue;
             }
-
-            valueExpected = false;
 
             if (!looksLikeFlag)
                 return string.Format(Resources.Commands_Commit_Relay_Rejected, token);

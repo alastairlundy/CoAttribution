@@ -105,6 +105,27 @@ public class CommitRelayTests
         await Assert.That(GitFlagRelay.Validate(["--author", "Relay Bot <relay@example.com>"], [])).IsNull();
     }
 
+    [Test]
+    public async Task Validate_AuthorConsumesTheNextTokenEvenWhenItLooksLikeAFlag()
+    {
+        // Git consumes the next argv as a separately-supplied --author value
+        // unconditionally, so the relay passes the token through with its
+        // flag instead of validating it as a flag of its own.
+        await Assert.That(GitFlagRelay.Validate(["--author", "--signoff"], [])).IsNull();
+    }
+
+    [Test]
+    public async Task Validate_BareTokenAfterAConsumedAuthorValue_IsRejectedByName()
+    {
+        // After the consumed value, a bare token no longer rides with a
+        // value-taking flag: the rejection names that token, which is also
+        // where git itself would fail on the same command line.
+        string rejection = GitFlagRelay.Validate(["--author", "--allow-empty", "somefile.txt"], []) ?? "";
+
+        await Assert.That(rejection).Contains("somefile.txt");
+        await Assert.That(rejection).Contains("not on the allowlist");
+    }
+
     // ---------- rejection classes, each naming the token ----------
 
     [Test]
